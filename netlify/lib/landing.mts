@@ -49,7 +49,12 @@ export type Site = {
   photo: boolean;
   created: string;
   views?: number;
+  domain?: string; // connected custom domain, e.g. www.aurorawaterheaters.com
+  pingedAt?: string; // last search engine submission
 };
+
+// File name / path for a city page on a self-hosted or custom-domain site: "Aurora, CO" -> "aurora-co".
+export const cityFile = (p: { city: string; slug: string }) => p.city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || p.slug;
 
 type Theme = {
   name: string; tag: string; dark: boolean;
@@ -160,7 +165,7 @@ ul.factors{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px
 ${extra}`;
 }
 
-function head(t: Theme, o: { title: string; desc: string; canonical?: string; image?: string; ld: unknown[] }) {
+function head(t: Theme, o: { title: string; desc: string; canonical?: string; image?: string; ld: unknown[]; noindex?: boolean }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -169,7 +174,7 @@ function head(t: Theme, o: { title: string; desc: string; canonical?: string; im
 <title>${esc(o.title)}</title>
 <meta name="description" content="${esc(o.desc)}">
 ${o.canonical ? `<link rel="canonical" href="${esc(o.canonical)}">` : ""}
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="${o.noindex ? "noindex,follow" : "index,follow,max-image-preview:large"}">
 <meta property="og:type" content="website">
 ${o.canonical ? `<meta property="og:url" content="${esc(o.canonical)}">` : ""}
 <meta property="og:title" content="${esc(o.title)}">
@@ -186,7 +191,7 @@ function heroStyle(t: Theme, photoUrl?: string) {
   return t.hero === "photo" && photoUrl ? ` style="background-image:linear-gradient(rgba(12,7,3,.64),rgba(12,7,3,.64)),url('${esc(photoUrl)}')"` : "";
 }
 
-export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: string; site?: SiteNav } = {}): string {
+export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: string; site?: SiteNav; canonical?: string; noindex?: boolean } = {}): string {
   const t = TEMPLATES[p.template] || TEMPLATES.clean;
   const c = p.copy;
   const phone = p.phone || "(555) 000-0000";
@@ -196,7 +201,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
   const KW = titleCase(kw);
   const brand = p.brand || `${town} ${KW} Help`;
   const title = c.seoTitle || `${p.service} in ${town} | ${brand}`;
-  const canonical = opts.base ? `${opts.base}/p/${p.slug}` : "";
+  const canonical = opts.canonical || (opts.base ? `${opts.base}/p/${p.slug}` : "");
   const nav = opts.site;
   const others = nav ? nav.cities.filter((x) => !x.current) : [];
   const ld: unknown[] = [
@@ -226,7 +231,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
       <div class="ph">Tap to call. We connect you with trusted local pros.</div>
     </div>`;
 
-  return `${head(t, { title, desc: c.metaDescription, canonical, image: opts.photoUrl, ld })}
+  return `${head(t, { title, desc: c.metaDescription, canonical, image: opts.photoUrl, ld, noindex: opts.noindex })}
 <style>${css(t)}</style>
 </head>
 <body>
@@ -283,7 +288,7 @@ ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2
 }
 
 // Hub page of a city site: one service across a region, linking to every city page.
-export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string }): string {
+export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string; canonical?: string; noindex?: boolean }): string {
   const t = TEMPLATES[site.theme] || TEMPLATES.clean;
   const first = pages[0];
   const kw = first?.copy.keyword || site.service.toLowerCase();
@@ -295,7 +300,7 @@ export function renderHub(site: Site, pages: LandingPage[], opts: { base?: strin
   const townList = towns.length > 3 ? `${towns.slice(0, 3).join(", ")} and ${towns.length - 3} more` : towns.join(", ").replace(/, ([^,]*)$/, " and $1");
   const title = `${KW} in ${site.region} | ${brand}`.slice(0, 70);
   const desc = `Need ${kw} in ${site.region}? Call ${phone} to reach a local pro in ${townList}. One number, quick connection to independent local experts.`.slice(0, 160);
-  const canonical = opts.base ? `${opts.base}${opts.selfHref}` : "";
+  const canonical = opts.canonical || (opts.base ? `${opts.base}${opts.selfHref}` : "");
   const ld: unknown[] = [{
     "@context": "https://schema.org", "@type": "Service", name: `${KW} in ${site.region}`, serviceType: site.service, description: desc,
     areaServed: pages.map((p) => ({ "@type": "City", name: p.city })),
@@ -308,7 +313,7 @@ export function renderHub(site: Site, pages: LandingPage[], opts: { base?: strin
     ? (opts.photoUrl ? `<img class="side" src="${esc(opts.photoUrl)}" alt="${esc(site.service)} in ${esc(site.region)}" width="600" height="600">` : `<div class="card" style="color:var(--ink)"><b>Cities we cover</b><div class="areas" style="margin-top:10px">${pages.map((p) => `<a href="${esc(opts.cityHref(p))}">${esc(p.city.split(",")[0])}</a>`).join("")}</div></div>`)
     : t.hero === "center" && opts.photoUrl ? `<img class="wide" src="${esc(opts.photoUrl)}" alt="${esc(site.service)} in ${esc(site.region)}" width="880" height="495">`
       : `<div class="chips">${towns.slice(0, 6).map((x) => `<span>${esc(x)}</span>`).join("")}</div>`;
-  return `${head(t, { title, desc, canonical, image: opts.photoUrl, ld })}
+  return `${head(t, { title, desc, canonical, image: opts.photoUrl, ld, noindex: opts.noindex })}
 <style>${css(t)}</style>
 </head>
 <body>

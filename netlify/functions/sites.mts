@@ -1,7 +1,8 @@
 import type { Config } from "@netlify/functions";
 import { getStore } from "@netlify/blobs";
 import { clean, whoAmI } from "../lib/access.mts";
-import { defaultRegion, isTheme, seoScore, type LandingPage, type Site } from "../lib/landing.mts";
+import { defaultRegion, isTheme, seoScore, cityFile, type LandingPage, type Site } from "../lib/landing.mts";
+import { cleanHost, checkDns, setAlias, pingIndexNow, domainsStore, domainsEnabled, NETLIFY_APEX_IP, NETLIFY_HOST } from "../lib/domains.mts";
 
 // City sites: one service across up to 10 cities, with a hub page linking them all.
 // The site record is created here (no charge); each city page is then built through
@@ -10,6 +11,8 @@ import { defaultRegion, isTheme, seoScore, type LandingPage, type Site } from ".
 //   GET    /api/sites?slug=...   one site with its pages
 //   POST   /api/sites            create { service, cities[], phone, brand?, region?, theme, photo? }
 //   PATCH  /api/sites            update { slug, theme?, phone?, brand?, region? } (applies to every page)
+//                                { slug, domain: "www.example.com" } connect a custom domain ("" disconnects)
+//                                { slug, ping: true } submit the site's URLs to search engines (IndexNow)
 //   DELETE /api/sites?slug=...   delete the site and all its pages
 const MAX_CITIES = 10;
 const MAX_SITES = 10;
@@ -48,12 +51,13 @@ export default async (req: Request) => {
       const built = new Set(live.map((p) => p.city));
       list.push({
         slug: s.slug, service: s.service, region: s.region, theme: s.theme, phone: s.phone, photo: s.photo, created: s.created,
+        domain: s.domain || null, pingedAt: s.pingedAt || null,
         cities: s.cities, built: live.length, missing: s.cities.filter((c) => !built.has(c)),
         views: (s.views || 0) + live.reduce((a, p) => a + (p.views || 0), 0),
         seo: live.length ? Math.round(live.reduce((a, p) => a + seoScore(p).score, 0) / live.length) : null,
       });
     }
-    return Response.json({ sites: list }, { headers: { "cache-control": "no-store" } });
+    return Response.json({ sites: list, domains: { enabled: domainsEnabled(), apexIp: NETLIFY_APEX_IP, cname: NETLIFY_HOST } }, { headers: { "cache-control": "no-store" } });
   }
 
   if (req.method === "DELETE") {
@@ -70,6 +74,10 @@ export default async (req: Request) => {
       const pl = ((await index().get(pageKey, { type: "json" })) as string[] | null) || [];
       await index().setJSON(pageKey, pl.filter((x) => !gone.has(x)));
     }
+    if (s?.domain) {
+      await domainsStore().delete(s.domain);
+      try { await setAlias(s.domain, false); } catch (e) { console.error("alias remove failed", e); }
+    }
     await sites().delete(slug);
     await index().setJSON(siteKey, mine.filter((x) => x !== slug));
     console.log(`site deleted ${slug} owner=${owner}`);
@@ -84,6 +92,58 @@ export default async (req: Request) => {
     if (!mine.includes(slug)) return Response.json({ error: "Site not found." }, { status: 404 });
     const s = (await sites().get(slug, { type: "json" })) as Site | null;
     if (!s) return Response.json({ error: "Site not found." }, { status: 404 });
+    // Public URLs of the site: on its own domain when connected, otherwise on callposts.com.
+    const siteUrls = () => {
+      const origin = new URL(req.url).origin;
+      return s.domain
+        ? [`https://${s.domain}/`, ...s.pages.map((x) => `https://${s.domain}/${cityFile(x)}`)]
+        : [`${origin}/s/${s.slug}`, ...s.pages.map((x) => `${origin}/p/${x.slug}`)];
+    };
+
+    if (body.ping === true) {
+      if (!s.pages.length) return Response.json({ error: "Build at least one city page first." }, { status: 400 });
+      if (s.pingedAt && Date.now() - Date.parse(s.pingedAt) < 60 * 60 * 1000) return Response.json({ error: "Already submitted in the last hour. Search engines don't need it more often." }, { status: 429 });
+      const r = await pingIndexNow(siteUrls());
+      if (!r.ok) return Response.json({ error: `The submission didn't go through (status ${r.status}). Try again later.` }, { status: 502 });
+      s.pingedAt = new Date().toISOString();
+      await sites().setJSON(slug, s);
+      return Response.json({ ok: true, urls: siteUrls().length, pingedAt: s.pingedAt });
+    }
+
+    if (body.domain !== undefined) {
+      if (!domainsEnabled()) return Response.json({ error: "Custom domains aren't switched on for CallPosts yet. Try again soon." }, { status: 503 });
+      const raw = String(body.domain || "").trim();
+      if (!raw) {
+        if (s.domain) {
+          await domainsStore().delete(s.domain);
+          try { await setAlias(s.domain, false); } catch (e) { console.error("alias remove failed", e); }
+          console.log(`domain disconnected ${s.domain} site=${slug}`);
+          s.domain = undefined;
+          await sites().setJSON(slug, s);
+        }
+        return Response.json({ ok: true, domain: null });
+      }
+      const host = cleanHost(raw);
+      if (!host) return Response.json({ error: "That doesn't look like a domain. Use something like www.yourdomain.com." }, { status: 400 });
+      const taken = await domainsStore().get(host);
+      if (taken && taken !== slug) return Response.json({ error: "That domain is already connected to another site." }, { status: 409 });
+      const dns = await checkDns(host);
+      if (!dns.ok) {
+        return Response.json({ ok: false, dns: false, host, found: dns.found,
+          error: dns.found.length ? `${host} points somewhere else right now (${dns.found.slice(0, 3).join(", ")}). Update the DNS record, wait a few minutes, then check again.` : `No DNS record found for ${host} yet. Add the record, wait a few minutes (sometimes up to an hour), then check again.` }, { status: 409 });
+      }
+      try { await setAlias(host, true); }
+      catch (e) { console.error("alias add failed", e); return Response.json({ error: "Couldn't attach the domain right now. Try again in a minute." }, { status: 502 }); }
+      if (s.domain && s.domain !== host) { await domainsStore().delete(s.domain); try { await setAlias(s.domain, false); } catch {} }
+      await domainsStore().set(host, slug);
+      s.domain = host;
+      await sites().setJSON(slug, s);
+      console.log(`domain connected ${host} site=${slug} owner=${owner}`);
+      // Let search engines know about the new home of these pages (best effort).
+      await pingIndexNow(siteUrls()).catch(() => null);
+      return Response.json({ ok: true, domain: host });
+    }
+
     const upd: Partial<LandingPage> = {};
     if (isTheme(body.theme)) { s.theme = body.theme; upd.template = body.theme; }
     if (body.phone !== undefined) {

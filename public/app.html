@@ -787,14 +787,29 @@ $("lpPhoto").onchange=lpLabel;
 async function loadPages(){
   if(!window.cpUser&&!$("code").value.trim()){$("lpList").innerHTML="";$("lpSites").innerHTML="";return}
   try{const [r,rs]=await Promise.all([fetch("/api/pages",{headers:authHeaders(),cache:"no-store"}),fetch("/api/sites",{headers:authHeaders(),cache:"no-store"})]);
-    if(rs.ok)renderSites((await rs.json()).sites||[]);if(r.ok)renderPages((await r.json()).pages||[])}catch(e){}
+    if(rs.ok){const js=await rs.json();lpDom=js.domains||lpDom;renderSites(js.sites||[])}if(r.ok)renderPages((await r.json()).pages||[])}catch(e){}
+}
+let lpDom={enabled:false,apexIp:"75.2.60.5",cname:"callposts.netlify.app"};
+const ago=t=>{const m=Math.round((Date.now()-Date.parse(t))/60000);return m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`};
+function domainBox(x){
+  if(x.domain)return `<div class="km">🔗 <a href="https://${esc(x.domain)}/" target="_blank" rel="noopener" style="color:var(--accent)">${esc(x.domain)}</a> · connected <button type="button" class="copy sdisc" style="margin-left:6px">Disconnect</button></div>`;
+  return `<details class="sdom"><summary class="km" style="cursor:pointer">Connect your own domain</summary>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)">
+      <span>1. At your domain registrar, add one DNS record:</span>
+      <span>• For <b>www.yourdomain.com</b> (recommended): <b>CNAME</b> · name <code>www</code> · value <code>${esc(lpDom.cname)}</code></span>
+      <span>• For the bare domain <b>yourdomain.com</b>: <b>A</b> · name <code>@</code> · value <code>${esc(lpDom.apexIp)}</code></span>
+      <span>2. Wait a few minutes, enter the domain and click Connect. HTTPS is set up automatically.</span>
+      <div style="display:flex;gap:6px"><input class="sdomin" placeholder="www.yourdomain.com" aria-label="Your domain" style="flex:1"><button type="button" class="copy sconn">Connect</button></div>
+      ${lpDom.enabled?"":`<span>Custom domains are being switched on; connecting will work shortly.</span>`}
+    </div></details>`;
 }
 function renderSites(list){
   $("lpSites").innerHTML=list.map(x=>`<div class="kit-row" data-site="${esc(x.slug)}"><div class="kh"><span>🌐 ${esc(x.service)} · ${esc(x.region)}</span><span style="display:flex;gap:8px;align-items:center">${x.seo!=null?`<span class="seo-badge ${x.seo>=85?"good":x.seo>=65?"ok":"bad"}" title="Average SEO score">SEO ${x.seo}</span>`:""}<span class="km">${x.views||0} views</span></span></div>
     <div class="km">${x.built} of ${x.cities.length} city pages built${x.missing.length?` · missing: ${esc(x.missing.join("; "))}`:""}</div>
     <div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}?preview=1" target="_blank" rel="noopener">Open site</a><button type="button" class="copy scopy">Copy link</button><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/site.zip" download>Download ZIP</a>
     <select class="stheme" aria-label="Site theme" style="width:auto;padding:4px 8px;font-size:12px">${THEMES.map(t=>`<option value="${t.k}"${t.k===x.theme?" selected":""}>${esc(t.n)}</option>`).join("")}</select>
-    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy sdel">Delete site</button></div></div>`).join("");
+    <button type="button" class="copy sping" title="Submit every page to Bing, Yandex and other IndexNow search engines">${x.pingedAt?`Submitted ${ago(x.pingedAt)} · Resubmit`:"Submit to search engines"}</button>
+    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy sdel">Delete site</button></div>${domainBox(x)}</div>`).join("")+(list.length?`<p class="status" style="margin:0;font-size:12px">Pages are sent to Bing, Yandex and other IndexNow engines automatically when they're built. For Google, add your domain (or callposts.com pages) in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:var(--accent)">Google Search Console</a> and submit <code>/sitemap.xml</code>.</p>`:"");
 }
 function renderPages(list){
   $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)} ${p.site?`<span class="site-tag">in site</span>`:""}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)} · ${esc(themeName(p.template))}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button>${p.site?"":`<button type="button" class="copy lpdl">Download HTML</button>`}<button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
@@ -868,6 +883,17 @@ $("lpSites").addEventListener("click",async e=>{
     if(!j.site.missing.length){loadPages();return}
     $("lpGo").disabled=true;try{await buildSiteCities(slug,j.site.missing,j.site.photo)}finally{$("lpGo").disabled=false}
   }
+  if(e.target.closest(".sping")){const b=e.target;b.disabled=true;b.textContent="Submitting…";
+    const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,ping:true})});const j=await r.json().catch(()=>({}));
+    b.disabled=false;b.textContent=r.ok?`Submitted ${j.urls} URLs`:"Submit to search engines";$("lpStatus").textContent=r.ok?`Sent ${j.urls} pages to Bing, Yandex and other IndexNow search engines.`:(j.error||"Couldn't submit. Try again later.")}
+  if(e.target.closest(".sconn")){const b=e.target,inp=row.querySelector(".sdomin"),d=inp.value.trim();if(!d){inp.focus();return}
+    b.disabled=true;b.textContent="Checking DNS…";
+    const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,domain:d})});const j=await r.json().catch(()=>({}));
+    b.disabled=false;b.textContent="Connect";
+    if(r.ok&&j.ok){$("lpStatus").innerHTML=`Connected. Your site will load at <a href="https://${esc(j.domain)}/" target="_blank" rel="noopener" style="color:var(--accent)">${esc(j.domain)}</a> as soon as HTTPS is ready (usually a few minutes).`;loadPages()}
+    else $("lpStatus").textContent=j.error||"Couldn't connect the domain. Try again."}
+  if(e.target.closest(".sdisc")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again to disconnect";return}
+    const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,domain:""})});if(r.ok)loadPages()}
   if(e.target.closest(".sdel")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again: deletes every page";return}
     const r=await fetch(`/api/sites?slug=${encodeURIComponent(slug)}`,{method:"DELETE",headers:authHeaders()});if(r.ok)loadPages()}
 });

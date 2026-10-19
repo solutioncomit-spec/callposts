@@ -3,7 +3,8 @@ import { getStore } from "@netlify/blobs";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import { payFor, creditHeaders, clean, whoAmI } from "../lib/access.mts";
-import { seoScore, isTheme, TEMPLATES, type LandingPage, type PageCopy, type Site } from "../lib/landing.mts";
+import { seoScore, isTheme, TEMPLATES, cityFile, type LandingPage, type PageCopy, type Site } from "../lib/landing.mts";
+import { pingIndexNow } from "../lib/domains.mts";
 
 // Landing page builder.
 // POST   /api/pages            create a page (AI writes the copy; optional AI hero photo)
@@ -289,6 +290,10 @@ export default async (req: Request) => {
           await updateSite(site.slug, (s) => { s.pages = [...s.pages.filter((x) => x.city !== city), { slug, city }].sort((a, b) => order.indexOf(a.city) - order.indexOf(b.city)); });
         }
         const words = [copy.intro, copy.localNote, ...(copy.signs || []).map((x) => x.text), ...copy.faqs.map((f) => f.a), ...(copy.costFactors || [])].join(" ").split(/\s+/).length;
+        // Tell search engines about the new page right away (IndexNow; best effort).
+        const origin = new URL(req.url).origin;
+        const fresh = site?.domain ? [`https://${site.domain}/${cityFile(page)}`, `https://${site.domain}/`] : [`${origin}/p/${slug}`, ...(site ? [`${origin}/s/${site.slug}`] : [])];
+        await pingIndexNow(fresh).catch(() => null);
         console.log(`page created ${slug} owner=${owner} site=${site?.slug || "-"} template=${template} photo=${!!photo} words=${words}`);
         finish({ ok: true, slug, url: `/p/${slug}`, photo: !!photo, words, credits });
       } catch (e) {
