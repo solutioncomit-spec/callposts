@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="CallPosts writes Facebook Marketplace listings, images and Messenger replies for pay-per-call affiliates, checked against the listing rules.">
+<title>CallPosts · Marketplace listings for pay-per-call affiliates</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script>if(/(confirmation|recovery|invite|email_change)_token=|access_token=/.test(location.hash))location.replace("/app"+location.hash);</script>
+<script>try{var t=localStorage.getItem("cp-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://callposts.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://callposts.com/">
+<meta property="og:title" content="CallPosts · Rules-compliant Marketplace listings in under 5 minutes">
+<meta property="og:description" content="Unique titles, descriptions, AI photos and Messenger replies for pay-per-call affiliates, checked against the listing rules before you post. Start with 15 credits.">
+<meta property="og:image" content="https://callposts.com/img/water-heater.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0c10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: split hero (pitch left, live-looking Marketplace listing right), then single-column bands: how it works, kit, Lead Smart, pricing, partner pitch, early access */
+/* Futuristic single dark theme: deep space ground, cyan→violet signal accents, glass panels over a faint grid */
+:root{
+  color-scheme:light;
+  --bg:#f5f7ff; --surface:rgba(255,255,255,.78); --ink:#0b1030; --muted:#56618a; --line:rgba(60,80,160,.16); --brand:#0a8fb0; --brand-2:#7c4dff; --brand-ink:#ffffff; --brand-soft:rgba(10,143,176,.08); --pay:#b45f00; --pay-soft:rgba(180,95,0,.10);
+  --field:#ffffff; --band:rgba(255,255,255,.6); --glow-a:rgba(124,77,255,.14); --glow-b:rgba(10,143,176,.12); --grid:rgba(60,80,160,.07); --h-start:#0b1030;
+  --display:"Unbounded",system-ui,sans-serif; --body:"Sora",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#070912; --surface:rgba(16,22,42,.66); --ink:#e8ecff; --muted:#93a0c9; --line:rgba(130,165,255,.18); --brand:#4ff0ff; --brand-2:#9b6bff; --brand-ink:#04121a; --brand-soft:rgba(79,240,255,.10); --pay:#ffb547; --pay-soft:rgba(255,181,71,.12);
+  --field:rgba(5,8,20,.7); --band:rgba(10,14,30,.55); --glow-a:rgba(155,107,255,.22); --glow-b:rgba(79,240,255,.14); --grid:rgba(120,160,255,.06); --h-start:#ffffff;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.band{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:56px}
+.in{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.alt{background:var(--surface);border-block:1px solid var(--line)}
+nav .in{flex-direction:row;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+nav{padding-block:18px!important}
+.logo{font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:-.02em}
+.logo span{color:var(--brand)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.015em}
+h1{font-weight:900;font-size:clamp(38px,6.4vw,70px);line-height:1}
+h2{font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1.08}
+h3{font-weight:600;font-size:19px}
+p{margin:0;max-width:62ch}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--muted)}
+.eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--brand)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 15px var(--body);text-decoration:none;border-radius:8px;padding:12px 18px;border:1px solid transparent;cursor:pointer}
+.btn.pri{background:var(--brand);color:var(--brand-ink)}
+.btn.sec{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible,input:focus,select:focus{outline:2px solid var(--brand);outline-offset:2px}
+.ctas{display:flex;gap:10px;flex-wrap:wrap}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr)}}
+.hero-copy{display:flex;flex-direction:column;gap:20px;min-width:0}
+/* Listing mock */
+.listing{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 18px 50px -24px rgba(0,0,0,.35);min-width:0}
+.listing .img{aspect-ratio:1.25;max-width:100%;background:var(--brand);color:var(--brand-ink);padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.listing .img small{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.listing .img strong{font-family:var(--display);font-weight:900;font-size:clamp(30px,4.4vw,44px);line-height:1}
+.listing .img .ph{background:var(--brand-ink);color:var(--brand);border-radius:10px;padding:10px 14px;font-family:var(--display);font-weight:800;font-size:22px;align-self:flex-start}
+.listing .meta{padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.price{font-family:var(--mono);font-size:22px;font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;border-radius:99px;padding:3px 9px;background:var(--brand-soft);color:var(--brand);font-weight:600}
+.chip.pay{background:var(--pay-soft);color:var(--pay);font-family:var(--mono)}
+.muted{color:var(--muted)}
+/* Hero (planner rev.): centered pitch, one big CTA, two Marketplace-style example cards */
+.hero2 .in{align-items:center;text-align:center;gap:18px}
+.hero2 h1{font-size:clamp(32px,5.2vw,58px);line-height:1.06;max-width:22ch}
+.hero2 .lede{max-width:64ch}
+.cta-block{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px}
+.btn.big{font-size:18px;padding:16px 28px;border-radius:10px}
+.founder-pill{font-size:13px;border:1px dashed var(--brand);border-radius:999px;padding:6px 14px;margin-top:4px}
+.founder-pill a{color:var(--brand)}
+.examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;width:100%;margin-top:18px;text-align:left}
+@media (max-width:900px){.examples{grid-template-columns:minmax(0,1fr)}}
+.mp{margin:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:16px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 30px 80px -40px rgba(79,240,255,.45);min-width:0}
+@media (max-width:480px){.mp{grid-template-columns:minmax(0,1fr)}}
+.mp img{width:100%;height:auto;align-self:start;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--brand-soft);display:block}
+.mp-copy{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mp-src{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.mp-ico{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--ink);color:var(--bg);font-size:12px}
+.mp h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,1.9vw,21px);line-height:1.25}
+.mp-price{font-family:var(--display);font-weight:800;font-size:28px;color:var(--brand)}
+.mp-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.mp-check{font-size:14px;border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.mp-check .ok{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#1f9d55;color:#fff;font-size:12px;margin-right:4px}
+.mp-check b{color:#1f9d55}
+:root[data-theme="dark"] .mp-check b{color:#4ade80}
+.mp figcaption{grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:8px}
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;list-style:none;padding:0;margin:0;counter-reset:s}
+@media (max-width:860px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.steps{grid-template-columns:minmax(0,1fr)}}
+.steps li{counter-increment:s;display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:3px solid var(--brand)}
+.steps li::before{content:counter(s);font-family:var(--mono);color:var(--brand);font-size:14px}
+/* Kit */
+.kit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+@media (max-width:860px){.kit{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.kit{grid-template-columns:minmax(0,1fr)}}
+.kit div{background:var(--surface);padding:20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+/* Payout strip */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+td.n{font-family:var(--mono);color:var(--pay);text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+/* Lead Smart */
+.paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:720px){.paths{grid-template-columns:minmax(0,1fr)}}
+.path{border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
+/* Pricing */
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+@media (max-width:860px){.plans{grid-template-columns:minmax(0,1fr)}}
+.plan{border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;background:var(--surface)}
+.founder{border:1px dashed var(--brand);border-radius:10px;padding:10px 14px;margin:6px 0 18px;font-size:14px}
+.badge{align-self:flex-start;font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;background:var(--brand);color:var(--brand-ink);border-radius:999px;padding:4px 10px}
+.payg{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:18px;background:var(--surface)}
+.plan.hl{border:2px solid var(--brand)}
+.amt{font-family:var(--display);font-weight:900;font-size:44px;line-height:1}
+.amt small{font-family:var(--body);font-weight:500;font-size:15px;color:var(--muted)}
+.plan ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.rules{grid-template-columns:minmax(0,1fr)}}
+.rule{display:flex;gap:10px;align-items:baseline;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.rule b{font-family:var(--mono);color:var(--brand)}
+.rule b.x{color:var(--pay)}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end}
+@media (max-width:860px){form{grid-template-columns:minmax(0,1fr)}}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;box-sizing:border-box}
+.small{font-size:13px;color:var(--muted)}
+footer .in{flex-direction:row;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media (prefers-reduced-motion:no-preference){.listing{animation:rise .6s ease-out both}@keyframes rise{from{transform:translateY(12px)}to{transform:none}}}
+
+body{background:var(--bg);background-image:radial-gradient(1200px 600px at 85% -10%,var(--glow-a),transparent 60%),radial-gradient(900px 500px at -10% 20%,var(--glow-b),transparent 60%);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%)}
+::selection{background:rgba(79,240,255,.35)}
+input,select,textarea{background:var(--field)!important;border-color:var(--line)!important;color:var(--ink)!important}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+
+h1{font-weight:800;letter-spacing:-.03em;background:linear-gradient(100deg,var(--h-start) 10%,var(--brand) 55%,var(--brand-2) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-weight:700;letter-spacing:-.02em}
+h3{font-family:var(--body);font-weight:600}
+.logo{font-weight:800;letter-spacing:.02em}
+.logo span{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{font-family:var(--mono);font-weight:500;letter-spacing:.18em;color:var(--brand)}
+.eyebrow::before{content:"▸ "}
+.alt{background:var(--band);border-color:var(--line)}
+.btn.pri{background:linear-gradient(100deg,var(--brand),var(--brand-2));color:var(--brand-ink);box-shadow:0 0 0 1px rgba(79,240,255,.4),0 8px 30px -8px rgba(79,240,255,.55);transition:box-shadow .2s,transform .2s}
+.btn.pri:hover{box-shadow:0 0 0 1px rgba(79,240,255,.7),0 10px 40px -6px rgba(155,107,255,.7);transform:translateY(-1px)}
+.btn.sec{background:var(--surface);border-color:var(--line);backdrop-filter:blur(8px)}
+.btn.sec:hover{border-color:rgba(79,240,255,.5)}
+.listing,.plan,.path,.rule,.tablewrap,.kit div{background:var(--surface);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.listing{border-color:rgba(79,240,255,.35);box-shadow:0 0 0 1px rgba(79,240,255,.08),0 30px 80px -30px rgba(79,240,255,.45)}
+.listing .img{background:linear-gradient(135deg,#0b1a3a 0%,#1a1048 60%,#2a0f55 100%);color:#fff;position:relative;overflow:hidden}
+.listing .img::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(79,240,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(79,240,255,.12) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
+.listing .img small{font-family:var(--mono);color:var(--brand);opacity:1}
+.listing .img strong{font-weight:800;position:relative;z-index:1}
+.listing .img .ph{background:linear-gradient(100deg,var(--brand),var(--brand-2));color:var(--brand-ink);position:relative;z-index:1;font-family:var(--mono);font-weight:500}
+.price,.amt{color:var(--brand)}
+.amt{font-weight:800}
+.chip{background:var(--brand-soft);color:var(--brand);border:1px solid rgba(79,240,255,.25);font-family:var(--mono);font-weight:500}
+.chip.pay{border-color:rgba(255,181,71,.3)}
+.kit{background:var(--line)}
+.steps li{border-top:2px solid transparent;border-image:linear-gradient(90deg,var(--brand),var(--brand-2)) 1}
+.plan.hl{border:1px solid rgba(79,240,255,.6);box-shadow:0 0 0 1px rgba(155,107,255,.3),0 20px 60px -24px rgba(79,240,255,.5)}
+.rule b{color:var(--brand)}
+th{font-family:var(--mono)}
+@media (prefers-reduced-motion:no-preference){.listing{animation:rise .7s ease-out both,float 6s ease-in-out .7s infinite}@keyframes float{50%{transform:translateY(-6px)}}}
+
+.theme-toggle{font:500 13px var(--mono);letter-spacing:.04em;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer}
+.theme-toggle:hover{border-color:var(--brand,var(--accent))}
+.theme-toggle:focus-visible{outline:2px solid var(--brand,var(--accent));outline-offset:2px}
+
+/* Black theme (matches the approved mockup): flat near-black, white Inter headings, blue→violet CTA, quiet dark cards */
+:root[data-theme="dark"]{
+  --bg:#0b0c10; --surface:#15171c; --ink:#f4f4f5; --muted:#a1a1aa; --line:rgba(255,255,255,.12);
+  --brand:#3b82f6; --brand-2:#7c3aed; --brand-ink:#ffffff; --brand-soft:rgba(59,130,246,.12);
+  --pay:#fbbf24; --pay-soft:rgba(251,191,36,.12); --field:#101217; --band:#111318;
+  --glow-a:transparent; --glow-b:transparent; --grid:transparent; --h-start:#ffffff;
+}
+:root[data-theme="dark"] body{background:var(--bg);background-image:none}
+:root[data-theme="dark"]{--display:"Inter",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif}
+:root[data-theme="dark"] h1{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff;font-weight:800;letter-spacing:-.025em}
+:root[data-theme="dark"] h2{color:#fff;font-weight:700;letter-spacing:-.02em}
+:root[data-theme="dark"] .logo{font-family:"Inter",system-ui,sans-serif;font-weight:700;letter-spacing:-.01em;font-size:24px}
+:root[data-theme="dark"] .logo span{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff}
+:root[data-theme="dark"] .eyebrow{color:#a1a1aa}
+:root[data-theme="dark"] .eyebrow::before{content:""}
+:root[data-theme="dark"] .btn.pri{background:linear-gradient(90deg,#3b82f6,#6d28d9);color:#fff;box-shadow:0 10px 30px -12px rgba(99,102,241,.7)}
+:root[data-theme="dark"] .btn.pri:hover{box-shadow:0 12px 36px -10px rgba(124,58,237,.8)}
+:root[data-theme="dark"] .btn.sec{background:transparent;border-color:var(--line);backdrop-filter:none}
+:root[data-theme="dark"] .listing,:root[data-theme="dark"] .plan,:root[data-theme="dark"] .path,:root[data-theme="dark"] .rule,:root[data-theme="dark"] .tablewrap,:root[data-theme="dark"] .kit div,:root[data-theme="dark"] .mp,:root[data-theme="dark"] .payg{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+:root[data-theme="dark"] .mp{border-color:rgba(255,255,255,.14);box-shadow:0 30px 60px -40px rgba(0,0,0,.9)}
+:root[data-theme="dark"] .mp-ico{background:#fff;color:#0b0c10}
+:root[data-theme="dark"] .mp-price{color:#3b82f6;font-family:"Inter",system-ui,sans-serif}
+:root[data-theme="dark"] .chip{border-color:rgba(59,130,246,.3)}
+:root[data-theme="dark"] .plan.hl{border:1px solid #3b82f6;box-shadow:0 0 0 1px rgba(124,58,237,.35)}
+:root[data-theme="dark"] .alt{background:var(--band)}
+:root[data-theme="dark"] .founder-pill,:root[data-theme="dark"] .founder{border-color:rgba(59,130,246,.55)}
+:root[data-theme="dark"] .steps li{border-image:linear-gradient(90deg,#3b82f6,#7c3aed) 1}
+.navlink{color:var(--ink);text-decoration:none;font-weight:500;padding:10px 12px}
+.navlink:hover{text-decoration:underline}
+.btn.outline{background:transparent;color:var(--ink);border:1px solid rgba(127,127,127,.55)}
+.btn.outline:hover{border-color:var(--ink)}
+nav .ctas{align-items:center}
+</style>
+</head>
+<body>
+
+
+<nav class="band"><div class="in">
+  <div class="logo">Call<span>Posts</span></div>
+  <div class="ctas"><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button><a class="navlink" href="/app">Log in</a><a class="btn outline" href="/app#signup">Create account</a></div>
+</div></nav>
+
+<section class="band hero2"><div class="in">
+  <h1>Write unique, rules-compliant Marketplace listings in under 5 minutes</h1>
+  <p class="lede">CallPosts generates the full kit — unique title, description, AI photo, and Messenger replies — then checks it against Lead Smart's listing rules so your posts stay up and your tracking number gets the call.</p>
+  <p class="small">Built for home-service offers: water heaters, plumbing, HVAC, windows, remodeling, and 40+ more.</p>
+  <div class="cta-block">
+    <a class="btn pri big" href="/app#signup">Start free with 15 credits</a>
+    <p class="small">15 credits = 15 listings with Messenger replies, or mix in AI photos. No card required.</p>
+    <p class="founder-pill"><b>Founding members:</b> first 50 subscribers keep launch pricing from $9/mo. <a href="#pricing">See plans</a></p>
+  </div>
+  <div class="examples">
+    <figure class="mp" aria-label="Example listing made with CallPosts: water heaters in Peoria">
+      <div class="mp-copy">
+        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Marketplace</div>
+        <h3>Water Heater Help in Peoria – Same-Day Local Pros</h3>
+        <div class="mp-price">$1,111</div>
+        <div class="mp-meta"><span>📍 Peoria, AZ</span><span>🕒 Posted just now</span></div>
+        <div class="mp-check"><span class="ok">✓</span> Rules check: <b>Passed 10 of 10</b></div>
+        <div class="chips"><span class="chip pay">up to $41/call</span><span class="chip">Same-day angle</span></div>
+      </div>
+      <img src="/img/water-heater.jpg" alt="AI-generated photo of a technician servicing a tank water heater" width="512" height="512" loading="eager">
+      <figcaption>AI-generated photo for listing use · Example</figcaption>
+    </figure>
+    <figure class="mp" aria-label="Example listing made with CallPosts: central AC in Scottsdale">
+      <div class="mp-copy">
+        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Marketplace</div>
+        <h3>AC Not Cooling? Scottsdale Central Air Repair, Call Today</h3>
+        <div class="mp-price">$1,111</div>
+        <div class="mp-meta"><span>📍 Scottsdale, AZ</span><span>🕒 Posted just now</span></div>
+        <div class="mp-check"><span class="ok">✓</span> Rules check: <b>Passed 10 of 10</b></div>
+        <div class="chips"><span class="chip pay">up to $25/call</span><span class="chip">Seasonal angle</span></div>
+      </div>
+      <img src="/img/central-ac.jpg" alt="AI-generated photo of an outdoor central air conditioner beside a stucco house" width="512" height="512" loading="lazy">
+      <figcaption>AI-generated photo for listing use · Example</figcaption>
+    </figure>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="in">
+  <span class="eyebrow">How it works</span>
+  <h2>From payout list to live listing in about five minutes.</h2>
+  <ol class="steps">
+    <li><h3>Pick a market</h3><p class="muted">Choose a service and city from the list of top-paying Lead Smart markets, or let AI market picks choose for you.</p></li>
+    <li><h3>Add your number</h3><p class="muted">Paste your tracking number and brand. Pick an angle: same-day, seasonal, local, or a mix.</p></li>
+    <li><h3>Generate the kit</h3><p class="muted">Get unique titles, descriptions, an AI photo creative and Messenger replies for each listing.</p></li>
+    <li><h3>Post, test, scale</h3><p class="muted">Post across services and cities, see which ones bring qualified calls, and add more of those.</p></li>
+  </ol>
+</div></section>
+
+<section class="band"><div class="in">
+  <span class="eyebrow">What's in the kit</span>
+  <h2>Everything a listing needs, nothing that gets it pulled.</h2>
+  <div class="kit">
+    <div><h3>Listing writer</h3><p class="muted">Unique titles and descriptions per city, so your posts don't read as duplicates.</p></div>
+    <div><h3>AI photo creatives</h3><p class="muted">A realistic AI photo for each job, laid out in a light or dark 1080×1080 design with the city and your number.</p></div>
+    <div><h3>Rules checker</h3><p class="muted">Flags banned words, real prices, links, licence claims and repeated openers before you post.</p></div>
+    <div><h3>Messenger replies</h3><p class="muted">Copy-ready answers for "how much?" that move the conversation to a phone call.</p></div>
+    <div><h3>AI market picks</h3><p class="muted">Tells you which service and city to post in next, weighing payouts, the season and what you posted recently.</p></div>
+    <div><h3>Canva templates</h3><p class="muted">23 service templates in light and dark styles that open as a copy in your own Canva, plus AI headlines to paste in.</p></div>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="in">
+  <span class="eyebrow">Where the calls pay</span>
+  <h2>Reported top payouts from Lead Smart, 2026.</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Service</th><th>Top market</th><th style="text-align:right">Per call</th></tr></thead>
+    <tbody>
+      <tr><td>Water Heaters</td><td>Peoria, AZ</td><td class="n">$41</td></tr>
+      <tr><td>Windows</td><td>Tempe, AZ</td><td class="n">$40</td></tr>
+      <tr><td>Toxic Lead Abatement</td><td>Philadelphia, PA</td><td class="n">$37</td></tr>
+      <tr><td>Exterior Painting</td><td>Denver, CO</td><td class="n">$36</td></tr>
+      <tr><td>Plumbing</td><td>Boulder, CO</td><td class="n">$35</td></tr>
+      <tr><td>Shower Doors</td><td>San Dimas, CA</td><td class="n">$34</td></tr>
+      <tr><td>Bathroom Remodeling</td><td>Littleton, CO</td><td class="n">$33</td></tr>
+      <tr><td>Central AC</td><td>Farmington, AR</td><td class="n">$30</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">These are reported top payouts, not guaranteed rates. Payouts change with buyer demand, and results depend on your listings, markets and call quality. Check your Lead Smart dashboard for current numbers.</p>
+</div></section>
+
+<section class="band" id="leadsmart"><div class="in">
+  <span class="eyebrow">Lead Smart</span>
+  <h2>You need a call buyer. Lead Smart is ours.</h2>
+  <p class="lede">CallPosts writes the listings. Lead Smart is the private affiliate network that gives you tracking numbers and pays you for qualified calls.</p>
+  <div class="paths">
+    <div class="path">
+      <h3>Already a Lead Smart affiliate</h3>
+      <p class="muted">Pull your tracking numbers from your dashboard, then start building listings in CallPosts.</p>
+      <div class="ctas"><a class="btn sec" href="https://dashboard.leadsmartinc.com" target="_blank" rel="noopener">Open Lead Smart dashboard</a></div>
+    </div>
+    <div class="path">
+      <h3>Not an affiliate yet</h3>
+      <p class="muted">Apply to Lead Smart directly. Once you're approved, add your tracking numbers to CallPosts and start posting.</p>
+      <div class="ctas"><a class="btn pri" id="joinLs" href="https://dashboard.leadsmartinc.com" target="_blank" rel="noopener">Join Lead Smart</a></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="in">
+  <span class="eyebrow">Listing rules built in</span>
+  <h2>The rules every listing follows.</h2>
+  <div class="rules">
+    <div class="rule"><b>✓</b><span>Price field uses the $1,111 placeholder.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No real service prices in the listing.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No price quotes in Messenger. Replies point to a call.</span></div>
+    <div class="rule"><b class="x">✕</b><span>Never says or implies the service costs nothing.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No invented reviews, licences or guarantees.</span></div>
+    <div class="rule"><b>✓</b><span>Unique wording per listing to avoid duplicate flags.</span></div>
+  </div>
+</div></section>
+
+<section class="band" id="pricing"><div class="in">
+  <span class="eyebrow">Pricing</span>
+  <h2>One qualified call can pay for a whole month.</h2>
+  <p class="lede">Payouts run $15 to $41 per call. Every plan costs less than a single good call, and every account starts with 15 credits to try it first.</p>
+  <div class="founder"><b>Founding member offer:</b> the first 50 subscribers keep their launch price for as long as they stay subscribed.</div>
+  <div class="plans">
+    <div class="plan">
+      <h3>Starter</h3>
+      <div class="amt">$9<small> / month</small></div>
+      <p class="muted small" style="margin:0">For testing a few markets.</p>
+      <ul><li><b>100 credits</b> a month</li><li>Up to 100 listings, or mix in AI photos</li><li>AI market picks</li><li>Rules checker and Messenger replies</li><li>All 23 Canva templates</li><li>Unused credits roll over</li></ul>
+      <a class="btn sec" href="/app#signup">Start with 15 credits</a>
+    </div>
+    <div class="plan hl">
+      <span class="badge">Most popular</span>
+      <h3>Pro</h3>
+      <div class="amt">$19<small> / month</small></div>
+      <p class="muted small" style="margin:0">For posting every day across several cities.</p>
+      <ul><li><b>350 credits</b> a month</li><li>Enough for a full kit with AI photos every day</li><li>About 5¢ per listing</li><li>Everything in Starter</li><li>Unused credits roll over</li></ul>
+      <a class="btn pri" href="/app#signup">Start with 15 credits</a>
+    </div>
+    <div class="plan">
+      <h3>Agency</h3>
+      <div class="amt">$49<small> / month</small></div>
+      <p class="muted small" style="margin:0">For teams running many profiles.</p>
+      <ul><li><b>1,200 credits</b> a month</li><li>About 4¢ per listing, the lowest rate</li><li>Priority help setting up markets</li><li>Everything in Pro</li><li>Unused credits roll over</li></ul>
+      <a class="btn sec" href="/app#signup">Start with 15 credits</a>
+    </div>
+  </div>
+  <div class="payg"><div><b>Pay as you go:</b> $5 for 40 credits, no subscription. Credits never expire.</div><a class="btn sec" href="/app#signup">Create account</a></div>
+  <p class="small">1 credit = 1 listing (title, description, tags, Messenger replies and rules check). An AI photo creative is 3 credits and AI market picks are 1. Cancel any time and keep the credits you've already got.</p>
+</div></section>
+
+<section class="band alt" id="access"><div class="in">
+  <span class="eyebrow">Get started</span>
+  <h2>Create an account and post your first listings today.</h2>
+  <p class="muted">Every new account starts with 15 credits, enough for a full batch of listings plus AI photos and market picks.</p>
+  <div class="ctas" style="margin:4px 0 18px"><a class="btn pri" href="/app#signup">Create account</a><a class="btn sec" href="/app">Log in</a></div>
+  <p class="muted">Prefer to talk first, or setting up a team? Leave your details and we'll reach out.</p>
+  <form id="wl" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company">
+    <input type="hidden" name="form-name" value="early-access">
+    <p hidden><label>Leave empty <input name="company"></label></p>
+    <label for="wlName">Name<input id="wlName" name="name" required autocomplete="name"></label>
+    <label for="wlContact">Email or WhatsApp<input id="wlContact" name="contact" required></label>
+    <label for="wlStatus">Lead Smart status
+      <select id="wlStatus" name="leadsmart"><option>Already an affiliate</option><option>Not yet, want to join</option><option>Use another network</option></select></label>
+    <button class="btn sec" type="submit">Send details</button>
+  </form>
+  <p class="small" id="wlMsg" role="status"></p>
+  <p class="small">Have an access code? <a href="/app" style="color:var(--brand)">Open the listing agent</a> and enter it under your account.</p>
+</div></section>
+
+<footer class="band"><div class="in">
+  <div class="logo" style="font-size:18px">Call<span>Posts</span></div>
+  <p class="small">CallPosts is an independent listing tool and isn't operated by Lead Smart or Meta. Facebook Marketplace is a trademark of Meta Platforms, Inc.</p>
+</div></footer>
+
+<script>
+// Lead Smart signup link (no referral program; this is their standard dashboard).
+const LEADSMART_REFERRAL_URL = "https://dashboard.leadsmartinc.com";
+document.getElementById("joinLs").href = LEADSMART_REFERRAL_URL;
+
+document.getElementById("wl").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("wlMsg");
+  const form = e.target;
+  try {
+    const res = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString() });
+    if (!res.ok) throw new Error(res.status);
+    msg.textContent = "Thanks. We'll reach out soon.";
+    form.reset();
+  } catch (err) {
+    msg.textContent = "That didn't go through. Please try again in a minute.";
+  }
+});
+
+(function(){const b=document.getElementById("themeToggle");if(!b)return;
+  const set=t=>{document.documentElement.dataset.theme=t;b.textContent=t==="dark"?"☀ Light":"☾ Dark";b.setAttribute("aria-label",t==="dark"?"Switch to light theme":"Switch to dark theme");try{localStorage.setItem("cp-theme",t)}catch(e){}};
+  set(document.documentElement.dataset.theme==="dark"?"dark":"light");
+  b.addEventListener("click",()=>set(document.documentElement.dataset.theme==="dark"?"light":"dark"));})();
+</script>
+
+</body>
+</html>

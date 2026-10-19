@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CallPosts · Listing Agent</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script>try{var t=localStorage.getItem("cp-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: left control rail (market picker + brief), right output stack of ready-to-paste listing cards */
+/* Futuristic single dark theme: deep space ground, cyan→violet signal accents, glass panels over a faint grid */
+:root{
+  color-scheme:light;
+  --bg:#f5f7ff; --panel:rgba(255,255,255,.80); --ink:#0b1030; --muted:#56618a; --line:rgba(60,80,160,.16); --accent:#0a8fb0; --accent-2:#7c4dff; --accent-ink:#ffffff; --pay:#b45f00; --pay-bg:rgba(180,95,0,.10); --warn-bg:rgba(180,95,0,.08); --warn:#8a4a00;
+  --field:#ffffff; --band:rgba(255,255,255,.6); --glow-a:rgba(124,77,255,.14); --glow-b:rgba(10,143,176,.12); --grid:rgba(60,80,160,.07); --h-start:#0b1030;
+  --display:"Unbounded",system-ui,sans-serif; --body:"Sora",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#070912; --panel:rgba(16,22,42,.66); --ink:#e8ecff; --muted:#93a0c9; --line:rgba(130,165,255,.18); --accent:#4ff0ff; --accent-2:#9b6bff; --accent-ink:#04121a; --pay:#ffb547; --pay-bg:rgba(255,181,71,.12); --warn-bg:rgba(255,181,71,.10); --warn:#ffcf85;
+  --field:rgba(5,8,20,.7); --band:rgba(10,14,30,.55); --glow-a:rgba(155,107,255,.22); --glow-b:rgba(79,240,255,.14); --grid:rgba(120,160,255,.06); --h-start:#ffffff;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,4vw,32px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;box-sizing:border-box}
+textarea{resize:vertical;min-height:60px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.markets{max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.markets table{width:100%;border-collapse:collapse;font-size:13px}
+.markets td{padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.markets tr:hover td,.markets tr.sel td{background:var(--pay-bg)}
+.pay{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--pay);font-weight:500;text-align:right;white-space:nowrap}
+.btn{font:600 14px var(--body);border:0;border-radius:6px;padding:10px 14px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.out{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card-head h3{font-family:var(--display);font-weight:600;font-size:17px;margin:0;min-width:0;overflow-wrap:anywhere}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.chip.p{border-color:transparent;background:var(--pay-bg);color:var(--pay);font-family:var(--mono)}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 10px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
+.desc{white-space:pre-wrap;background:var(--bg);border-radius:6px;padding:10px 12px;font-size:14px;overflow-wrap:anywhere}
+.photos{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
+.note{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:13px}
+.copy{font:500 12px var(--body);background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:4px 8px;cursor:pointer}
+.rules{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.rulelist summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:2px}
+.rulelist ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.rulelist li{display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px dashed var(--line)}
+.rulelist .mk{font-family:var(--mono);width:16px;flex:none}
+.rulelist .pass .mk{color:var(--accent)} .rulelist .fail .mk{color:var(--warn)} .rulelist .warnr .mk{color:var(--pay)}
+.rulelist .why{color:var(--muted)}
+.ok{color:var(--accent);font-weight:600}
+.bad{color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:6px 10px}
+.creative{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.creative .canva{text-decoration:none;display:inline-flex;align-items:center}
+.creative img{width:180px;max-width:100%;aspect-ratio:1;border-radius:8px;border:1px solid var(--line)}
+.creative .ctl{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.meter{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.meter b{font-family:var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);text-align:center;padding:40px 16px;border:1px dashed var(--line);border-radius:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+body{background:var(--bg);background-image:radial-gradient(1200px 600px at 85% -10%,var(--glow-a),transparent 60%),radial-gradient(900px 500px at -10% 20%,var(--glow-b),transparent 60%);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%)}
+::selection{background:rgba(79,240,255,.35)}
+input,select,textarea{background:var(--field)!important;border-color:var(--line)!important;color:var(--ink)!important}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+
+header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100deg,var(--h-start) 10%,var(--accent) 60%,var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.panel,.card{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.panel{box-shadow:0 0 0 1px rgba(79,240,255,.06),0 30px 80px -40px rgba(79,240,255,.35)}
+.card{transition:border-color .2s}
+.card:hover{border-color:rgba(79,240,255,.4)}
+.card-head h3{font-family:var(--body);font-weight:600}
+.label{font-family:var(--mono);font-weight:500;letter-spacing:.14em;color:var(--muted)}
+.btn{background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--accent-ink);box-shadow:0 8px 30px -10px rgba(79,240,255,.6)}
+.btn.ghost{background:var(--field);color:var(--ink);box-shadow:none}
+.copy{background:var(--field);border-color:var(--line)}
+.copy:hover{border-color:rgba(79,240,255,.5);color:var(--accent)}
+.desc{background:var(--field);border:1px solid var(--line)}
+.chip{font-family:var(--mono);border-color:var(--line)}
+.chip.p{background:var(--pay-bg);color:var(--pay)}
+.markets{background:var(--field)}
+.markets tr:hover td,.markets tr.sel td{background:rgba(79,240,255,.08)}
+.markets tr.sel td{box-shadow:inset 2px 0 0 var(--accent)}
+.ok{color:var(--accent)}
+.empty{border-color:rgba(79,240,255,.25);background:var(--panel)}
+.status{color:var(--muted)}
+
+.tpl{padding:0}
+.tpl>summary{list-style:none;cursor:pointer;padding:16px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.tpl>summary::-webkit-details-marker{display:none}
+.tpl>summary h2{font-family:var(--display);font-weight:700;font-size:17px;margin:0}
+.tpl>summary .sum{font-size:13px;color:var(--muted)}
+.tpl-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+.tpl-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tpl-bar input{flex:1 1 200px;width:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--field)}
+.seg button{font:500 12px var(--mono);border:0;background:transparent;color:var(--muted);padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-height:520px;overflow:auto;padding:2px}
+.tcard{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--field);cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
+.tcard:hover{border-color:rgba(79,240,255,.5)}
+.tcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.tcard img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:var(--line);display:block}
+.tcard .tn{font-size:13px;font-weight:600;line-height:1.25}
+.tcard .tm{font:500 11px var(--mono);color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.tcard .soon{color:var(--warn)}
+.picked{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.picked img{width:44px;height:44px;border-radius:6px;object-fit:cover}
+.ai{display:inline-flex;align-items:center;gap:6px}
+.ai::before{content:"✦";font-size:12px}
+.ctext{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:13px;margin-top:6px}
+.ctext dt{color:var(--muted)} .ctext dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.styleseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.styleseg button{font:500 12px var(--mono);border:0;background:var(--field);color:var(--muted);padding:5px 10px;cursor:pointer}
+.styleseg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.pick{display:flex;flex-direction:column;gap:3px;text-align:left;font:inherit;color:inherit;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer}
+.pick:hover{border-color:rgba(79,240,255,.5)}
+.pick .ph{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:14px}
+.pick .pw{font-size:13px;color:var(--muted)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.acct{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--field)}
+.acct .tabs{display:flex;gap:6px}
+.acct .tabs button{flex:1;font:600 13px var(--body);border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:7px;cursor:pointer}
+.acct .tabs button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.acct .who{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.acct .bal{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent)}
+.acct .row2{display:flex;gap:8px;flex-wrap:wrap}
+.acct a.copy{text-decoration:none}
+.onb{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--field);display:flex;flex-direction:column;gap:6px}
+.onb ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:13px}
+.onb li{display:flex;gap:8px;align-items:center}
+.onb li .bx{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);display:inline-grid;place-items:center;font-size:12px;flex:none}
+.onb li.done{color:var(--muted);text-decoration:line-through}
+.onb li.done .bx{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.onb .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.onb .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.kit-row{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--field)}
+.kit-row .kh{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:600}
+.kit-row .km{font-size:12px;color:var(--muted)}
+.kit-row .kn{display:flex;gap:6px}.kit-row .kn input{font-size:13px;padding:6px 8px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:600 14px var(--body,system-ui);background:#fff;color:#1f1f1f;border:1px solid #dadce0;border-radius:6px;padding:10px 14px;cursor:pointer}.gbtn:hover{background:#f7f8f8}.orline{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--accent);cursor:pointer;text-decoration:underline}
+.theme-toggle{font:500 13px var(--mono);letter-spacing:.04em;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer}
+.theme-toggle:hover{border-color:var(--brand,var(--accent))}
+.theme-toggle:focus-visible{outline:2px solid var(--brand,var(--accent));outline-offset:2px}
+
+/* Black theme to match the landing page */
+:root[data-theme="dark"]{
+  --bg:#0b0c10; --panel:#15171c; --ink:#f4f4f5; --muted:#a1a1aa; --line:rgba(255,255,255,.12);
+  --accent:#3b82f6; --accent-2:#7c3aed; --accent-ink:#ffffff; --pay:#fbbf24; --pay-bg:rgba(251,191,36,.12);
+  --field:#101217; --glow-a:transparent; --glow-b:transparent; --grid:transparent; --h-start:#ffffff;
+  --display:"Inter",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+:root[data-theme="dark"] body{background:var(--bg);background-image:none}
+:root[data-theme="dark"] header h1{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff}
+:root[data-theme="dark"] .panel,:root[data-theme="dark"] .card{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+:root[data-theme="dark"] .btn{background:linear-gradient(90deg,#3b82f6,#6d28d9);color:#fff;box-shadow:0 8px 24px -12px rgba(99,102,241,.7)}
+:root[data-theme="dark"] .btn.ghost{background:var(--field);color:var(--ink);box-shadow:none}
+:root[data-theme="dark"] .card:hover{border-color:rgba(59,130,246,.45)}
+:root[data-theme="dark"] .markets tr.sel td,:root[data-theme="dark"] .markets tr:hover td{background:rgba(59,130,246,.12)}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>CallPosts Listing Agent</h1>
+    <p>Pick a paying market, add your tracking number, and the agent writes unique, ready-to-paste Facebook Marketplace service listings that push people to call.</p>
+    <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
+  </header>
+
+  <details class="panel tpl" id="tplBox" open>
+    <summary><h2>Creative templates</h2><span class="sum" id="tplSum">Auto-match to your service</span></summary>
+    <div class="tpl-body">
+      <p class="status" style="margin:0">23 services, each in a light and a dark style. Pick one to use on every listing, or leave it on auto-match. Templates open in your own Canva as a copy with both styles: page 1 is light, page 2 is dark.</p>
+      <div class="tpl-bar">
+        <input id="tplQ" placeholder="Search templates" aria-label="Search templates">
+        <div class="seg" role="group" aria-label="Style"><button type="button" data-st="all" aria-pressed="true">All</button><button type="button" data-st="1" aria-pressed="false">Light</button><button type="button" data-st="2" aria-pressed="false">Dark</button></div>
+        <button class="copy" type="button" id="tplAuto">Use auto-match</button>
+      </div>
+      <div class="tpl-grid" id="tplGrid"></div>
+    </div>
+  </details>
+
+  <div class="grid">
+    <section class="panel" aria-label="Brief">
+      <div class="acct" id="acct">
+        <div id="acctOut">
+          <div class="label" style="margin-bottom:8px">Your account</div>
+          <div class="tabs" role="group" aria-label="Account"><button type="button" data-mode="login" aria-pressed="true">Log in</button><button type="button" data-mode="signup" aria-pressed="false">Create account</button></div>
+          <div id="gWrap" hidden style="margin-top:10px;display:flex;flex-direction:column;gap:8px"><button type="button" class="gbtn" id="gBtn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Continue with Google</button><div class="orline">or use email</div></div>
+          <form id="authForm" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <input id="authEmail" type="email" autocomplete="email" placeholder="Email" required aria-label="Email">
+            <input id="authPass" type="password" autocomplete="current-password" placeholder="Password (8+ characters)" minlength="8" required aria-label="Password">
+            <button class="btn" id="authGo" type="submit">Log in</button>
+            <p class="status" id="authMsg" role="status" style="margin:0"></p>
+            <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><button type="button" class="linkbtn" id="forgot">Forgot password?</button><span class="status" id="starterNote" style="margin:0">New accounts start with 15 credits.</span></div>
+          </form>
+          <form id="resetForm" hidden style="flex-direction:column;gap:8px;margin-top:10px">
+            <input id="newPass" type="password" autocomplete="new-password" placeholder="New password (8+ characters)" minlength="8" required aria-label="New password">
+            <button class="btn" type="submit">Save password</button>
+          </form>
+        </div>
+        <div id="acctIn" hidden>
+          <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
+          <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
+          <p class="status" id="acctHint" style="margin:0">1 credit per listing · 3 per AI photo · 1 for market picks</p>
+          <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
+        </div>
+        <details id="codeBox"><summary class="label" style="cursor:pointer">Have an access code?</summary>
+          <input id="code" autocomplete="off" placeholder="Enter your CallPosts access code" style="margin-top:8px"></details>
+      </div>
+      <div class="onb" id="onb" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="label">Get your first calls</span><button type="button" class="linkbtn" id="onbHide">Hide</button></div>
+        <div class="bar"><i id="onbBar" style="width:0"></i></div>
+        <ol id="onbList"></ol>
+      </div>
+      <div class="field">
+        <span class="label">Top-paying markets (Lead Smart, 2026)</span>
+        <input id="filter" placeholder="Filter by service, city or state">
+        <div class="markets"><table id="mkt"></table></div>
+      </div>
+      <details class="field" id="pickBox">
+        <summary class="label" style="cursor:pointer">✦ AI market picks: where to post next</summary>
+        <textarea id="pickNotes" placeholder="Optional: states you cover, what has worked, services to skip"></textarea>
+        <button class="btn ghost ai" id="pickGo" type="button">Suggest markets</button>
+        <div class="status" id="pickStatus" role="status"></div>
+        <div class="picks" id="picks"></div>
+      </details>
+      <details class="field" id="histBox">
+        <summary class="label" style="cursor:pointer">Your listing history</summary>
+        <p class="status" style="margin:0">Reopen past kits and note which ones brought calls. AI market picks use your notes.</p>
+        <div class="picks" id="hist"></div>
+      </details>
+      <div class="row">
+        <div class="field"><label class="label" for="service">Service</label><input id="service"></div>
+        <div class="field"><label class="label" for="city">City, State</label><input id="city"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label class="label" for="phone">Tracking number</label><input id="phone" placeholder="(555) 123-4567"></div>
+        <div class="field"><label class="label" for="brand">Brand / page name</label><input id="brand" placeholder="e.g. Home Relay Pros"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label class="label" for="angle">Angle</label>
+          <select id="angle">
+            <option>Mix of angles</option><option>Same-day / emergency</option><option>Quick quote</option>
+            <option>Seasonal / weather</option><option>Cost-saving / financing</option><option>Local &amp; trusted</option>
+          </select></div>
+        <div class="field"><label class="label" for="count">Variations</label>
+          <select id="count"><option>3</option><option selected>5</option><option>8</option></select></div>
+      </div>
+      <div class="field"><label class="label" for="extra">Offer & notes (optional)</label>
+        <textarea id="extra" placeholder="e.g. 24/7, call hours 8am–8pm, serves Peoria, Glendale, Surprise"></textarea></div>
+      <div class="actions">
+        <button class="btn" id="go">Write listings</button><span class="status" id="costNote" style="align-self:center;margin:0"></span>
+        <button class="btn ghost" id="stop" hidden>Stop</button>
+      </div>
+      <div class="status" id="status" role="status"></div>
+      <details class="field">
+        <summary class="label" style="cursor:pointer">Check your own listing against the rules</summary>
+        <textarea id="ownText" placeholder="Paste a title + description you wrote"></textarea>
+        <button class="btn ghost" id="ownCheck">Check listing</button>
+        <div class="rules" id="ownResult"></div>
+      </details>
+      <div class="note"><b>Lead Smart Marketplace rules built in:</b> price field is always the $1,111 placeholder, no real service prices in listings, and Messenger replies never quote a price, and the word “free” is never used. Listings also avoid invented reviews or licence claims.<br><br><b>Workflow:</b> pick strong-payout markets → post targeted listings → test several services and cities → scale what brings qualified calls. Payouts shown are reported 2026 top rates, not guaranteed; check your dashboard for current numbers.</div>
+    </section>
+
+    <section class="out" id="out" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+const MARKETS=[
+["Water Heaters","Peoria, AZ",41],["Water Heaters","Aurora, CO",34],["Water Heaters","Phoenix, AZ",34],["Water Heaters","Seffner, FL",33],["Water Heaters","Redmond, WA",31],["Water Heaters","Laguna Hills, CA",28],["Water Heaters","Fort Lauderdale, FL",28],["Water Heaters","Sacramento, CA",25],["Water Heaters","San Antonio, TX",24],["Water Heaters","San Jose, CA",23],
+["Plumbing","Boulder, CO",35],["Plumbing","Denver, CO",33],["Plumbing","Scottsdale, AZ",30],["Plumbing","Atlanta, GA",28],["Plumbing","Van Nuys, CA",25],["Plumbing","Panama City Beach, FL",25],["Plumbing","Colorado Springs, CO",24],["Plumbing","Austin, TX",22],["Plumbing","Jersey City, NJ",21],["Plumbing","Sacramento, CA",20],
+["Windows","Tempe, AZ",40],["Windows","Rancho Cucamonga, CA",32],["Windows","Seattle, WA",32],["Windows","Brighton, MA",29],["Windows","Minneapolis, MN",28],["Windows","Greensboro, NC",27],["Windows","Tampa, FL",27],["Windows","Fort Myers, FL",27],["Windows","Plano, TX",26],["Windows","Wylie, TX",26],
+["Central AC","Farmington, AR",30],["Central AC","Fallbrook, CA",29],["Central AC","Cerritos, CA",29],["Central AC","Wilmington, DE",28],["Central AC","Navarre, FL",28],["Central AC","Las Vegas, NV",28],["Central AC","Orlando, FL",27],["Central AC","Hudson, NH",27],["Central AC","Spring, TX",26],["Central AC","Scottsdale, AZ",25],
+["Shower Doors","San Dimas, CA",34],["Shower Doors","San Jose, CA",32],["Shower Doors","Wausau, WI",30],["Shower Doors","Elkhart, IN",28],["Shower Doors","Washington, DC",27],["Shower Doors","Lees Summit, MO",26],["Shower Doors","Colorado Springs, CO",26],["Shower Doors","Lockport, IL",24],["Shower Doors","Buffalo Grove, IL",23],
+["Bathroom Remodeling","Littleton, CO",33],["Bathroom Remodeling","Haslett, MI",31],["Bathroom Remodeling","Carlsbad, CA",29],["Bathroom Remodeling","Brunswick, OH",29],["Bathroom Remodeling","Miami, FL",27],["Bathroom Remodeling","Tulsa, OK",27],["Bathroom Remodeling","Milwaukee, WI",26],["Bathroom Remodeling","Venice, FL",24],["Bathroom Remodeling","San Jose, CA",24],
+["Electrical Panel Upgrades","Snohomish, WA",27],["Electrical Panel Upgrades","North Brookfield, MA",26],["Electrical Panel Upgrades","Dodge Center, MN",22],["Electrical Panel Upgrades","Grove, OK",21],["Electrical Panel Upgrades","Bethpage, NY",20],
+["Toxic Lead Abatement","Philadelphia, PA",37],["Exterior Painting","Denver, CO",36],["Central Heating","Elkton, MD",33],["Interior Painting","Annapolis, MD",31],["Window Blinds","Wylie, TX",31],["Additions & Remodeling","Chula Vista, CA",31],
+["Septic Pumping","Pleasant Grove, AL",29],["Ducts & Vents","Aurora, CO",29],["Swamp Cooler Repair","Denver, CO",29],["Mold Removal","Splendora, TX",27],["Drain Cleaning","Boca Raton, FL",27],
+["Concrete Foundations","Windham, OH",25],["Concrete Work","Union, NJ",25],["Stucco Siding","Saint Johns, FL",24],["Bathtub Installation","Hutchinson, KS",24],["Vinyl Siding","Denver, CO",23],["Window Draperies","Atlanta, GA",23],
+["Septic Repair","Maplewood, NJ",21],["Skylights","Lake Helen, FL",21],["Cabinet Installation","Clairton, PA",20],["Decks","Austin, TX",20],["Hardwood Flooring","Spring, TX",20],["Sewer/Water Main","Ronkonkoma, NY",20],
+["Gutters","Georgetown, GA",19],["Outdoor Lighting","San Antonio, TX",18],["Retaining Walls","Austin, TX",18],["Garage Doors","Keyser, WV",17],["Pest Control","Gainesville, FL",16],["Tree Trimming","Allen, TX",16],["Tree Removal","Los Angeles, CA",16],["Solar Energy","Jupiter, FL",15],["Stump Grinding","Los Angeles, CA",15]
+].sort((a,b)=>b[2]-a[2]);
+
+const $=id=>document.getElementById(id);
+let selPay=41;
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+// Auth: an access code (unlimited pass) or a logged-in account paying with credits.
+window.cpUser=null;
+function authHeaders(){const c=$("code").value.trim();return{"content-type":"application/json",...(c?{"x-access-code":c}:{})}}
+function canUseAI(statusEl){if($("code").value.trim()||window.cpUser)return true;statusEl.textContent="Log in or create an account first (new accounts get 15 credits).";document.getElementById("authEmail").focus();document.getElementById("acct").scrollIntoView({behavior:"smooth",block:"center"});return false}
+function noteCredits(res){const c=res.headers.get("x-credits");if(c!=null&&window.cpSetCredits)window.cpSetCredits(+c)}
+function aiError(res,j,fallback){if(res.status===402&&window.cpUser)return (j.error||"Not enough credits.")+(window.cpBuyUrl?"":" Contact CallPosts to top up.");if(res.status===401&&j.needLogin)return "Your login expired. Log in again to continue.";if(res.status===429)return "Too many requests. Wait a minute and try again.";return j.error||fallback}
+
+function renderMarkets(){
+  const q=$("filter").value.toLowerCase().trim();
+  const rows=MARKETS.filter(m=>!q||(m[0]+" "+m[1]).toLowerCase().includes(q));
+  $("mkt").innerHTML=rows.map(m=>`<tr data-s="${esc(m[0])}" data-c="${esc(m[1])}" data-p="${m[2]}"><td>${esc(m[0])}</td><td>${esc(m[1])}</td><td class="pay">$${m[2]}</td></tr>`).join("")||`<tr><td>No match. Type your own service and city below.</td></tr>`;
+}
+$("mkt").addEventListener("click",e=>{
+  const tr=e.target.closest("tr[data-s]"); if(!tr)return;
+  document.querySelectorAll("#mkt tr.sel").forEach(r=>r.classList.remove("sel")); tr.classList.add("sel");
+  $("service").value=tr.dataset.s; $("city").value=tr.dataset.c; selPay=+tr.dataset.p; save();
+});
+$("filter").addEventListener("input",renderMarkets);
+
+const KEYS=["code","service","city","phone","brand","angle","count","extra"];
+function save(){try{localStorage.setItem("mpa",JSON.stringify(Object.fromEntries(KEYS.map(k=>[k,$(k).value]))))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem("mpa")||"null");if(d)KEYS.forEach(k=>{if(d[k]!=null)$(k).value=d[k]})}catch(e){}}
+KEYS.forEach(k=>$(k).addEventListener("change",()=>{if(k==="service"||k==="city"){const m=MARKETS.find(x=>x[0]===$("service").value&&x[1]===$("city").value);selPay=m?m[2]:null}save()}));
+
+function prompt(b){
+return `You are a Facebook Marketplace copywriter for a US pay-per-call home-services referral business. Write ${b.count} DIFFERENT Marketplace listings that make homeowners call the phone number.
+
+Service: ${b.service}
+Market: ${b.city}
+Phone (tracking number): ${b.phone||"[PHONE]"}
+Brand/page name: ${b.brand||"(none, write without a brand)"}
+Angle: ${b.angle}
+Extra notes from the publisher: ${b.extra||"(none)"}
+
+Rules:
+- Honest referral service. Never claim to be a licensed/insured contractor, never invent reviews, ratings, years in business, prices, guarantees or certifications. Include one short line such as "We connect you with trusted local pros" in each description.
+- No fake products. These are service listings (Marketplace category "Home Services" or the closest fit).
+- Put the phone number in the description twice, written plainly (e.g. 555-123-4567). Do not use links, emojis spam, ALL CAPS, or the words "call now!!!".
+- Each listing must use a different hook, title structure and opening line, so they are not duplicates. Mention ${b.city.split(",")[0]} and 1-3 nearby neighborhoods or suburbs you are confident are real.
+- Titles: max 90 characters, include service and city. Descriptions: 80-160 words, short paragraphs, plain text.
+- Never use the word "free" (free quote, free estimate, free inspection, etc.) or say or imply any part of the service costs nothing.
+- The Marketplace price field is always the placeholder "$1,111". Never mention any real service price, cost, rate, discount amount or dollar figure anywhere in the title, description or replies.
+- Write 2 short Messenger replies per listing for people who message instead of calling (e.g. "How much?" / "Are you available?"). Never quote a price; explain that pricing depends on the job and the fastest way to get an exact quote is to call the number.
+- Give 3 photo ideas per listing the publisher can shoot or source legally (no stock watermarks, no other companies' logos).
+
+Reply with only a JSON array. Each item: {"title": string, "hook": string (2-4 word label of the angle), "category": string, "price": "$1,111", "description": string, "tags": [up to 6 short search tags], "photos": [3 strings], "replies": [2 strings]}`;
+}
+
+function fallback(b){
+  const c=b.city.split(",")[0]||b.city, ph=b.phone||"[PHONE]", br=b.brand?b.brand+" ":"";
+  const hooks=[
+    ["Same-day help",`${b.service} in ${c} – Same-Day Pros, Call Today`,`Need ${b.service.toLowerCase()} help in ${c} today?`],
+    ["Quick quote",`${b.service} Quotes – ${c} Homeowners`,`Get a fast, no-pressure ${b.service.toLowerCase()} quote in ${c}.`],
+    ["Local & trusted",`Local ${b.service} Pros Serving ${b.city}`,`${c} homeowners: skip the guesswork on ${b.service.toLowerCase()}.`],
+    ["Seasonal",`${b.service} Before the Season Turns – ${c}`,`Get ahead of the season and book your ${b.service.toLowerCase()} in ${c}.`],
+    ["Save money",`Affordable ${b.service} Options in ${c}`,`Compare ${b.service.toLowerCase()} options in ${c} without overpaying.`]
+  ];
+  return Array.from({length:+b.count},(_,i)=>{const h=hooks[i%hooks.length];return{
+    title:h[1],hook:h[0],category:"Home Services",price:"$1,111",replies:[`Thanks for reaching out! Pricing depends on the job, so the quickest way to get an exact quote is to call ${ph}. A local pro can help you today.`,`Yes, we can help in ${c}. Give us a call at ${ph} and we'll get you matched with a local ${b.service.toLowerCase()} pro.`],
+    description:`${h[2]}\n\n${br}connects you with trusted local ${b.service.toLowerCase()} pros in ${b.city}. Tell us what you need and we'll match you with someone who can help.${b.extra?"\n\n"+b.extra:""}\n\nCall ${ph} to get a quote.\nQuestions? Call ${ph}.`,
+    tags:[b.service,c,"home services","local pros"],headline:b.service,tagline:["Same-day help from local pros","Quick quotes from local pros","Trusted local pros near you","Book before the season turns","Compare options, call today"][i%5],photos:[`Before/after of a ${b.service.toLowerCase()} job you own rights to`,`Clean text graphic: "${b.service} – ${c}" with the phone number`,`Photo of a local ${c} home exterior you took`]}});
+}
+
+// Rules checker: every rule is listed with pass/fail so users see exactly why a listing passed or failed.
+const RULES=[
+  {name:'No "free" wording',re:/\bfree\b/i,why:'Uses the word "free". Remove it; you can\'t imply any part of the service costs nothing.'},
+  {name:"Only the $1,111 placeholder price",re:/\$\s?(?!1,?111\b)\d[\d,]*(\.\d+)?/,why:"Shows a dollar amount. Only the $1,111 placeholder belongs in the price field; never put real prices in the listing."},
+  {name:"No discounts or coupons",re:/\b\d+\s?%\s?off\b|\bdiscount\b|\bcoupon\b/i,why:"Mentions a discount. That implies pricing; take it out."},
+  {name:"No licence, guarantee or warranty claims",re:/\b(licensed|insured|bonded|certified|guaranteed?|warranty)\b/i,why:"Claims a licence, guarantee or warranty. As a referral service you can't promise this."},
+  {name:"No reviews, ratings or years in business",re:/\b\d(\.\d)?\s?(stars?|★)|\b\d+\+?\s?(reviews|years in business)\b/i,why:"Cites reviews, ratings or years in business. Remove unless verifiable."},
+  {name:"No links or web addresses",re:/https?:\/\/|www\.|\.com\b/i,why:"Contains a link or web address. Marketplace often removes these; use the phone number only."},
+  {name:"No long ALL-CAPS runs",re:/\b[A-Z]{5,}\b(?:\s+\b[A-Z]{4,}\b){2,}/,why:"Long ALL-CAPS run. Write in normal case."},
+];
+function runChecks(text,phone){
+  const out=RULES.map(r=>{const ok=!r.re.test(text);return{name:r.name,ok,why:ok?"":r.why}});
+  const digits=(phone||"").replace(/\D/g,"");
+  if(digits.length>=10){const ok=text.replace(/\D/g,"").includes(digits.slice(-10));out.push({name:"Tracking number included",ok,why:ok?"":"Your tracking number isn't in the text."})}
+  else out.push({name:"Tracking number included",ok:false,warn:true,why:"Add your tracking number in the brief so it's checked and written in."});
+  return out;
+}
+function checkListing(it,phone,all){
+  const out=runChecks([it.title,it.description,...(it.replies||[])].join("\n"),phone);
+  const tl=(it.title||"").length;
+  out.push({name:"Title under 90 characters",ok:tl<=90,why:tl<=90?"":`Title is ${tl} characters; keep it under 90.`});
+  const open=(it.description||"").split("\n")[0].trim().toLowerCase();
+  const dup=all.filter(x=>(x.description||"").split("\n")[0].trim().toLowerCase()===open).length>1;
+  out.push({name:"Unique opening line",ok:!dup,why:dup?"Same opening line as another listing. Vary it to avoid duplicate flags.":""});
+  return out;
+}
+function checkText(text,phone){return runChecks(text,phone)}
+function rulesHTML(res){
+  const bad=res.filter(r=>!r.ok&&!r.warn),warn=res.filter(r=>r.warn),pass=res.filter(r=>r.ok).length;
+  const head=bad.length?`<div class="bad"><b>✕ ${bad.length} rule${bad.length>1?"s":""} failed</b> · passed ${pass} of ${res.length}</div>`:`<div class="ok">✓ Passed ${pass} of ${res.length} checks${warn.length?" (1 needs your number)":""}</div>`;
+  const rows=res.map(r=>`<li class="${r.ok?"pass":r.warn?"warnr":"fail"}"><span class="mk">${r.ok?"✓":r.warn?"!":"✕"}</span><span><b>${esc(r.name)}</b>${r.why?`<br><span class="why">${esc(r.why)}</span>`:""}</span></li>`).join("");
+  return `${head}<details class="rulelist"${bad.length?" open":""}><summary>See every check</summary><ul>${rows}</ul></details>`;
+}
+$("ownCheck").onclick=()=>{const t=$("ownText").value.trim();$("ownResult").innerHTML=t?rulesHTML(checkText(t,$("phone").value)):"Paste a listing first."};
+
+// Image creatives: 1080x1080 drawn on canvas in the same light/dark layouts as the Canva templates.
+function wrapLines(ctx,text,max){const w=String(text).split(/\s+/),out=[];let line="";for(const x of w){const t=line?line+" "+x:x;if(ctx.measureText(t).width>max&&line){out.push(line);line=x}else line=t}if(line)out.push(line);return out}
+function fitLines(x,text,weight,size,min,maxW,maxLines,family){for(let f=size;f>=min;f-=4){x.font=`${weight} ${f}px ${family}`;const l=wrapLines(x,text,maxW);if(l.length<=maxLines&&l.every(t=>x.measureText(t).width<=maxW))return{lines:l,size:f}}x.font=`${weight} ${min}px ${family}`;return{lines:wrapLines(x,text,maxW).slice(0,maxLines),size:min}}
+function loadImg(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src})}
+function cover(x,img,dx,dy,dw,dh){const r=Math.max(dw/img.width,dh/img.height),w=img.width*r,h=img.height*r;x.drawImage(img,dx+(dw-w)/2,dy+(dh-h)/2,w,h)}
+function pin(x,cx,cy,s,color){x.save();x.fillStyle=color;x.beginPath();x.arc(cx,cy,s*.5,Math.PI,0);x.quadraticCurveTo(cx+s*.5,cy+s*.45,cx,cy+s*1.05);x.quadraticCurveTo(cx-s*.5,cy+s*.45,cx-s*.5,cy);x.fill();x.fillStyle="#fff";x.beginPath();x.arc(cx,cy,s*.2,0,Math.PI*2);x.fill();x.restore()}
+function rrect(x,X,Y,W,H,R){x.beginPath();x.roundRect?x.roundRect(X,Y,W,H,R):x.rect(X,Y,W,H)}
+async function drawCreative(it,b,i,opt={}){
+  const COND='"Barlow Condensed","Arial Narrow",system-ui,sans-serif',BODY='"Sora",system-ui,sans-serif';
+  try{await Promise.all([document.fonts.load(`800 90px ${COND}`),document.fonts.load(`600 40px ${BODY}`)])}catch(e){}
+  const c=document.createElement("canvas");c.width=c.height=1080;const x=c.getContext("2d");
+  const dark=opt.style==="dark",img=opt.photo?await loadImg(opt.photo).catch(()=>null):null;
+  const head=it.headline||b.service,tag=it.tagline||(it.hook?`${it.hook} · local pros`:"Talk to local pros today");
+  const city=b.city||"",phone=b.phone||"(555) 000-0000";
+  const grad=(x0,y0,x1,y1)=>{const g=x.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,"#13b5d6");g.addColorStop(1,"#7c4dff");return g};
+  if(!dark){
+    const bg=x.createLinearGradient(0,0,0,1080);bg.addColorStop(0,"#ffffff");bg.addColorStop(1,"#eef0ff");x.fillStyle=bg;x.fillRect(0,0,1080,1080);
+    x.save();x.beginPath();x.moveTo(650,0);x.lineTo(1080,0);x.lineTo(1080,1080);x.lineTo(500,1080);x.closePath();x.clip();
+    if(img)cover(x,img,500,0,580,1080);else{const g=x.createLinearGradient(500,0,1080,1080);g.addColorStop(0,"#c9f3ff");g.addColorStop(1,"#d9ccff");x.fillStyle=g;x.fillRect(500,0,580,1080)}
+    x.restore();
+    x.strokeStyle=grad(650,0,500,1080);x.lineWidth=14;x.beginPath();x.moveTo(650,0);x.lineTo(500,1080);x.stroke();
+    x.fillStyle="#0b1030";const h=fitLines(x,head,800,118,72,500,3,COND);let y=110;
+    if(b.brand){x.font=`600 28px ${BODY}`;x.fillStyle="#56618a";x.fillText(b.brand,64,y);y+=40;x.fillStyle="#0b1030"}
+    x.font=`800 ${h.size}px ${COND}`;y+=h.size*.85;for(const l of h.lines){x.fillText(l,64,y);y+=h.size*1.02}
+    y+=10;x.fillStyle=grad(64,0,520,0);x.fillRect(64,y,440,5);y+=70;
+    pin(x,84,y-26,40,"#13b5d6");x.fillStyle="#0b1030";const cf=fitLines(x,city,600,44,28,400,1,BODY);x.font=`600 ${cf.size}px ${BODY}`;x.fillText(cf.lines[0]||"",120,y);
+    y+=80;const tf=fitLines(x,tag,500,40,26,440,2,BODY);x.font=`500 ${tf.size}px ${BODY}`;x.fillStyle="#1d2550";for(const l of tf.lines){x.fillText(l,64,y);y+=tf.size*1.25}
+    y=Math.max(y+30,700);rrect(x,64,y,440,118,22);x.fillStyle=grad(64,y,504,y+118);x.fill();
+    x.fillStyle="#fff";const pf=fitLines(x,`Call ${phone}`,700,58,36,400,1,COND);x.font=`700 ${pf.size}px ${COND}`;x.textAlign="center";x.fillText(pf.lines[0],284,y+78);x.textAlign="left";
+    x.fillStyle="#0b1030";x.font=`500 22px ${BODY}`;x.fillText("We connect you with trusted local pros",64,1030);
+  }else{
+    x.fillStyle="#050816";x.fillRect(0,0,1080,1080);
+    if(img)cover(x,img,0,0,1080,1080);else{const g=x.createRadialGradient(820,260,40,820,260,800);g.addColorStop(0,"#3a2a7a");g.addColorStop(1,"#050816");x.fillStyle=g;x.fillRect(0,0,1080,1080)}
+    const ov=x.createLinearGradient(0,300,0,1080);ov.addColorStop(0,"rgba(5,8,22,0)");ov.addColorStop(.45,"rgba(5,8,22,.78)");ov.addColorStop(1,"rgba(5,8,22,.96)");x.fillStyle=ov;x.fillRect(0,0,1080,1080);
+    x.fillStyle=grad(0,0,1080,0);x.fillRect(0,0,1080,14);
+    if(b.brand){x.font=`600 30px ${BODY}`;x.fillStyle="rgba(255,255,255,.85)";x.fillText(b.brand,64,80)}
+    const h=fitLines(x,head,800,104,64,950,2,COND),tf=fitLines(x,tag,500,40,26,900,1,BODY);
+    let y=1080-60-40-60-118-50-tf.size-30-50-h.lines.length*h.size*1.0;
+    x.fillStyle="#fff";x.font=`800 ${h.size}px ${COND}`;y+=h.size*.85;for(const l of h.lines){x.fillText(l,64,y);y+=h.size*1.0}
+    y+=40;pin(x,84,y-26,40,"#4ff0ff");x.fillStyle="#4ff0ff";const cf=fitLines(x,city,600,44,28,800,1,BODY);x.font=`600 ${cf.size}px ${BODY}`;x.fillText(cf.lines[0]||"",120,y);
+    y+=60;x.fillStyle="rgba(255,255,255,.9)";x.font=`500 ${tf.size}px ${BODY}`;x.fillText(tf.lines[0]||"",64,y);
+    y+=40;rrect(x,64,y,560,118,22);x.fillStyle=grad(64,y,624,y+118);x.fill();
+    x.fillStyle="#fff";const pf=fitLines(x,`Call ${phone}`,700,60,36,510,1,COND);x.font=`700 ${pf.size}px ${COND}`;x.textAlign="center";x.fillText(pf.lines[0],344,y+80);x.textAlign="left";
+    x.fillStyle="rgba(255,255,255,.75)";x.font=`500 26px ${BODY}`;x.fillText("We connect you with trusted local pros",64,1040);
+  }
+  return c.toDataURL("image/jpeg",.92);
+}
+let lastItems=[],lastBrief=null;
+
+// Canva templates. url = Canva template link (opens a copy in the user's own Canva); "" = link not added yet.
+const TEMPLATES=[
+  {k:"water",name:"Water Heaters",url:"https://canva.link/bfrlmzirdbk7owj",re:/water heater/},
+  {k:"plumbing",name:"Plumbing & Drains",url:"https://canva.link/dq4rgzcatn0avqq",re:/plumb|drain|sewer|water main/},
+  {k:"hvac",name:"Central AC & Heating",url:"https://canva.link/fsq1yknktfppfc4",re:/\bac\b|air cond|heating|hvac|duct|vent|swamp cooler/},
+  {k:"windows",name:"Windows",url:"https://canva.link/37efqpt78yhk7vd",re:/window(?!.*(blind|drape|draper))/},
+  {k:"blinds",name:"Blinds & Draperies",url:"https://canva.link/wc43ffos8hpwyvu",re:/blind|drape|draper|shade|shutter/},
+  {k:"bath",name:"Bathroom & Showers",url:"https://canva.link/akmtrnbd6cqymzp",re:/bath|shower|tub/},
+  {k:"paint",name:"Painting",url:"https://canva.link/b35i9sh1n9egvkq",re:/paint/},
+  {k:"electrical",name:"Electrical & Lighting",url:"https://canva.link/71vrsaavbcj62p5",re:/electric|panel|outdoor lighting/},
+  {k:"roofing",name:"Roofing & Gutters",url:"https://canva.link/yv49ner4ol4mku0",re:/roof|gutter|skylight/},
+  {k:"mold",name:"Mold Removal",url:"https://canva.link/fbzzco0dfvazdky",re:/mold/},
+  {k:"septic",name:"Septic",url:"https://canva.link/rrcisgytkfw3pj8",re:/septic/},
+  {k:"basement",name:"Basements",url:"https://canva.link/lbacq5se4fsk4ms",re:/basement/},
+  {k:"lead",name:"Lead Abatement",url:"https://canva.link/xr6tqvzqyc43p6o",re:/\blead\b/},
+  {k:"garage",name:"Garage Doors",url:"https://canva.link/2i7qh4hlxta52zf",re:/garage/},
+  {k:"concrete",name:"Concrete & Foundations",url:"https://canva.link/uvmud6onazo086j",re:/concrete|foundation|retaining/},
+  {k:"decks",name:"Decks",url:"https://canva.link/wpqu63wb8yi4y6s",re:/deck/},
+  {k:"tree",name:"Tree Service",url:"https://canva.link/vnz6ymls9vy3njd",re:/tree|stump/},
+  {k:"siding",name:"Siding & Stucco",url:"https://canva.link/vscj1mnf08xfj4e",re:/siding|stucco/},
+  {k:"flooring",name:"Flooring",url:"https://canva.link/jm87gdl9z4cd4jl",re:/floor|hardwood/},
+  {k:"cabinets",name:"Cabinets",url:"https://canva.link/omvo0wmedxtejc1",re:/cabinet/},
+  {k:"pest",name:"Pest Control",url:"https://canva.link/nts4x5yl109nupv",re:/pest|termite|rodent/},
+  {k:"solar",name:"Solar",url:"https://canva.link/mvrb5q30n2omk0q",re:/solar/},
+  {k:"additions",name:"Additions & Remodels",url:"https://canva.link/bx0gx0r6vib9cf1",re:/addition|remodel/}
+];
+// Match order: specific services before broad words (lead before paint, basement/bath before remodel).
+const MATCH_ORDER=["mold","septic","lead","electrical","basement","blinds","roofing","water","windows","plumbing","hvac","bath","paint","garage","concrete","decks","tree","siding","flooring","cabinets","pest","solar","additions"];
+const T=Object.fromEntries(TEMPLATES.map(t=>[t.k,t]));
+let picked=null; // {k, p} when the user chose a template; null = auto-match
+try{const v=JSON.parse(localStorage.getItem("cp-tpl")||"null");if(v&&T[v.k])picked=v}catch(e){}
+const thumb=(k,p)=>`/tpl/${k}-${p}.jpg`;
+function matchTemplate(service){const s=String(service||"").toLowerCase();return MATCH_ORDER.map(k=>T[k]).find(t=>t.re.test(s))||null}
+function canvaFor(service){
+  const style=p=>p===2?"dark style (page 2)":"light style (page 1)";
+  if(picked){const t=T[picked.k];
+    if(t.url)return{url:t.url,note:`Opens the ${t.name} template, ${style(picked.p)}, in your own Canva. Change the city and number, then download.`};
+    return{url:T.water.url,note:`The ${t.name} Canva link isn't added yet, so this opens the general template. Swap the photo and headline in Canva.`}}
+  const t=matchTemplate(service);
+  if(t&&t.url)return{url:t.url,note:`Opens the ${t.name} template in your own Canva (page 1 light, page 2 dark). Change the city and number, then download.`};
+  if(t)return{url:T.water.url,note:`The ${t.name} Canva link isn't added yet, so this opens the general template. Swap the photo and headline in Canva.`};
+  return{url:T.water.url,note:"No dedicated template for this service yet. This opens the general template; swap the photo and headline in Canva."};
+}
+let tplStyle="all";
+function renderTemplates(){
+  const q=$("tplQ").value.toLowerCase().trim();
+  const auto=matchTemplate($("service").value);
+  const cards=[];
+  for(const t of TEMPLATES){
+    if(q&&!(t.name+" "+t.k).toLowerCase().includes(q))continue;
+    for(const p of [1,2]){
+      if(tplStyle!=="all"&&String(p)!==tplStyle)continue;
+      const on=picked&&picked.k===t.k&&picked.p===p;
+      const isAuto=!picked&&auto&&auto.k===t.k&&p===1;
+      cards.push(`<button type="button" class="tcard" data-k="${t.k}" data-p="${p}" aria-pressed="${on}"><img loading="lazy" alt="${esc(t.name)} ${p===1?"light":"dark"} template" src="${thumb(t.k,p)}"><span class="tn">${esc(t.name)}</span><span class="tm"><span>${p===1?"Light":"Dark"}${isAuto?" · auto":""}</span>${t.url?"":`<span class="soon">link soon</span>`}</span></button>`);
+    }
+  }
+  $("tplGrid").innerHTML=cards.join("")||`<p class="status">No template matches that search.</p>`;
+  if(picked){const t=T[picked.k];$("tplSum").innerHTML=`<span class="picked"><img alt="" src="${thumb(t.k,picked.p)}">Using ${esc(t.name)} · ${picked.p===1?"light":"dark"}</span>`}
+  else $("tplSum").textContent=auto?`Auto-match: ${auto.name}`:"Auto-match to your service";
+}
+$("tplGrid").addEventListener("click",e=>{const c=e.target.closest(".tcard");if(!c)return;
+  const v={k:c.dataset.k,p:+c.dataset.p};
+  picked=(picked&&picked.k===v.k&&picked.p===v.p)?null:v;
+  try{localStorage.setItem("cp-tpl",JSON.stringify(picked))}catch(err){}
+  renderTemplates();if(lastBrief)render(lastItems,lastBrief,true)});
+$("tplAuto").onclick=()=>{picked=null;try{localStorage.removeItem("cp-tpl")}catch(e){}renderTemplates();if(lastBrief)render(lastItems,lastBrief,true)};
+$("tplQ").addEventListener("input",renderTemplates);
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{tplStyle=b.dataset.st;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderTemplates()});
+["service"].forEach(k=>{$(k).addEventListener("input",renderTemplates);$(k).addEventListener("change",renderTemplates)});
+$("mkt").addEventListener("click",()=>setTimeout(renderTemplates,0));
+function render(items,b,live){
+  if(items!==lastItems)photos={};
+  lastItems=items;lastBrief=b;
+  const pay=selPay?`<span class="chip p">$${selPay}/call</span>`:"";
+  $("out").innerHTML=items.map((it,i)=>{
+    const full=`${it.title}\n\n${it.description}`;
+    return `<article class="card">
+      <div class="card-head"><h3>${esc(it.title)}</h3><button class="copy" data-copy="${esc(it.title)}">Copy title</button></div>
+      <div class="chips"><span class="chip">${esc(it.hook||"Listing "+(i+1))}</span>${pay}<span class="chip">${esc(b.city)}</span></div>
+      <dl class="kv"><dt>Category</dt><dd>${esc(it.category)}</dd><dt>Price field</dt><dd>$1,111 <span style="color:var(--muted)">(placeholder)</span></dd><dt>Tags</dt><dd>${esc((it.tags||[]).join(", "))}</dd></dl>
+      <div class="desc">${esc(it.description)}</div>
+      <div class="actions"><button class="copy" data-copy="${esc(it.description)}">Copy description</button><button class="copy" data-copy="${esc(full)}">Copy title + description</button></div>
+      <div><span class="label">Messenger replies (never quote a price)</span>${(it.replies||[]).map(r=>`<div class="desc" style="margin-top:6px">${esc(r)}</div><button class="copy" data-copy="${esc(r)}" style="margin-top:4px">Copy reply</button>`).join("")}</div>
+      <div><span class="label">Rules check</span><div class="rules">${rulesHTML(checkListing(it,b.phone,items))}</div></div>
+      <div><span class="label">Image creative</span>
+        <dl class="ctext"><dt>Headline</dt><dd>${esc(it.headline||b.service)}</dd><button class="copy" data-copy="${esc(it.headline||b.service)}">Copy</button><dt>Tagline</dt><dd>${esc(it.tagline||"")}</dd><button class="copy" data-copy="${esc(it.tagline||"")}">Copy</button></dl>
+        <div class="creative" data-i="${i}" style="margin-top:8px"><button class="btn ai aiimg" type="button">AI photo + design</button><button class="copy mk" type="button">Quick design (no photo)</button><a class="copy canva" href="${canvaFor(b.service).url}" target="_blank" rel="noopener">Customize in Canva ↗</a></div>
+        <p class="status" style="margin:6px 0 0">${esc(canvaFor(b.service).note)} Paste the headline and tagline above into the template.</p></div>
+      <div><span class="label">Photo ideas</span><ul class="photos">${(it.photos||[]).map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>
+    </article>`}).join("");
+}
+let photos={};
+async function showCreative(box){
+  const i=+box.dataset.i,style=box.dataset.style||"light",photo=photos[i]||null;
+  const url=await drawCreative(lastItems[i],lastBrief,i,{style,photo});
+  const base=`listing-${(lastBrief.service+"-"+lastBrief.city).replace(/[^a-z0-9]+/gi,"-").toLowerCase()}-${i+1}`;
+  box.innerHTML=`<img alt="Listing image" src="${url}"><div class="ctl">
+    <div class="styleseg" role="group" aria-label="Style"><button type="button" data-style="light" aria-pressed="${style==="light"}">Light</button><button type="button" data-style="dark" aria-pressed="${style==="dark"}">Dark</button></div>
+    <a class="copy" style="text-decoration:none;text-align:center" href="${url}" download="${base}-${style}.jpg">Download image</a>
+    ${photo?`<a class="copy" style="text-decoration:none;text-align:center" href="${photo}" download="${base}-photo.png">Download photo only (for Canva)</a>`:`<button class="btn ai aiimg" type="button">Add AI photo</button>`}
+    <a class="copy canva" style="text-decoration:none;text-align:center" href="${canvaFor(lastBrief.service).url}" target="_blank" rel="noopener">Customize in Canva ↗</a>
+    <span class="status">${photo?"AI-generated photo. Check it looks right for the job before posting.":"Add an AI photo or upload your own in Canva."} On a phone, long-press the image to save it.</span></div>`;
+}
+$("out").addEventListener("click",async e=>{
+  const st=e.target.closest(".styleseg button");
+  if(st){const box=st.closest(".creative");box.dataset.style=st.dataset.style;await showCreative(box);return}
+  const mk=e.target.closest(".mk,.aiimg");
+  if(mk){const box=mk.closest(".creative"),i=+box.dataset.i;
+    box.dataset.style=box.dataset.style||(picked&&picked.p===2?"dark":"light");
+    if(mk.classList.contains("aiimg")){
+      if(!canUseAI($("status")))return;
+      mk.disabled=true;mk.innerHTML=`<span class="spin"></span> Making photo… ~20s`;
+      try{
+        const r=await fetch("/api/photo",{method:"POST",headers:authHeaders(),
+          body:JSON.stringify({service:lastBrief.service,city:lastBrief.city,idea:(lastItems[i].photos||[])[0]||"",style:box.dataset.style})});
+        const j=await r.json().catch(()=>({}));
+        if(!r.ok||!j.image)throw new Error(aiError(r,j,"The photo didn't come through. Try again."));
+        noteCredits(r);
+        photos[i]=j.image;onbDone("photo");
+      }catch(err){mk.disabled=false;mk.textContent="AI photo + design";box.insertAdjacentHTML("beforeend",`<span class="status" style="flex-basis:100%">${esc(err.message)}</span>`);return}
+    }
+    await showCreative(box);return}
+
+  const b=e.target.closest("[data-copy]"); if(!b)return;
+  try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied"}catch(err){b.textContent="Select & copy manually"}
+  setTimeout(()=>{b.textContent=b.textContent==="Copied"?"Copied ✓":b.textContent},10);
+});
+
+function brief(){return Object.fromEntries(KEYS.map(k=>[k,$(k).value.trim()]))}
+
+let ctl=null;
+function parseItems(text){
+  const t=text.trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+  const a=t.indexOf("["),z=t.lastIndexOf("]");
+  if(a<0||z<a)throw new Error("bad");
+  const items=JSON.parse(t.slice(a,z+1));
+  if(!Array.isArray(items)||!items.length)throw new Error("bad");
+  return items;
+}
+function scrub(items){items.forEach(it=>{for(const k of ['title','description','hook','headline','tagline'])if(it[k])it[k]=String(it[k]).replace(/\bfree\b\s*/gi,'');for(const k of ['tags','replies','photos'])if(Array.isArray(it[k]))it[k]=it[k].map(x=>String(x).replace(/\bfree\b\s*/gi,''))});return items}
+
+$("go").onclick=async()=>{
+  const b=brief();
+  if(!canUseAI($("status")))return;
+  if(!b.service||!b.city){$("status").textContent="Pick a market or type a service and city first.";return}
+  save();
+  ctl=new AbortController(); $("go").disabled=true; $("stop").hidden=false;
+  $("status").textContent="Writing listings… this usually takes 20–50 seconds.";
+  let text="";
+  try{
+    const res=await fetch("/api/generate",{method:"POST",signal:ctl.signal,headers:authHeaders(),
+      body:JSON.stringify({service:b.service,city:b.city,phone:b.phone,brand:b.brand,angle:b.angle,count:+b.count,extra:b.extra})});
+    if(!res.ok){
+      let j={};try{j=await res.json()}catch(e){}
+      $("status").textContent=aiError(res,j,"Something went wrong. Try again in a minute.");return}
+    noteCredits(res);
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    for(;;){const {done,value}=await reader.read();if(done)break;text+=dec.decode(value,{stream:true});
+      const n=(text.match(/"title"/g)||[]).length;$("status").textContent=n?`Writing listing ${Math.min(n,+b.count)} of ${b.count}…`:"Writing listings…"}
+    if(text.includes("[[ERROR]]"))throw new Error("upstream");
+    const items=scrub(parseItems(text));
+    render(items,b,true); addHistory(b); saveKit(b,items); onbDone("write"); $("status").textContent=`${items.length} listings ready. Post them from different profiles over a few days.`;
+  }catch(e){
+    $("status").textContent=e.name==="AbortError"?"Stopped.":"The listings didn't come through cleanly. Press Write listings again.";
+  }finally{$("go").disabled=false;$("stop").hidden=true}
+};
+$("stop").onclick=()=>ctl?.abort();
+
+// Start in a working state: top market selected, example listings shown
+load(); renderMarkets();
+if(!$("service").value){$("service").value=MARKETS[0][0];$("city").value=MARKETS[0][1];}
+{const m=MARKETS.find(x=>x[0]===$("service").value&&x[1]===$("city").value);selPay=m?m[2]:null}
+renderTemplates();
+render(fallback({...brief(),count:"2"}),brief(),true);
+$("out").insertAdjacentHTML("afterbegin",`<div class="empty">Example listings for ${esc($("service").value)} in ${esc($("city").value)} are below. Log in (or add an access code) and your tracking number, then press <b>Write listings</b> for unique AI-written posts.</div>`);
+
+// Saved kits: on the server for logged-in users, in this browser for access-code users.
+window.cpKits=[];
+function localKits(){try{return JSON.parse(localStorage.getItem("cp-kits")||"[]")}catch(e){return[]}}
+function saveLocalKits(k){try{localStorage.setItem("cp-kits",JSON.stringify(k.slice(0,20)))}catch(e){}}
+async function loadHistory(){
+  if(window.cpUser){try{const r=await fetch("/api/history",{cache:"no-store"});if(r.ok)window.cpKits=(await r.json()).kits||[]}catch(e){}}
+  else window.cpKits=localKits();
+  renderHistory();
+}
+function renderHistory(){
+  const k=window.cpKits||[];
+  $("hist").innerHTML=k.length?k.map(x=>`<div class="kit-row" data-id="${esc(x.id)}"><div class="kh"><span>${esc(x.service)} · ${esc(x.city)}</span><button type="button" class="copy kopen">Open</button></div><div class="km">${new Date(x.t).toLocaleDateString(undefined,{month:"short",day:"numeric"})} · ${(x.items||[]).length} listings${x.angle?" · "+esc(x.angle):""}</div><div class="kn"><input class="knote" placeholder="Calls from this? e.g. 3 calls in 2 days" value="${esc(x.note||"")}" aria-label="Result note"><button type="button" class="copy ksave">Save</button></div></div>`).join(""):`<p class="status" style="margin:0">Your kits will appear here after you write listings.</p>`;
+}
+async function saveKit(b,items){
+  const kit={service:b.service,city:b.city,angle:b.angle,phone:b.phone,brand:b.brand,items};
+  if(window.cpUser){try{const r=await fetch("/api/history",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(kit)});if(r.ok){const j=await r.json();window.cpKits=[{...kit,id:j.id,t:new Date().toISOString(),note:""},...window.cpKits]}}catch(e){}}
+  else{window.cpKits=[{...kit,id:String(Date.now()),t:new Date().toISOString(),note:""},...localKits()];saveLocalKits(window.cpKits)}
+  renderHistory();
+}
+$("hist").addEventListener("click",async e=>{
+  const row=e.target.closest(".kit-row");if(!row)return;const kit=(window.cpKits||[]).find(x=>x.id===row.dataset.id);if(!kit)return;
+  if(e.target.closest(".kopen")){
+    $("service").value=kit.service;$("city").value=kit.city;if(kit.phone)$("phone").value=kit.phone;if(kit.brand)$("brand").value=kit.brand;
+    const m=MARKETS.find(x=>x[0]===kit.service&&x[1]===kit.city);selPay=m?m[2]:null;
+    render(kit.items,{...brief(),service:kit.service,city:kit.city,phone:kit.phone||$("phone").value.trim(),brand:kit.brand||""},true);
+    $("status").textContent=`Reopened your ${kit.service} kit for ${kit.city}.`;$("out").scrollIntoView({behavior:"smooth"});return}
+  if(e.target.closest(".ksave")){
+    const note=row.querySelector(".knote").value.trim();kit.note=note;const btn=e.target.closest(".ksave");
+    if(window.cpUser){try{const r=await fetch("/api/history",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({id:kit.id,note})});btn.textContent=r.ok?"Saved":"Retry"}catch(err){btn.textContent="Retry"}}
+    else{saveLocalKits(window.cpKits);btn.textContent="Saved"}
+    if(note)onbDone("notes");setTimeout(()=>btn.textContent="Save",1500)}
+});
+
+// First-steps checklist
+const ONB=[["market","Pick a paying market"],["phone","Add your tracking number"],["write","Write your first listings"],["photo","Make an AI photo creative"],["notes","Post it, then note your calls in history"]];
+function onbState(){try{return JSON.parse(localStorage.getItem("cp-onb")||"{}")}catch(e){return{}}}
+function onbSave(st){try{localStorage.setItem("cp-onb",JSON.stringify(st))}catch(e){}}
+function onbDone(k){const st=onbState();st.done=st.done||{};if(!st.done[k]){st.done[k]=1;onbSave(st)}renderOnb()}
+function renderOnb(){
+  const st=onbState(),d=st.done||{},n=ONB.filter(([k])=>d[k]).length;
+  $("onb").hidden=!!st.hidden||n===ONB.length;
+  $("onbBar").style.width=(n/ONB.length*100)+"%";
+  $("onbList").innerHTML=ONB.map(([k,t])=>`<li class="${d[k]?"done":""}"><span class="bx">${d[k]?"✓":""}</span>${t}</li>`).join("");
+}
+$("onbHide").onclick=()=>{const st=onbState();st.hidden=1;onbSave(st);renderOnb()};
+$("mkt").addEventListener("click",e=>{if(e.target.closest("tr[data-s]"))onbDone("market")});
+$("phone").addEventListener("change",()=>{if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone")});
+window.cpAfterAuth=()=>loadHistory();
+renderOnb();if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone");if($("service").value&&$("city").value&&(window.cpKits||[]).length)onbDone("market");
+
+// History for AI market picks: saved kits (with result notes) first, then the older simple log.
+function getHistory(){
+  if(window.cpKits&&window.cpKits.length)return window.cpKits.slice(0,40).map(k=>({service:k.service,city:k.city,date:String(k.t||"").slice(0,10),note:k.note||""}));
+  try{return JSON.parse(localStorage.getItem("cp-history")||"[]")}catch(e){return[]}}
+function addHistory(b){try{const h=getHistory();h.unshift({service:b.service,city:b.city,date:new Date().toISOString().slice(0,10)});localStorage.setItem("cp-history",JSON.stringify(h.slice(0,40)))}catch(e){}}
+$("pickGo").onclick=async()=>{
+  if(!canUseAI($("pickStatus")))return;
+  $("pickGo").disabled=true;$("pickStatus").innerHTML=`<span class="spin"></span> Picking markets…`;$("picks").innerHTML="";
+  try{
+    const r=await fetch("/api/suggest",{method:"POST",headers:authHeaders(),
+      body:JSON.stringify({markets:MARKETS,history:getHistory(),notes:$("pickNotes").value.trim()})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(aiError(r,j,"Couldn't get suggestions."));
+    noteCredits(r);
+    $("picks").innerHTML=j.picks.map(p=>`<button type="button" class="pick" data-s="${esc(p.service)}" data-c="${esc(p.city)}" data-a="${esc(p.angle)}"><span class="ph"><span>${esc(p.service)} · ${esc(p.city)}</span><span class="pay">${p.payout?"$"+p.payout:""}</span></span><span class="pw">${esc(p.why)}</span><span class="pw">Angle: ${esc(p.angle)}</span></button>`).join("");
+    $("pickStatus").textContent="Tap a pick to load it into the brief.";
+  }catch(err){$("pickStatus").textContent=err.message}
+  finally{$("pickGo").disabled=false}
+};
+$("picks").addEventListener("click",e=>{const p=e.target.closest(".pick");if(!p)return;
+  $("service").value=p.dataset.s;$("city").value=p.dataset.c;
+  const opt=[...$("angle").options].find(o=>o.text===p.dataset.a);if(opt)$("angle").value=opt.value;
+  const m=MARKETS.find(x=>x[0]===p.dataset.s&&x[1]===p.dataset.c);selPay=m?m[2]:null;save();renderTemplates();onbDone("market");
+  $("status").textContent=`Loaded ${p.dataset.s} in ${p.dataset.c}. Press Write listings.`;$("go").scrollIntoView({behavior:"smooth",block:"center"})});
+
+(function(){const b=document.getElementById("themeToggle");if(!b)return;
+  const set=t=>{document.documentElement.dataset.theme=t;b.textContent=t==="dark"?"☀ Light":"☾ Dark";b.setAttribute("aria-label",t==="dark"?"Switch to light theme":"Switch to dark theme");try{localStorage.setItem("cp-theme",t)}catch(e){}};
+  set(document.documentElement.dataset.theme==="dark"?"dark":"light");
+  b.addEventListener("click",()=>set(document.documentElement.dataset.theme==="dark"?"light":"dark"));})();
+</script>
+
+<script type="module">
+import { signup, login, logout, getUser, handleAuthCallback, requestPasswordRecovery, recoverPassword, onAuthChange, getSettings, acceptInvite, oauthLogin } from "/js/identity.js";
+const $=id=>document.getElementById(id);
+let mode="login";
+const say=t=>{$("authMsg").textContent=t};
+function setMode(m){mode=m;document.querySelectorAll("#acct .tabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===m)));
+  $("authGo").textContent=m==="login"?"Log in":"Create account";$("authPass").autocomplete=m==="login"?"current-password":"new-password";say("")}
+document.querySelectorAll("#acct .tabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+if(location.hash==="#signup")setMode("signup");
+
+window.cpSetCredits=n=>{$("acctBal").textContent=n;updateCost()};
+function updateCost(){const n=+$("count").value||5;$("costNote").textContent=window.cpUser&&!$("code").value.trim()?`Uses ${n} credit${n===1?"":"s"}`:""}
+$("count").addEventListener("change",updateCost);$("code").addEventListener("input",updateCost);
+
+async function refresh(){
+  let me={loggedIn:false};
+  try{me=await fetch("/api/me",{cache:"no-store"}).then(r=>r.json())}catch(e){}
+  window.cpUser=me.loggedIn?me:null;window.cpBuyUrl=me.buyUrl||"";
+  $("acctOut").hidden=!!me.loggedIn;$("acctIn").hidden=!me.loggedIn;
+  if(me.loggedIn){$("acctEmail").textContent=me.email||"";$("acctBal").textContent=me.credits;
+    const plans=me.plans||[];$("buyBtn").hidden=!plans.length;$("adminLink").hidden=!me.admin;
+    $("buyBox").innerHTML=plans.map(p=>`<a class="copy" style="display:flex;justify-content:space-between;gap:8px" href="${p.url}" target="_blank" rel="noopener"><span><b>${p.name}</b> · ${p.credits}</span><span>${p.price}</span></a>`).join("");
+    if(location.hash==="#buy"&&plans.length){$("buyBox").hidden=false}
+    if(!me.buyUrl)$("acctHint").textContent="1 credit per listing · 3 per AI photo · 1 for market picks. Need more? Message CallPosts to top up.";}
+  updateCost();
+  if(window.cpAfterAuth)window.cpAfterAuth();
+}
+
+$("authForm").addEventListener("submit",async e=>{e.preventDefault();
+  const email=$("authEmail").value.trim(),pass=$("authPass").value;$("authGo").disabled=true;say(mode==="login"?"Logging in…":"Creating your account…");
+  try{
+    if(mode==="signup"){
+      const u=await signup(email,pass);
+      if(u&&u.confirmedAt){await refresh();say("")}
+      else{say("Check your email and click the confirmation link, then log in here.");setMode("login");$("authEmail").value=email}
+    }else{await login(email,pass);await refresh();say("")}
+  }catch(err){say(authErrorText(err))}
+  finally{$("authGo").disabled=false}});
+
+// The Identity library throws AuthError with an empty message, so read the status and server text too.
+function authErrorText(err){
+  const st=err&&(err.status||err.cause&&err.cause.status);
+  const raw=[err&&err.message,err&&err.cause&&(err.cause.message||err.cause.json&&(err.cause.json.error_description||err.cause.json.msg))].filter(Boolean).join(" ");
+  if(!identityOn||st===404||st===502)return "New accounts open very soon. If you have an access code, enter it below.";
+  if(/registered|exists|already/i.test(raw))return "That email already has an account. Log in instead.";
+  if(/confirm/i.test(raw))return "Confirm your email first. Check your inbox (and spam) for the link.";
+  if(/password.*(short|least|6|8)/i.test(raw))return "Use a password with at least 8 characters.";
+  if(/invalid|credentials|password|grant/i.test(raw)||st===400||st===401)return mode==="login"?"Email or password is wrong, or the email isn't confirmed yet.":"Couldn't create the account. Check the email and password and try again.";
+  if(st===429)return "Too many tries. Wait a minute and try again.";
+  return mode==="login"?"Couldn't log in right now. Try again in a minute.":"Couldn't create the account right now. Try again in a minute.";
+}
+let identityOn=true;
+getSettings().then(st=>{identityOn=true;if(st&&st.disable_signup){$("starterNote").textContent="Sign-ups are invite-only right now."}if(st&&st.providers&&st.providers.google||st&&st.external&&st.external.google){$("gWrap").hidden=false;$("gWrap").style.display="flex"}}).catch(()=>{identityOn=false;$("starterNote").textContent="New accounts open very soon.";});
+
+$("gBtn").onclick=()=>{try{oauthLogin("google")}catch(e){say("Google sign-in isn't available right now. Use email instead.")}};
+$("forgot").onclick=async()=>{const email=$("authEmail").value.trim();if(!email){say("Type your email above, then press Forgot password.");$("authEmail").focus();return}
+  try{await requestPasswordRecovery(email);say("If that email has an account, a reset link is on its way.")}catch(e){say("Couldn't send the reset email. Try again in a minute.")}};
+
+let recoveryToken=null,inviteToken=null;
+$("resetForm").addEventListener("submit",async e=>{e.preventDefault();
+  try{if(inviteToken)await acceptInvite(inviteToken,$("newPass").value);else await recoverPassword(recoveryToken,$("newPass").value);$("resetForm").hidden=true;$("authForm").hidden=false;await refresh()}
+  catch(err){say("Couldn't set the password. The link may have expired; request a new one.")}});
+
+$("buyBtn").onclick=()=>{$("buyBox").hidden=!$("buyBox").hidden};
+$("logoutBtn").onclick=async()=>{try{await logout()}catch(e){}await refresh()};
+
+(async()=>{
+  try{
+    const hash=location.hash;
+    if(/recovery_token=/.test(hash)){recoveryToken=new URLSearchParams(hash.slice(1)).get("recovery_token");$("authForm").hidden=true;$("resetForm").hidden=false;$("resetForm").style.display="flex";say("Choose your password to finish logging in.");history.replaceState(null,"",location.pathname)}
+    else{const r=await handleAuthCallback();if(r){history.replaceState(null,"",location.pathname);
+      if(r.type==="invite"&&r.token){inviteToken=r.token;$("authForm").hidden=true;$("resetForm").hidden=false;$("resetForm").style.display="flex";say("Welcome to CallPosts. Choose a password to finish setting up your account.")}
+      else if(r.type==="confirmation")say("Email confirmed. You're logged in.");
+      if(r.user){let back=null;try{back=localStorage.getItem("cp-after-login");localStorage.removeItem("cp-after-login")}catch(e){}if(back==="/admin"){location.href="/admin";return}}}}
+  }catch(e){console.warn("auth callback",e)}
+  await refresh();
+})();
+try{onAuthChange(()=>refresh())}catch(e){}
+</script>
+</body>
+</html>

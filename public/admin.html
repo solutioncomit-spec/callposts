@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>CallPosts · Admin</title>
+<script>try{var t=localStorage.getItem("cp-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{color-scheme:light;--bg:#f5f7ff;--panel:#fff;--ink:#0b1030;--muted:#56618a;--line:rgba(60,80,160,.16);--accent:#0a8fb0;--accent-2:#7c4dff;--accent-ink:#fff;--warn:#8a4a00;--warn-bg:rgba(180,95,0,.08);--field:#fff}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#070912;--panel:rgba(16,22,42,.8);--ink:#e8ecff;--muted:#93a0c9;--line:rgba(130,165,255,.18);--accent:#4ff0ff;--accent-2:#9b6bff;--accent-ink:#04121a;--warn:#ffcf85;--warn-bg:rgba(255,181,71,.1);--field:rgba(5,8,20,.7)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Sora",system-ui,sans-serif;padding:24px 16px 48px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font:800 clamp(22px,4vw,30px) "Unbounded",system-ui,sans-serif;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.label{font:500 11px "JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.grid3{display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:8px;align-items:end}
+@media (max-width:720px){.grid3{grid-template-columns:1fr}}
+.btn{font:600 14px "Sora",system-ui,sans-serif;border:0;border-radius:6px;padding:10px 14px;cursor:pointer;background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--accent-ink)}
+.ghost{background:var(--field);color:var(--ink);border:1px solid var(--line)}
+.status{font-size:13px;color:var(--muted);margin:0}
+.bad{color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:8px 10px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 11px "JetBrains Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td.n{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;text-align:right}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:140px}
+.stat b{display:block;font:500 22px "JetBrains Mono",monospace}
+a{color:var(--accent)}
+[hidden]{display:none!important}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:600 14px var(--body,system-ui);background:#fff;color:#1f1f1f;border:1px solid #dadce0;border-radius:6px;padding:10px 14px;cursor:pointer}.gbtn:hover{background:#f7f8f8}.orline{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
+.linkish{background:none;border:0;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <h1>CallPosts Admin</h1><span style="display:flex;gap:14px;align-items:center"><a href="/app">← Listing agent</a><button type="button" class="linkish" id="logout" hidden>Log out</button></span>
+  </header>
+  <p class="status bad" id="gate" hidden></p>
+  <section class="panel" id="loginBox" hidden style="max-width:440px">
+    <span class="label" id="lbTitle">Admin log in</span>
+    <p class="status" id="lbHelp">Log in with your admin email (leadifyuae@gmail.com).</p>
+    <div id="gWrap" hidden style="flex-direction:column;gap:8px"><button type="button" class="gbtn" id="gBtn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Continue with Google</button><div class="orline">or use email</div></div>
+    <form id="lbForm" style="display:flex;flex-direction:column;gap:10px">
+      <input id="lbEmail" type="email" autocomplete="email" placeholder="Email" required aria-label="Email">
+      <input id="lbPass" type="password" autocomplete="current-password" placeholder="Password (8+ characters)" minlength="8" required aria-label="Password">
+      <button class="btn" id="lbGo" type="submit">Log in</button>
+    </form>
+    <p class="status" id="lbMsg" role="status"></p>
+    <p class="status">No account yet? <button type="button" class="linkish" id="lbSwitch">Create your admin account</button> · <button type="button" class="linkish" id="lbForgot">Forgot password?</button></p>
+  </section>
+  <section class="panel" id="create" hidden>
+    <span class="label">Create a login</span>
+    <p class="status">For signup requests. The account is ready right away and they get an email to set their password, then they're logged in. New accounts get 15 starter credits; add more here if you like.</p>
+    <form id="createForm" class="grid3">
+      <label class="status">Email<input id="cEmail" type="email" required></label>
+      <label class="status">Extra credits<input id="cCredits" type="number" min="0" step="1" value="0"></label>
+      <label class="status">Name (optional)<input id="cName"></label>
+      <button class="btn" type="submit">Create login</button>
+    </form>
+    <p class="status" id="cMsg" role="status"></p>
+  </section>
+  <section class="panel" id="grant" hidden>
+    <span class="label">Add or remove credits</span>
+    <form id="grantForm" class="grid3">
+      <label class="status">Account email<input id="gEmail" type="email" required></label>
+      <label class="status">Credits (use − to remove)<input id="gCredits" type="number" step="1" required value="50"></label>
+      <label class="status">Note<input id="gNote" placeholder="e.g. Paid via bKash, 50 credits"></label>
+      <button class="btn" type="submit">Apply</button>
+    </form>
+    <p class="status" id="gMsg" role="status"></p>
+  </section>
+  <section class="panel" id="list" hidden>
+    <div class="stats" id="stats"></div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span class="label">Accounts</span><button class="btn ghost" id="reload" type="button">Refresh</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Email</th><th>Joined</th><th>Confirmed</th><th>First listing</th><th style="text-align:right">Credits</th><th style="text-align:right">Used</th><th>Last activity</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const day=s=>s?new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"";
+async function load(){
+  const r=await fetch("/api/admin",{cache:"no-store"});const j=await r.json().catch(()=>({}));
+  $("gate").hidden=true;
+  if(r.status===401){$("loginBox").hidden=false;$("logout").hidden=true;["grant","list","create"].forEach(i=>$(i).hidden=true);return}
+  $("loginBox").hidden=true;$("logout").hidden=false;
+  if(!r.ok){$("gate").hidden=false;$("gate").textContent=r.status===403?"You're logged in, but this email isn't an admin. Log out and use leadifyuae@gmail.com.":(j.error||"Couldn't load accounts.");return}
+  $("grant").hidden=false;$("list").hidden=false;$("create").hidden=false;
+  const rows=j.rows||[];const total=rows.reduce((a,x)=>a+(x.credits||0),0),used=rows.reduce((a,x)=>a+(x.spent||0),0);
+  const wk=Date.now()-7*864e5,recent=rows.filter(x=>x.created&&Date.parse(x.created)>wk).length;
+  const act=rows.filter(x=>x.firstListingAt),paid=rows.filter(x=>x.paid).length;
+  const mins=act.map(x=>(Date.parse(x.firstListingAt)-Date.parse(x.created))/6e4).filter(n=>n>=0).sort((a,b)=>a-b);
+  const med=mins.length?mins[Math.floor(mins.length/2)]:null;
+  const fmt=m=>m==null?"–":m<60?`${Math.round(m)} min`:m<2880?`${(m/60).toFixed(1)} h`:`${Math.round(m/1440)} d`;
+  const pct=(n,d)=>d?` (${Math.round(n*100/d)}%)`:"";
+  $("stats").innerHTML=`<div class="stat"><span class="label">Signups</span><b>${rows.length}</b><span class="status">${recent} in the last 7 days</span></div><div class="stat"><span class="label">Wrote a listing</span><b>${act.length}</b><span class="status">${pct(act.length,rows.length).trim()||"–"} activated</span></div><div class="stat"><span class="label">Time to first listing</span><b>${fmt(med)}</b><span class="status">median</span></div><div class="stat"><span class="label">Paying</span><b>${paid}</b><span class="status">${pct(paid,rows.length).trim()||"–"} of signups</span></div><div class="stat"><span class="label">Credits used</span><b>${used}</b><span class="status">${total} still held</span></div>`;
+  $("rows").innerHTML=rows.map(x=>`<tr><td>${esc(x.email)}</td><td>${day(x.created)}</td><td>${x.confirmed?"Yes":"No"}</td><td>${x.firstListingAt?day(x.firstListingAt):"–"}</td><td class="n">${x.credits??"–"}</td><td class="n">${x.spent||0}</td><td>${x.last?`${esc(x.last.why)} (${x.last.d>0?"+":""}${x.last.d}) · ${day(x.last.t)}`:"–"}</td></tr>`).join("")||`<tr><td colspan="7">No accounts yet.</td></tr>`;
+}
+$("grantForm").addEventListener("submit",async e=>{e.preventDefault();$("gMsg").textContent="Applying…";
+  const r=await fetch("/api/admin",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:$("gEmail").value.trim(),credits:+$("gCredits").value,note:$("gNote").value.trim()})});
+  const j=await r.json().catch(()=>({}));$("gMsg").textContent=r.ok?`Done. ${j.email} now has ${j.credits} credits.`:(j.error||"That didn't work.");if(r.ok)load()});
+$("createForm").addEventListener("submit",async e=>{e.preventDefault();$("cMsg").textContent="Creating…";
+  const r=await fetch("/api/admin",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"create",email:$("cEmail").value.trim(),credits:+$("cCredits").value||0,name:$("cName").value.trim()})});
+  const j=await r.json().catch(()=>({}));
+  $("cMsg").textContent=r.ok?(j.emailed?`Done. ${j.email} has a login and an email to set their password (check spam if they can't see it).`:`Login created for ${j.email}, but the email didn't send. Ask them to use "Forgot password?" on the app with this email.`):(j.error||"That didn't work.");
+  if(r.ok){e.target.reset();load()}});
+$("reload").onclick=load;
+load();
+</script>
+<script type="module">
+import { login, signup, logout, requestPasswordRecovery, getSettings, oauthLogin } from "/js/identity.js";
+const $=id=>document.getElementById(id);let mode="login";
+const msg=t=>{$("lbMsg").textContent=t};
+function errText(e){const st=e&&(e.status||e.cause&&e.cause.status);const raw=[e&&e.message,e&&e.cause&&e.cause.message].filter(Boolean).join(" ");
+  if(/registered|exists|already/i.test(raw))return "That email already has an account. Log in instead.";
+  if(/confirm/i.test(raw))return "Confirm your email first. Check your inbox and spam for the CallPosts link.";
+  if(st===400||st===401||/invalid|grant|credentials/i.test(raw))return mode==="login"?"Email or password is wrong, or the email isn't confirmed yet.":"Couldn't create the account. Check the email and password.";
+  return "That didn't work. Try again in a minute.";}
+$("lbSwitch").onclick=()=>{mode=mode==="login"?"signup":"login";$("lbTitle").textContent=mode==="login"?"Admin log in":"Create your admin account";$("lbGo").textContent=mode==="login"?"Log in":"Create account";$("lbSwitch").textContent=mode==="login"?"Create your admin account":"Back to log in";msg("")};
+$("lbForm").addEventListener("submit",async e=>{e.preventDefault();$("lbGo").disabled=true;msg(mode==="login"?"Logging in…":"Creating account…");
+  try{if(mode==="login"){await login($("lbEmail").value.trim(),$("lbPass").value);msg("");await load()}
+    else{const u=await signup($("lbEmail").value.trim(),$("lbPass").value);if(u&&u.confirmedAt){await load();msg("")}else{msg("Account created. Open the confirmation email, click the link, then come back to callposts.com/admin and log in.");$("lbSwitch").click()}}}
+  catch(err){msg(errText(err))}finally{$("lbGo").disabled=false}});
+$("lbForgot").onclick=async()=>{const em=$("lbEmail").value.trim();if(!em){msg("Type your email first.");return}try{await requestPasswordRecovery(em);msg("If that email has an account, a reset link is on its way.")}catch(e){msg("Couldn't send the reset email right now.")}};
+getSettings().then(st=>{if(st&&st.providers&&st.providers.google||st&&st.external&&st.external.google){$("gWrap").hidden=false;$("gWrap").style.display="flex"}}).catch(()=>{});
+$("gBtn").onclick=()=>{try{localStorage.setItem("cp-after-login","/admin")}catch(e){}oauthLogin("google")};
+$("logout").onclick=async()=>{try{await logout()}catch(e){}location.reload()};
+</script>
+</body>
+</html>

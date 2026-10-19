@@ -1,0 +1,12 @@
+{
+  "name": "calldrop",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "@google/genai": "^2.30.0",
+    "@netlify/blobs": "^11.1.4",
+    "@netlify/functions": "^6.0.2",
+    "@netlify/identity": "^2.0.0"
+  }
+}
