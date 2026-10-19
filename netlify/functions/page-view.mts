@@ -60,7 +60,8 @@ export default async (req: Request, context: Context) => {
         imgName.set(p.slug, name);
         files.push({ name, data: new Uint8Array(got.data as ArrayBuffer) });
       }
-      const cityHref = (p: LandingPage) => `${p.slug}.html`;
+      // Friendly file names for self-hosting: aurora-co.html, denver-co.html ...
+      const cityHref = (p: LandingPage) => `${p.city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || p.slug}.html`;
       const nav = (cur: LandingPage): SiteNav => ({ hubName: `${site.service} in ${site.region}`, hubHref: "index.html", cities: pages.map((p) => ({ name: p.city, href: cityHref(p), current: p.slug === cur.slug })) });
       files.unshift({ name: "index.html", data: renderHub(site, pages, { cityHref, selfHref: "index.html", photoUrl: withPhoto ? imgName.get(withPhoto.slug) : undefined }) });
       for (const p of pages) files.push({ name: cityHref(p), data: renderLanding(p, { photoUrl: imgName.get(p.slug), site: nav(p) }) });

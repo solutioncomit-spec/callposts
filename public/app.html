@@ -804,7 +804,7 @@ async function postPage(body){
   let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
   return {r,j};
 }
-// Builds the given cities of a site, two at a time. Stops early if credits run out.
+// Builds the given cities of a site one after another (pages share the site record, so no parallel writes). Stops early if credits run out.
 async function buildSiteCities(slug,cities,photo){
   const total=cities.length,queue=[...cities],lines={};let done=0,stop="",okN=0;
   const draw=()=>{$("lpProg").innerHTML=cities.map(c=>`<span class="${lines[c]?.cls||""}">${lines[c]?.txt||"○"} ${esc(c)}</span>`).join("")};
@@ -812,7 +812,7 @@ async function buildSiteCities(slug,cities,photo){
   async function worker(){
     while(queue.length&&!stop){
       const c=queue.shift();lines[c]={txt:"…",cls:""};draw();
-      $("lpStatus").innerHTML=`<span class="spin"></span> Writing city pages: ${done} of ${total} done. Each takes about 30 seconds; keep this tab open.`;
+      $("lpStatus").innerHTML=`<span class="spin"></span> Writing city pages: ${done} of ${total} done. Each takes about 20–30 seconds; keep this tab open.`;
       try{const {r,j}=await postPage({site:slug,city:c});
         if(r.ok&&j.ok){okN++;lines[c]={txt:"✓",cls:"ok"}}
         else if(j.already){okN++;lines[c]={txt:"✓",cls:"ok"}}
@@ -821,7 +821,7 @@ async function buildSiteCities(slug,cities,photo){
       done++;draw();
     }
   }
-  await Promise.all([worker(),worker()]);
+  await worker();
   if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
   const link=`<a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your site ↗</a>`;
   $("lpStatus").innerHTML=stop?`${esc(stop)} ${okN} of ${total} pages were built; use “Finish” on the site below after topping up. ${okN?link:""}`
