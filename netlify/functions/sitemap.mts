@@ -15,6 +15,10 @@ export default async (req: Request) => {
     const { blobs } = await getStore({ name: "pages", consistency: "strong" }).list();
     for (const b of blobs) if (/^[a-z0-9-]+$/.test(b.key)) urls.push({ loc: `${origin}/p/${b.key}`, priority: "0.8" });
   } catch (e) { console.error("sitemap list failed", e); }
+  try {
+    const { blobs } = await getStore({ name: "sites", consistency: "strong" }).list();
+    for (const b of blobs) if (/^[a-z0-9-]+$/.test(b.key)) urls.push({ loc: `${origin}/s/${b.key}`, priority: "0.8" });
+  } catch (e) { console.error("sitemap sites failed", e); }
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u.loc}</loc><priority>${u.priority}</priority></url>`).join("\n")}\n</urlset>\n`;
   return new Response(xml, { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=3600" } });
 };

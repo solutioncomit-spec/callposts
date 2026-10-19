@@ -160,8 +160,19 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .onb li.done{color:var(--muted);text-decoration:line-through}
 .onb li.done .bx{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .onb .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.onb .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-.lp-tpls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.lp-tpl{display:flex;flex-direction:column;gap:6px;align-items:center;font:600 12px var(--body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer}
+.lp-tpls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.lp-tpl .th{position:relative;width:100%;aspect-ratio:390/470;overflow:hidden;border-radius:6px;border:1px solid var(--line);background:var(--panel)}
+.lp-tpl .th iframe{position:absolute;top:0;left:0;width:390px;height:470px;border:0;transform-origin:0 0;pointer-events:none}
+.lp-tpl .tt{display:flex;justify-content:space-between;align-items:center;width:100%;gap:6px}
+.lp-tpl .tt a{font-weight:500;color:var(--accent);text-decoration:none;font-size:11px}
+.lp-tpl .tg{font-weight:400;color:var(--muted);font-size:11px;line-height:1.35;text-align:left;width:100%}
+.lp-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:4px}
+.lp-mode button{font:600 13px var(--body);border:0;border-radius:6px;padding:8px;background:transparent;color:var(--muted);cursor:pointer}
+.lp-mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.lp-prog{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.lp-prog .ok{color:#22c55e}.lp-prog .bad{color:#ef4444}
+.site-tag{font:600 10px var(--mono);border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.lp-tpl{display:flex;flex-direction:column;gap:6px;align-items:flex-start;font:600 12px var(--body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer}
 .lp-tpl .sw{width:100%;height:38px;border-radius:5px;border:1px solid var(--line)}
 .lp-tpl[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .seo-badge{font:600 11px var(--mono);border-radius:999px;padding:2px 8px;border:1px solid var(--line)}
@@ -276,15 +287,21 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
       </details>
       <details class="field" id="lpBox">
         <summary class="label" style="cursor:pointer">✦ Landing page builder</summary>
-        <p class="status" style="margin:0">A one-page call site for the service, city and tracking number in your brief, hosted on callposts.com with a tap-to-call button. Built to rank on Google for “service + city”: long, unique, local copy with search-ready titles and structured data. Use it for Google Business, ads or SEO. Don't put links in Marketplace listings.</p>
-        <div class="lp-tpls" role="radiogroup" aria-label="Template">
-          <button type="button" class="lp-tpl" data-t="clean" aria-pressed="true"><span class="sw" style="background:linear-gradient(135deg,#eef4ff 55%,#2563eb 55%)"></span>Clean</button>
-          <button type="button" class="lp-tpl" data-t="bold" aria-pressed="false"><span class="sw" style="background:linear-gradient(135deg,#0b0c10 55%,#6d28d9 55%)"></span>Bold dark</button>
-          <button type="button" class="lp-tpl" data-t="urgent" aria-pressed="false"><span class="sw" style="background:linear-gradient(135deg,#fff1e6 55%,#dc2626 55%)"></span>Emergency</button>
+        <p class="status" style="margin:0">Call sites hosted on callposts.com with tap-to-call buttons, built to rank on Google for “service + city”: long, unique, local copy with search-ready titles and structured data. Use them for Google Business, ads or SEO. Don't put links in Marketplace listings.</p>
+        <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">City site (up to 10 cities)</button></div>
+        <div id="lpSiteFields" hidden style="display:flex;flex-direction:column;gap:8px">
+          <label class="label" for="lpCities" style="margin:0">Cities, one per line, with state code</label>
+          <textarea id="lpCities" rows="5" placeholder="Aurora, CO&#10;Denver, CO&#10;Lakewood, CO"></textarea>
+          <input id="lpRegion" placeholder="Region name (optional), e.g. Denver Metro" aria-label="Region name">
+          <p class="status" style="margin:0">You get a hub page for the region plus one full page per city, all linked together and listed in the sitemap. Same service and tracking number on every page.</p>
         </div>
-        <label class="status" style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="lpPhoto" style="width:auto"> Add an AI hero photo (+3 credits)</label>
+        <span class="label" style="margin:2px 0 -2px">Theme <span class="status" style="font-weight:400">· tap Preview to see it full size</span></span>
+        <div class="lp-tpls" id="lpThemes" role="radiogroup" aria-label="Theme"></div>
+        <label class="status" style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="lpPhoto" style="width:auto"> <span id="lpPhotoLbl">Add an AI hero photo (+3 credits)</span></label>
         <button class="btn ai" id="lpGo" type="button">Build landing page · 3 credits</button>
         <div class="status" id="lpStatus" role="status"></div>
+        <div class="lp-prog" id="lpProg"></div>
+        <div class="picks" id="lpSites"></div>
         <div class="picks" id="lpList"></div>
       </details>
       <details class="field" id="histBox">
@@ -334,7 +351,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
     <div class="ed-head"><h2 id="lpEditTitle">Edit landing page</h2><button class="copy" value="cancel" type="submit" aria-label="Close">Close</button></div>
     <div class="ed-grid">
       <div class="ed-fields">
-        <div class="row"><label class="field"><span class="label">Template</span><select id="edTemplate"><option value="clean">Clean</option><option value="bold">Bold dark</option><option value="urgent">Emergency</option></select></label>
+        <div class="row"><label class="field"><span class="label">Template</span><select id="edTemplate"></select></label>
           <label class="field"><span class="label">Tracking number</span><input id="edPhone"></label></div>
         <div class="row"><label class="field"><span class="label">Brand / page name</span><input id="edBrand" placeholder="Leave blank for an automatic name"></label>
           <label class="field"><span class="label">Main keyword</span><input id="edKeyword" placeholder="e.g. water heater repair"></label></div>
@@ -737,26 +754,103 @@ $("hist").addEventListener("click",async e=>{
     if(note)onbDone("notes");setTimeout(()=>btn.textContent="Save",1500)}
 });
 
-// Landing page builder
-let lpTemplate="clean";
-document.querySelectorAll(".lp-tpl").forEach(b=>b.onclick=()=>{lpTemplate=b.dataset.t;document.querySelectorAll(".lp-tpl").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))});
-$("lpPhoto").onchange=()=>{$("lpGo").textContent=`Build landing page · ${$("lpPhoto").checked?6:3} credits`};
+// Landing page builder: themes, single pages and multi-city sites
+const THEMES=[
+  {k:"clean",n:"Clean",t:"Bright and simple. Works for any service."},
+  {k:"bold",n:"Bold dark",t:"Dark and modern with a violet glow."},
+  {k:"urgent",n:"Emergency",t:"Red and urgent, for leaks, floods and breakdowns."},
+  {k:"heritage",n:"Heritage",t:"Navy and gold with serif headings."},
+  {k:"meadow",n:"Meadow",t:"Soft green and rounded. Lawn, pest, cleaning."},
+  {k:"neon",n:"Neon",t:"Near-black with cyan and violet."},
+  {k:"minimal",n:"Minimal",t:"Black on white, big type, nothing extra."},
+  {k:"sunset",n:"Sunset photo",t:"Full-width photo hero, warm amber buttons."}];
+const themeName=k=>(THEMES.find(x=>x.k===k)||{n:k}).n;
+let lpTemplate="clean",lpMode="page";
+$("lpThemes").innerHTML=THEMES.map(x=>`<div class="lp-tpl" role="radio" tabindex="0" data-t="${x.k}" aria-checked="${x.k==="clean"}" aria-pressed="${x.k==="clean"}"><div class="th"><iframe tabindex="-1" title="${esc(x.n)} theme preview" data-src="/theme/${x.k}" loading="lazy"></iframe></div><div class="tt"><span>${esc(x.n)}</span><a href="/theme/${x.k}" target="_blank" rel="noopener">Preview ↗</a></div><div class="tg">${esc(x.t)}</div></div>`).join("");
+$("edTemplate").innerHTML=THEMES.map(x=>`<option value="${x.k}">${esc(x.n)}</option>`).join("");
+function pickTheme(el){lpTemplate=el.dataset.t;document.querySelectorAll(".lp-tpl").forEach(x=>{x.setAttribute("aria-pressed",String(x===el));x.setAttribute("aria-checked",String(x===el))})}
+$("lpThemes").addEventListener("click",e=>{if(e.target.closest("a"))return;const el=e.target.closest(".lp-tpl");if(el)pickTheme(el)});
+$("lpThemes").addEventListener("keydown",e=>{const el=e.target.closest(".lp-tpl");if(el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();pickTheme(el)}});
+function fitThumbs(){document.querySelectorAll("#lpThemes .th").forEach(th=>{const f=th.querySelector("iframe");if(!f.src&&f.dataset.src)f.src=f.dataset.src;f.style.transform=`scale(${th.clientWidth/390})`})}
+if(window.ResizeObserver)new ResizeObserver(()=>{if($("lpBox").open)fitThumbs()}).observe($("lpThemes"));
+const lpCities=()=>{const seen=new Set();return $("lpCities").value.split(/\n|;/).map(x=>x.trim().replace(/\s*,\s*/g,", ").replace(/\s+/g," ")).filter(x=>x&&!seen.has(x.toLowerCase())&&seen.add(x.toLowerCase()))};
+function lpLabel(){
+  const per=3+($("lpPhoto").checked?3:0);
+  if(lpMode==="page"){$("lpGo").textContent=`Build landing page · ${per} credits`;$("lpPhotoLbl").textContent="Add an AI hero photo (+3 credits)";return}
+  const n=lpCities().length;$("lpPhotoLbl").textContent="Add an AI hero photo to every page (+3 credits each)";
+  $("lpGo").textContent=n>=2?`Build city site · ${n} pages · ${n*per} credits`:"Build city site · add 2+ cities";
+}
+document.querySelectorAll(".lp-mode button").forEach(b=>b.onclick=()=>{lpMode=b.dataset.m;document.querySelectorAll(".lp-mode button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));$("lpSiteFields").hidden=lpMode!=="site";
+  if(lpMode==="site"&&!$("lpCities").value.trim()&&$("city").value.trim())$("lpCities").value=$("city").value.trim()+"\n";lpLabel()});
+$("lpCities").addEventListener("input",lpLabel);
+$("lpPhoto").onchange=lpLabel;
 async function loadPages(){
-  if(!window.cpUser&&!$("code").value.trim()){$("lpList").innerHTML="";return}
-  try{const r=await fetch("/api/pages",{headers:authHeaders(),cache:"no-store"});if(!r.ok)return;const j=await r.json();renderPages(j.pages||[])}catch(e){}
+  if(!window.cpUser&&!$("code").value.trim()){$("lpList").innerHTML="";$("lpSites").innerHTML="";return}
+  try{const [r,rs]=await Promise.all([fetch("/api/pages",{headers:authHeaders(),cache:"no-store"}),fetch("/api/sites",{headers:authHeaders(),cache:"no-store"})]);
+    if(rs.ok)renderSites((await rs.json()).sites||[]);if(r.ok)renderPages((await r.json()).pages||[])}catch(e){}
+}
+function renderSites(list){
+  $("lpSites").innerHTML=list.map(x=>`<div class="kit-row" data-site="${esc(x.slug)}"><div class="kh"><span>🌐 ${esc(x.service)} · ${esc(x.region)}</span><span style="display:flex;gap:8px;align-items:center">${x.seo!=null?`<span class="seo-badge ${x.seo>=85?"good":x.seo>=65?"ok":"bad"}" title="Average SEO score">SEO ${x.seo}</span>`:""}<span class="km">${x.views||0} views</span></span></div>
+    <div class="km">${x.built} of ${x.cities.length} city pages built${x.missing.length?` · missing: ${esc(x.missing.join("; "))}`:""}</div>
+    <div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}?preview=1" target="_blank" rel="noopener">Open site</a><button type="button" class="copy scopy">Copy link</button><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/site.zip" download>Download ZIP</a>
+    <select class="stheme" aria-label="Site theme" style="width:auto;padding:4px 8px;font-size:12px">${THEMES.map(t=>`<option value="${t.k}"${t.k===x.theme?" selected":""}>${esc(t.n)}</option>`).join("")}</select>
+    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy sdel">Delete site</button></div></div>`).join("");
 }
 function renderPages(list){
-  $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button><button type="button" class="copy lpdl">Download HTML</button><button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
+  $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)} ${p.site?`<span class="site-tag">in site</span>`:""}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)} · ${esc(themeName(p.template))}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button>${p.site?"":`<button type="button" class="copy lpdl">Download HTML</button>`}<button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
+}
+async function postPage(body){
+  const r=await fetch("/api/pages",{method:"POST",headers:authHeaders(),body:JSON.stringify(body)});
+  let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+  return {r,j};
+}
+// Builds the given cities of a site, two at a time. Stops early if credits run out.
+async function buildSiteCities(slug,cities,photo){
+  const total=cities.length,queue=[...cities],lines={};let done=0,stop="",okN=0;
+  const draw=()=>{$("lpProg").innerHTML=cities.map(c=>`<span class="${lines[c]?.cls||""}">${lines[c]?.txt||"○"} ${esc(c)}</span>`).join("")};
+  draw();
+  async function worker(){
+    while(queue.length&&!stop){
+      const c=queue.shift();lines[c]={txt:"…",cls:""};draw();
+      $("lpStatus").innerHTML=`<span class="spin"></span> Writing city pages: ${done} of ${total} done. Each takes about 30 seconds; keep this tab open.`;
+      try{const {r,j}=await postPage({site:slug,city:c});
+        if(r.ok&&j.ok){okN++;lines[c]={txt:"✓",cls:"ok"}}
+        else if(j.already){okN++;lines[c]={txt:"✓",cls:"ok"}}
+        else{lines[c]={txt:"✕",cls:"bad"};if(r.status===402||r.status===401){stop=aiError(r,j,"Stopped.");}}
+      }catch(e){lines[c]={txt:"✕",cls:"bad"}}
+      done++;draw();
+    }
+  }
+  await Promise.all([worker(),worker()]);
+  if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+  const link=`<a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your site ↗</a>`;
+  $("lpStatus").innerHTML=stop?`${esc(stop)} ${okN} of ${total} pages were built; use “Finish” on the site below after topping up. ${okN?link:""}`
+    :okN===total?`Done: ${total} city pages plus a hub page, all linked. ${link}`
+    :`${okN} of ${total} pages were built; any that failed had their credits returned. Use “Finish” on the site below to retry. ${okN?link:""}`;
+  loadPages();
 }
 $("lpGo").onclick=async()=>{
   if(!canUseAI($("lpStatus")))return;
   const b=brief();
-  if(!b.service||!b.city){$("lpStatus").textContent="Pick a market or type a service and city in the brief first.";return}
+  if(!b.service){$("lpStatus").textContent="Pick a market or type a service in the brief first.";return}
   if(b.phone.replace(/\D/g,"").length<10){$("lpStatus").textContent="Add your tracking number in the brief first. The page is built around it.";$("phone").focus();return}
+  $("lpProg").innerHTML="";
+  if(lpMode==="site"){
+    const cities=lpCities(),per=3+($("lpPhoto").checked?3:0);
+    if(cities.length<2){$("lpStatus").textContent="Add at least 2 cities, one per line, like “Aurora, CO”.";$("lpCities").focus();return}
+    if(cities.length>10){$("lpStatus").textContent="A site can have up to 10 cities. Split the rest into another site.";return}
+    if(window.cpUser&&!$("code").value.trim()&&window.cpUser.credits<cities.length*per){$("lpStatus").textContent=`This site needs ${cities.length*per} credits and you have ${window.cpUser.credits}. Remove some cities or top up first.`;return}
+    $("lpGo").disabled=true;$("lpStatus").innerHTML=`<span class="spin"></span> Setting up your site…`;
+    try{const r=await fetch("/api/sites",{method:"POST",headers:authHeaders(),body:JSON.stringify({service:b.service,cities,phone:b.phone,brand:b.brand,region:$("lpRegion").value.trim(),theme:lpTemplate,photo:$("lpPhoto").checked})});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(aiError(r,j,"Couldn't create the site. Try again."));
+      await buildSiteCities(j.slug,j.cities,$("lpPhoto").checked);
+    }catch(err){$("lpStatus").textContent=err.message}finally{$("lpGo").disabled=false}
+    return;
+  }
+  if(!b.city){$("lpStatus").textContent="Pick a market or type a city in the brief first.";return}
   $("lpGo").disabled=true;$("lpStatus").innerHTML=`<span class="spin"></span> Writing your page… about 30–50 seconds`;
   try{
-    const r=await fetch("/api/pages",{method:"POST",headers:authHeaders(),body:JSON.stringify({service:b.service,city:b.city,phone:b.phone,brand:b.brand,angle:b.angle,extra:b.extra,template:lpTemplate,photo:$("lpPhoto").checked})});
-    let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+    const {r,j}=await postPage({service:b.service,city:b.city,phone:b.phone,brand:b.brand,angle:b.angle,extra:b.extra,template:lpTemplate,photo:$("lpPhoto").checked});
     if(!r.ok||!j.ok)throw new Error(r.ok?(j.error||"The page didn't come through. Try again."):aiError(r,j,"The page didn't come through. Try again."));
     if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
     $("lpStatus").innerHTML=`Done: about ${j.words||"1,000"} words of local copy. <a href="${j.url}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your page ↗</a>${$("lpPhoto").checked&&!j.photo?" (The photo didn't work, so those credits went back.)":""}`;
@@ -764,6 +858,24 @@ $("lpGo").onclick=async()=>{
   }catch(err){$("lpStatus").textContent=err.message}
   finally{$("lpGo").disabled=false}
 };
+$("lpSites").addEventListener("click",async e=>{
+  const row=e.target.closest(".kit-row");if(!row)return;const slug=row.dataset.site;
+  if(e.target.closest(".scopy")){const url=`${location.origin}/s/${slug}`;try{await navigator.clipboard.writeText(url);e.target.textContent="Copied"}catch(err){e.target.textContent=url}}
+  if(e.target.closest(".sfin")){
+    if(!canUseAI($("lpStatus")))return;
+    const r=await fetch(`/api/sites?slug=${encodeURIComponent(slug)}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));
+    if(!r.ok){$("lpStatus").textContent=j.error||"Couldn't open that site.";return}
+    if(!j.site.missing.length){loadPages();return}
+    $("lpGo").disabled=true;try{await buildSiteCities(slug,j.site.missing,j.site.photo)}finally{$("lpGo").disabled=false}
+  }
+  if(e.target.closest(".sdel")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again: deletes every page";return}
+    const r=await fetch(`/api/sites?slug=${encodeURIComponent(slug)}`,{method:"DELETE",headers:authHeaders()});if(r.ok)loadPages()}
+});
+$("lpSites").addEventListener("change",async e=>{
+  const sel=e.target.closest(".stheme");if(!sel)return;const slug=sel.closest(".kit-row").dataset.site;
+  sel.disabled=true;const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,theme:sel.value})});sel.disabled=false;
+  $("lpStatus").innerHTML=r.ok?`Theme changed to ${esc(themeName(sel.value))} on every page. <a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open site ↗</a>`:"Couldn't change the theme. Try again.";if(r.ok)loadPages();
+});
 $("lpList").addEventListener("click",async e=>{
   const row=e.target.closest(".kit-row");if(!row)return;const slug=row.dataset.slug,url=`${location.origin}/p/${slug}`;
   if(e.target.closest(".lpedit")){openEditor(slug);return}
@@ -807,7 +919,7 @@ $("edSave").onclick=async()=>{
     if(!r.ok)throw new Error(j.error||"Couldn't save. Try again.");showScore(j.seo);$("edMsg").textContent="Saved. The live page is updated.";loadPages()}
   catch(err){$("edMsg").textContent=err.message}finally{$("edSave").disabled=false}
 };
-$("lpBox").addEventListener("toggle",()=>{if($("lpBox").open)loadPages()});
+$("lpBox").addEventListener("toggle",()=>{if($("lpBox").open){loadPages();requestAnimationFrame(fitThumbs)}});
 
 // First-steps checklist
 const ONB=[["market","Pick a paying market"],["phone","Add your tracking number"],["write","Write your first listings"],["photo","Make an AI photo creative"],["notes","Post it, then note your calls in history"]];

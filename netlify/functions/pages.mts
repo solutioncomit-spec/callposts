@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import { payFor, creditHeaders, clean, whoAmI } from "../lib/access.mts";
-import { seoScore, type LandingPage, type PageCopy } from "../lib/landing.mts";
+import { seoScore, isTheme, TEMPLATES, type LandingPage, type PageCopy, type Site } from "../lib/landing.mts";
 
 // Landing page builder.
 // POST   /api/pages            create a page (AI writes the copy; optional AI hero photo)
@@ -16,6 +16,21 @@ const MODEL = "claude-sonnet-5-5";
 const pages = () => getStore({ name: "pages", consistency: "strong" });
 const index = () => getStore({ name: "page-index", consistency: "strong" });
 const images = () => getStore("page-images");
+const sites = () => getStore({ name: "sites", consistency: "strong" });
+const MAX_PAGES = 150;
+
+// Add or remove a page on its city site. Retries on concurrent writes (sites build 2 pages at once).
+async function updateSite(siteSlug: string, fn: (s: Site) => void) {
+  for (let i = 0; i < 6; i++) {
+    const got = await sites().getWithMetadata(siteSlug, { type: "json" });
+    if (!got) return;
+    const s = got.data as Site;
+    fn(s);
+    const res = await sites().setJSON(siteSlug, s, { onlyIfMatch: got.etag });
+    if (res.modified) return;
+  }
+  console.error(`site update gave up ${siteSlug}`);
+}
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
@@ -140,12 +155,12 @@ export default async (req: Request) => {
       if (!slugs.includes(one)) return Response.json({ error: "Page not found." }, { status: 404 });
       const p = (await pages().get(one, { type: "json" })) as LandingPage | null;
       if (!p) return Response.json({ error: "Page not found." }, { status: 404 });
-      return Response.json({ page: { slug: p.slug, template: p.template, service: p.service, city: p.city, phone: p.phone, brand: p.brand, copy: p.copy, photo: !!p.photo }, seo: seoScore(p) }, { headers: { "cache-control": "no-store" } });
+      return Response.json({ page: { slug: p.slug, site: p.site || null, template: p.template, service: p.service, city: p.city, phone: p.phone, brand: p.brand, copy: p.copy, photo: !!p.photo }, seo: seoScore(p) }, { headers: { "cache-control": "no-store" } });
     }
     const list = [];
     for (const s of slugs.slice(0, 50)) {
       const p = (await pages().get(s, { type: "json" })) as LandingPage | null;
-      if (p) list.push({ slug: p.slug, service: p.service, city: p.city, phone: p.phone, template: p.template, headline: p.copy.headline, created: p.created, views: p.views || 0, photo: !!p.photo, seo: seoScore(p).score });
+      if (p) list.push({ slug: p.slug, site: p.site || null, service: p.service, city: p.city, phone: p.phone, template: p.template, headline: p.copy.headline, created: p.created, views: p.views || 0, photo: !!p.photo, seo: seoScore(p).score });
     }
     return Response.json({ pages: list }, { headers: { "cache-control": "no-store" } });
   }
@@ -157,6 +172,7 @@ export default async (req: Request) => {
     if (p?.photo) await images().delete(p.photo);
     await pages().delete(slug);
     await index().setJSON(idxKey, slugs.filter((s) => s !== slug));
+    if (p?.site) await updateSite(p.site, (s) => { s.pages = s.pages.filter((x) => x.slug !== slug); });
     return Response.json({ ok: true });
   }
 
@@ -177,7 +193,7 @@ export default async (req: Request) => {
       p.phone = ph;
     }
     if (body.brand !== undefined) p.brand = clean(body.brand, 60);
-    if (["clean", "bold", "urgent"].includes(body.template)) p.template = body.template;
+    if (isTheme(body.template)) p.template = body.template;
     const c = body.copy || {};
     const next: PageCopy = { ...p.copy };
     if (c.keyword !== undefined) next.keyword = clean(c.keyword, 60).toLowerCase();
@@ -208,17 +224,27 @@ export default async (req: Request) => {
 
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return Response.json({ error: "Request body must be JSON." }, { status: 400 }); }
-  const service = clean(body.service, 80);
+  let service = clean(body.service, 80);
   const city = clean(body.city, 80);
-  const phone = clean(body.phone, 30);
-  const brand = clean(body.brand, 60);
+  let phone = clean(body.phone, 30);
+  let brand = clean(body.brand, 60);
   const angle = clean(body.angle, 40);
   const extra = clean(body.extra, 300);
-  const template = (["clean", "bold", "urgent"].includes(String(body.template)) ? body.template : "clean") as LandingPage["template"];
-  const withPhoto = body.photo === true;
+  let template: LandingPage["template"] = isTheme(body.template) ? body.template : "clean";
+  let withPhoto = body.photo === true;
+  // Building a page for a city site: the site decides service, number, brand, theme and photo.
+  const siteSlug = clean(body.site, 80);
+  let site: Site | null = null;
+  if (siteSlug) {
+    site = (await sites().get(siteSlug, { type: "json" })) as Site | null;
+    if (!site || site.owner !== owner) return Response.json({ error: "Site not found." }, { status: 404 });
+    if (!site.cities.includes(city)) return Response.json({ error: "That city isn't part of this site." }, { status: 400 });
+    if (site.pages.some((x) => x.city === city)) return Response.json({ error: `${city} is already built.`, already: true }, { status: 409 });
+    service = site.service; phone = site.phone; brand = site.brand; template = site.theme; withPhoto = site.photo;
+  }
   if (!service || !city) return Response.json({ error: "Add a service and a city in the brief first." }, { status: 400 });
   if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: "Add your tracking number in the brief first. The page is built around it." }, { status: 400 });
-  if (slugs.length >= 50) return Response.json({ error: "You have 50 pages already. Delete some before making more." }, { status: 400 });
+  if (slugs.length >= MAX_PAGES) return Response.json({ error: `You have ${MAX_PAGES} pages already. Delete some before making more.` }, { status: 400 });
 
   const cost = PAGE_COST + (withPhoto ? PHOTO_COST : 0);
   const payer = await payFor(req, cost, `landing page: ${service}, ${city}${withPhoto ? " + photo" : ""}`);
@@ -234,12 +260,12 @@ export default async (req: Request) => {
       try {
         const [copy, photo] = await Promise.all([
           writeCopy(service, city, angle, extra),
-          withPhoto ? makePhoto(service, city, template === "bold") : Promise.resolve(null),
+          withPhoto ? makePhoto(service, city, TEMPLATES[template].dark) : Promise.resolve(null),
         ]);
         const base = slugify(`${service} ${city.split(",")[0]}`);
         let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
         while (await pages().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0 };
+        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug } : {}) };
         let credits = payer.credits;
         if (photo) {
           page.photo = `img/${slug}`;
@@ -251,10 +277,19 @@ export default async (req: Request) => {
           credits = again.ok && again.kind === "user" ? again.credits : credits;
         }
         await pages().setJSON(slug, page);
-        const latest = ((await index().get(idxKey, { type: "json" })) as string[] | null) || [];
-        await index().setJSON(idxKey, [slug, ...latest.filter((x) => x !== slug)]);
+        // Concurrent builds (city sites) write this list at the same time, so retry on conflict.
+        for (let i = 0; i < 6; i++) {
+          const got = await index().getWithMetadata(idxKey, { type: "json" });
+          const latest = ((got?.data as string[] | null) || []).filter((x) => x !== slug);
+          const res = got ? await index().setJSON(idxKey, [slug, ...latest], { onlyIfMatch: got.etag }) : await index().setJSON(idxKey, [slug], { onlyIfNew: true });
+          if (res.modified) break;
+        }
+        if (site) {
+          const order = site.cities;
+          await updateSite(site.slug, (s) => { s.pages = [...s.pages.filter((x) => x.city !== city), { slug, city }].sort((a, b) => order.indexOf(a.city) - order.indexOf(b.city)); });
+        }
         const words = [copy.intro, copy.localNote, ...(copy.signs || []).map((x) => x.text), ...copy.faqs.map((f) => f.a), ...(copy.costFactors || [])].join(" ").split(/\s+/).length;
-        console.log(`page created ${slug} owner=${owner} template=${template} photo=${!!photo} words=${words}`);
+        console.log(`page created ${slug} owner=${owner} site=${site?.slug || "-"} template=${template} photo=${!!photo} words=${words}`);
         finish({ ok: true, slug, url: `/p/${slug}`, photo: !!photo, words, credits });
       } catch (e) {
         console.error("page create failed", e);
@@ -269,6 +304,6 @@ export default async (req: Request) => {
 export const config: Config = {
   path: "/api/pages",
   method: ["GET", "POST", "PATCH", "DELETE"],
-  rateLimit: { windowLimit: 15, windowSize: 60, aggregateBy: ["ip", "domain"] },
+  rateLimit: { windowLimit: 25, windowSize: 60, aggregateBy: ["ip", "domain"] },
 };
 
