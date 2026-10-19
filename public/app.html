@@ -160,6 +160,26 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .onb li.done{color:var(--muted);text-decoration:line-through}
 .onb li.done .bx{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .onb .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.onb .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.lp-tpls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lp-tpl{display:flex;flex-direction:column;gap:6px;align-items:center;font:600 12px var(--body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer}
+.lp-tpl .sw{width:100%;height:38px;border-radius:5px;border:1px solid var(--line)}
+.lp-tpl[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.seo-badge{font:600 11px var(--mono);border-radius:999px;padding:2px 8px;border:1px solid var(--line)}
+.seo-badge.good{color:#22c55e;border-color:rgba(34,197,94,.45)}.seo-badge.ok{color:#f59e0b;border-color:rgba(245,158,11,.45)}.seo-badge.bad{color:#ef4444;border-color:rgba(239,68,68,.45)}
+#lpEdit{width:min(1100px,96vw);max-height:92vh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink)}
+#lpEdit::backdrop{background:rgba(0,0,0,.6)}
+#lpEditForm{display:flex;flex-direction:column;max-height:92vh}
+.ed-head,.ed-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.ed-foot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end;flex-wrap:wrap}.ed-foot .status{margin-right:auto}
+.ed-head h2{margin:0;font:700 18px var(--display)}
+.ed-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;padding:16px 18px;overflow:auto}
+@media (max-width:820px){.ed-grid{grid-template-columns:minmax(0,1fr)}.ed-score{order:-1}}
+.ed-fields{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ed-score{border:1px solid var(--line);border-radius:10px;padding:14px;align-self:start;position:sticky;top:0;background:var(--field);display:flex;flex-direction:column;gap:10px}
+.score-ring{display:flex;flex-direction:column;align-items:center;gap:2px}.score-ring b{font:700 40px var(--display)}.score-ring span{font-size:12px;color:var(--muted)}
+#edChecks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+#edChecks li{display:flex;gap:6px}#edChecks .tip{color:var(--muted)}
+.cnt{font:500 11px var(--mono);letter-spacing:0;text-transform:none;margin-left:6px}.cnt.warn{color:var(--warn)}
 .kit-row{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--field)}
 .kit-row .kh{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:600}
 .kit-row .km{font-size:12px;color:var(--muted)}
@@ -254,6 +274,19 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="status" id="pickStatus" role="status"></div>
         <div class="picks" id="picks"></div>
       </details>
+      <details class="field" id="lpBox">
+        <summary class="label" style="cursor:pointer">✦ Landing page builder</summary>
+        <p class="status" style="margin:0">A one-page call site for the service, city and tracking number in your brief, hosted on callposts.com with a tap-to-call button. Built to rank on Google for “service + city”: long, unique, local copy with search-ready titles and structured data. Use it for Google Business, ads or SEO. Don't put links in Marketplace listings.</p>
+        <div class="lp-tpls" role="radiogroup" aria-label="Template">
+          <button type="button" class="lp-tpl" data-t="clean" aria-pressed="true"><span class="sw" style="background:linear-gradient(135deg,#eef4ff 55%,#2563eb 55%)"></span>Clean</button>
+          <button type="button" class="lp-tpl" data-t="bold" aria-pressed="false"><span class="sw" style="background:linear-gradient(135deg,#0b0c10 55%,#6d28d9 55%)"></span>Bold dark</button>
+          <button type="button" class="lp-tpl" data-t="urgent" aria-pressed="false"><span class="sw" style="background:linear-gradient(135deg,#fff1e6 55%,#dc2626 55%)"></span>Emergency</button>
+        </div>
+        <label class="status" style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="lpPhoto" style="width:auto"> Add an AI hero photo (+3 credits)</label>
+        <button class="btn ai" id="lpGo" type="button">Build landing page · 3 credits</button>
+        <div class="status" id="lpStatus" role="status"></div>
+        <div class="picks" id="lpList"></div>
+      </details>
       <details class="field" id="histBox">
         <summary class="label" style="cursor:pointer">Your listing history</summary>
         <p class="status" style="margin:0">Reopen past kits and note which ones brought calls. AI market picks use your notes.</p>
@@ -296,6 +329,38 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   </div>
 </div>
 
+<dialog id="lpEdit" aria-labelledby="lpEditTitle">
+  <form method="dialog" id="lpEditForm">
+    <div class="ed-head"><h2 id="lpEditTitle">Edit landing page</h2><button class="copy" value="cancel" type="submit" aria-label="Close">Close</button></div>
+    <div class="ed-grid">
+      <div class="ed-fields">
+        <div class="row"><label class="field"><span class="label">Template</span><select id="edTemplate"><option value="clean">Clean</option><option value="bold">Bold dark</option><option value="urgent">Emergency</option></select></label>
+          <label class="field"><span class="label">Tracking number</span><input id="edPhone"></label></div>
+        <div class="row"><label class="field"><span class="label">Brand / page name</span><input id="edBrand" placeholder="Leave blank for an automatic name"></label>
+          <label class="field"><span class="label">Main keyword</span><input id="edKeyword" placeholder="e.g. water heater repair"></label></div>
+        <label class="field"><span class="label">SEO title <span class="cnt" data-for="edTitle" data-min="30" data-max="60"></span></span><input id="edTitle"></label>
+        <label class="field"><span class="label">Meta description <span class="cnt" data-for="edMeta" data-min="110" data-max="160"></span></span><textarea id="edMeta" rows="2"></textarea></label>
+        <label class="field"><span class="label">Main heading (H1)</span><input id="edH1"></label>
+        <label class="field"><span class="label">Subheading</span><textarea id="edSub" rows="2"></textarea></label>
+        <label class="field"><span class="label">Call button text</span><input id="edCta"></label>
+        <label class="field"><span class="label">Intro <span class="cnt words" data-for="edIntro"></span></span><textarea id="edIntro" rows="6"></textarea></label>
+        <label class="field"><span class="label">Signs you need the service · one per line: Title | text</span><textarea id="edSigns" rows="5"></textarea></label>
+        <label class="field"><span class="label">Benefits · one per line</span><textarea id="edBullets" rows="4"></textarea></label>
+        <label class="field"><span class="label">Local conditions <span class="cnt words" data-for="edLocal"></span></span><textarea id="edLocal" rows="5"></textarea></label>
+        <label class="field"><span class="label">What affects the cost · one per line (no prices)</span><textarea id="edCost" rows="4"></textarea></label>
+        <label class="field"><span class="label">How it works · one per line: Title | text</span><textarea id="edSteps" rows="3"></textarea></label>
+        <label class="field"><span class="label">FAQs · Q: question, then A: answer, blank line between</span><textarea id="edFaqs" rows="10"></textarea></label>
+        <label class="field"><span class="label">Areas served · comma separated</span><input id="edAreas"></label>
+      </div>
+      <aside class="ed-score">
+        <div class="score-ring"><b id="edScore">–</b><span>SEO score</span></div>
+        <ul id="edChecks"></ul>
+        <p class="status" style="margin:0">Score updates when you save.</p>
+      </aside>
+    </div>
+    <div class="ed-foot"><span class="status" id="edMsg" role="status"></span><a class="copy" id="edView" target="_blank" rel="noopener" style="text-decoration:none">View page ↗</a><button class="btn" type="button" id="edSave">Save changes</button></div>
+  </form>
+</dialog>
 <script>
 const MARKETS=[
 ["Water Heaters","Peoria, AZ",41],["Water Heaters","Aurora, CO",34],["Water Heaters","Phoenix, AZ",34],["Water Heaters","Seffner, FL",33],["Water Heaters","Redmond, WA",31],["Water Heaters","Laguna Hills, CA",28],["Water Heaters","Fort Lauderdale, FL",28],["Water Heaters","Sacramento, CA",25],["Water Heaters","San Antonio, TX",24],["Water Heaters","San Jose, CA",23],
@@ -672,6 +737,78 @@ $("hist").addEventListener("click",async e=>{
     if(note)onbDone("notes");setTimeout(()=>btn.textContent="Save",1500)}
 });
 
+// Landing page builder
+let lpTemplate="clean";
+document.querySelectorAll(".lp-tpl").forEach(b=>b.onclick=()=>{lpTemplate=b.dataset.t;document.querySelectorAll(".lp-tpl").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))});
+$("lpPhoto").onchange=()=>{$("lpGo").textContent=`Build landing page · ${$("lpPhoto").checked?6:3} credits`};
+async function loadPages(){
+  if(!window.cpUser&&!$("code").value.trim()){$("lpList").innerHTML="";return}
+  try{const r=await fetch("/api/pages",{headers:authHeaders(),cache:"no-store"});if(!r.ok)return;const j=await r.json();renderPages(j.pages||[])}catch(e){}
+}
+function renderPages(list){
+  $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button><button type="button" class="copy lpdl">Download HTML</button><button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
+}
+$("lpGo").onclick=async()=>{
+  if(!canUseAI($("lpStatus")))return;
+  const b=brief();
+  if(!b.service||!b.city){$("lpStatus").textContent="Pick a market or type a service and city in the brief first.";return}
+  if(b.phone.replace(/\D/g,"").length<10){$("lpStatus").textContent="Add your tracking number in the brief first. The page is built around it.";$("phone").focus();return}
+  $("lpGo").disabled=true;$("lpStatus").innerHTML=`<span class="spin"></span> Writing your page… about 30–50 seconds`;
+  try{
+    const r=await fetch("/api/pages",{method:"POST",headers:authHeaders(),body:JSON.stringify({service:b.service,city:b.city,phone:b.phone,brand:b.brand,angle:b.angle,extra:b.extra,template:lpTemplate,photo:$("lpPhoto").checked})});
+    let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+    if(!r.ok||!j.ok)throw new Error(r.ok?(j.error||"The page didn't come through. Try again."):aiError(r,j,"The page didn't come through. Try again."));
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+    $("lpStatus").innerHTML=`Done: about ${j.words||"1,000"} words of local copy. <a href="${j.url}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your page ↗</a>${$("lpPhoto").checked&&!j.photo?" (The photo didn't work, so those credits went back.)":""}`;
+    loadPages();
+  }catch(err){$("lpStatus").textContent=err.message}
+  finally{$("lpGo").disabled=false}
+};
+$("lpList").addEventListener("click",async e=>{
+  const row=e.target.closest(".kit-row");if(!row)return;const slug=row.dataset.slug,url=`${location.origin}/p/${slug}`;
+  if(e.target.closest(".lpedit")){openEditor(slug);return}
+  if(e.target.closest(".lpcopy")){try{await navigator.clipboard.writeText(url);e.target.textContent="Copied"}catch(err){e.target.textContent=url}}
+  if(e.target.closest(".lpdl")){const html=await fetch(`/p/${slug}?download=1`).then(r=>r.text());const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));a.download=`${slug}.html`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+  if(e.target.closest(".lpdel")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again to delete";return}
+    const r=await fetch(`/api/pages?slug=${encodeURIComponent(slug)}`,{method:"DELETE",headers:authHeaders()});if(r.ok)row.remove()}
+});
+// Landing page editor
+let edSlug=null;
+const lines=v=>v.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+const pairLines=(v,a,b)=>lines(v).map(l=>{const i=l.indexOf("|");return i<0?{[a]:l,[b]:""}:{[a]:l.slice(0,i).trim(),[b]:l.slice(i+1).trim()}}).filter(x=>x[a]&&x[b]);
+const faqText=f=>f.map(x=>`Q: ${x.q}\nA: ${x.a}`).join("\n\n");
+const faqParse=v=>v.split(/\n\s*\n/).map(b=>{const q=(b.match(/Q:\s*([\s\S]*?)(?:\n|$)/i)||[])[1],a=(b.match(/A:\s*([\s\S]*)/i)||[])[1];return{q:(q||"").trim(),a:(a||"").trim()}}).filter(x=>x.q&&x.a);
+function showScore(seo){
+  $("edScore").textContent=seo?seo.score:"–";$("edScore").style.color=seo?(seo.score>=85?"#22c55e":seo.score>=65?"#f59e0b":"#ef4444"):"";
+  $("edChecks").innerHTML=seo?seo.checks.map(c=>`<li><span>${c.ok?"✓":"✕"}</span><span><b>${esc(c.name)}</b>${c.ok?"":`<br><span class="tip">${esc(c.tip)}</span>`}</span></li>`).join(""):"";
+}
+function updCounts(){document.querySelectorAll("#lpEdit .cnt").forEach(el=>{const v=$(el.dataset.for).value;if(el.classList.contains("words")){el.textContent=`${v.split(/\s+/).filter(Boolean).length} words`;return}const n=v.length,min=+el.dataset.min,max=+el.dataset.max;el.textContent=`${n} chars`;el.classList.toggle("warn",n<min||n>max)})}
+document.querySelectorAll("#lpEdit input,#lpEdit textarea").forEach(el=>el.addEventListener("input",updCounts));
+async function openEditor(slug){
+  $("lpStatus").textContent="Opening editor…";
+  const r=await fetch(`/api/pages?slug=${encodeURIComponent(slug)}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));
+  if(!r.ok){$("lpStatus").textContent=j.error||"Couldn't open that page.";return}
+  $("lpStatus").textContent="";edSlug=slug;const p=j.page,c=p.copy;
+  $("edTemplate").value=p.template;$("edPhone").value=p.phone||"";$("edBrand").value=p.brand||"";$("edKeyword").value=c.keyword||"";
+  $("edTitle").value=c.seoTitle||"";$("edMeta").value=c.metaDescription||"";$("edH1").value=c.headline||"";$("edSub").value=c.subheadline||"";$("edCta").value=c.cta||"";
+  $("edIntro").value=c.intro||"";$("edLocal").value=c.localNote||"";
+  $("edSigns").value=(c.signs||[]).map(x=>`${x.title} | ${x.text}`).join("\n");$("edBullets").value=(c.bullets||[]).join("\n");
+  $("edCost").value=(c.costFactors||[]).join("\n");$("edSteps").value=(c.steps||[]).map(x=>`${x.title} | ${x.text}`).join("\n");
+  $("edFaqs").value=faqText(c.faqs||[]);$("edAreas").value=(c.areas||[]).join(", ");
+  $("edView").href=`/p/${slug}?preview=1`;$("edMsg").textContent="";showScore(j.seo);updCounts();$("lpEdit").showModal();
+}
+$("edSave").onclick=async()=>{
+  if(!edSlug)return;$("edSave").disabled=true;$("edMsg").textContent="Saving…";
+  const body={slug:edSlug,template:$("edTemplate").value,phone:$("edPhone").value.trim(),brand:$("edBrand").value.trim(),copy:{
+    keyword:$("edKeyword").value.trim(),seoTitle:$("edTitle").value.trim(),metaDescription:$("edMeta").value.trim(),headline:$("edH1").value.trim(),subheadline:$("edSub").value.trim(),cta:$("edCta").value.trim(),
+    intro:$("edIntro").value.trim(),localNote:$("edLocal").value.trim(),signs:pairLines($("edSigns").value,"title","text"),bullets:lines($("edBullets").value),
+    costFactors:lines($("edCost").value),steps:pairLines($("edSteps").value,"title","text"),faqs:faqParse($("edFaqs").value),areas:$("edAreas").value.split(",").map(x=>x.trim()).filter(Boolean)}};
+  try{const r=await fetch("/api/pages",{method:"PATCH",headers:authHeaders(),body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||"Couldn't save. Try again.");showScore(j.seo);$("edMsg").textContent="Saved. The live page is updated.";loadPages()}
+  catch(err){$("edMsg").textContent=err.message}finally{$("edSave").disabled=false}
+};
+$("lpBox").addEventListener("toggle",()=>{if($("lpBox").open)loadPages()});
+
 // First-steps checklist
 const ONB=[["market","Pick a paying market"],["phone","Add your tracking number"],["write","Write your first listings"],["photo","Make an AI photo creative"],["notes","Post it, then note your calls in history"]];
 function onbState(){try{return JSON.parse(localStorage.getItem("cp-onb")||"{}")}catch(e){return{}}}
@@ -686,7 +823,7 @@ function renderOnb(){
 $("onbHide").onclick=()=>{const st=onbState();st.hidden=1;onbSave(st);renderOnb()};
 $("mkt").addEventListener("click",e=>{if(e.target.closest("tr[data-s]"))onbDone("market")});
 $("phone").addEventListener("change",()=>{if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone")});
-window.cpAfterAuth=()=>loadHistory();
+window.cpAfterAuth=()=>{loadHistory();if($("lpBox").open)loadPages()};
 renderOnb();if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone");if($("service").value&&$("city").value&&(window.cpKits||[]).length)onbDone("market");
 
 // History for AI market picks: saved kits (with result notes) first, then the older simple log.
@@ -747,6 +884,7 @@ async function refresh(){
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }
+window.cpRefreshMe=refresh;
 
 $("authForm").addEventListener("submit",async e=>{e.preventDefault();
   const email=$("authEmail").value.trim(),pass=$("authPass").value;$("authGo").disabled=true;say(mode==="login"?"Logging in…":"Creating your account…");

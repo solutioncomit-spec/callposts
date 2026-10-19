@@ -62,3 +62,11 @@ export function isAdminEmail(email?: string): boolean {
   const admins = (Netlify.env.get("ADMIN_EMAILS") || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
   return !!email && admins.includes(email.toLowerCase());
 }
+
+// Identifies the caller without charging: a valid access code, or the logged-in user's email.
+export async function whoAmI(req: Request): Promise<string | null> {
+  const code = codeFrom(req);
+  if (code) return `code:${code}`;
+  const user = await getUser();
+  return user ? `user:${user.id}` : null;
+}
