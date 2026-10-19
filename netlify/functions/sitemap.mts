@@ -7,6 +7,9 @@ export default async (req: Request) => {
   const urls: { loc: string; lastmod?: string; priority: string }[] = [
     { loc: `${origin}/`, priority: "1.0" },
     { loc: `${origin}/app`, priority: "0.6" },
+    { loc: `${origin}/terms`, priority: "0.2" },
+    { loc: `${origin}/privacy`, priority: "0.2" },
+    { loc: `${origin}/refunds`, priority: "0.2" },
   ];
   try {
     const { blobs } = await getStore({ name: "pages", consistency: "strong" }).list();
