@@ -81,7 +81,7 @@ Overall score: ${r.score}/100
 Failed checks (name — what we found — standard fix):
 ${failed.map((c) => `- ${c.name} — ${c.found} — ${c.tip}`).join("\n")}
 
-Write the 3 to 6 most important fixes, most impactful first, as a JSON array of strings. Each item: one or two plain sentences saying exactly what to change on this page and why it matters for rankings or calls. Be specific to what was found. Don't invent facts about the site beyond the list. Never recommend using the word "free" or showing prices. Reply with only the JSON array.`;
+Write the 3 to 6 most important fixes, most impactful first, as a JSON array of strings. Each item: one or two plain sentences saying exactly what to change on this page and why it matters for rankings or calls. Be specific to what was found. Don't invent facts about the site beyond the list; if no target service or city was given, that only means the user didn't type one, not that the page lacks it. Never recommend using the word "free" or showing prices. Reply with only the JSON array.`;
   const msg = await anthropic.messages.stream({ model: MODEL, max_tokens: 1200, thinking: { type: "between_tools" } as any, messages: [{ role: "user", content: prompt }] }).finalMessage();
   const text = msg.content.map((c) => (c.type === "text" ? c.text : "")).join("");
   const arr = JSON.parse(text.slice(text.indexOf("["), text.lastIndexOf("]") + 1));
