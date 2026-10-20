@@ -115,7 +115,7 @@ p{margin:0;max-width:62ch}
 @media (max-width:640px){.dfinal{grid-template-columns:minmax(0,1fr)}}
 .dfinal figure{margin:0}.dfinal img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);display:block}.dfinal figcaption{font-size:12px;color:var(--muted);margin-top:6px}
 .costs{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--surface)}
-.costs h3{margin:0 0 10px}.costs table{width:100%;border-collapse:collapse;font-size:15px}
+.costs{min-width:0;max-width:100%}.costs h3{margin:0 0 10px}.costs table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}.costs td{overflow-wrap:anywhere}.costs td.n{width:34%}
 .costs td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}.costs td.n{text-align:right;white-space:nowrap;padding-left:16px}
 @media (max-width:640px){.costs td.n{white-space:normal}}
 .tools3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
