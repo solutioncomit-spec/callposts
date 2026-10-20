@@ -98,6 +98,12 @@ p{margin:0;max-width:62ch}
 :root[data-theme="dark"] .mp-check b{color:#4ade80}
 .mp figcaption{grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:8px}
 /* Steps */
+.tools3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.tools3{grid-template-columns:minmax(0,1fr)}}
+.tool{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.tool:hover{border-color:var(--brand)}
+.tool .tk{font-family:var(--mono);font-size:13px;color:var(--brand)}
+.tool .tc{margin-top:auto;font-weight:600;font-size:14px;color:var(--brand)}
 .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;list-style:none;padding:0;margin:0;counter-reset:s}
 @media (max-width:860px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:480px){.steps{grid-template-columns:minmax(0,1fr)}}
@@ -259,6 +265,16 @@ nav .ctas{align-items:center}
       <img src="/img/central-ac.jpg" alt="AI-generated photo of an outdoor central air conditioner beside a stucco house" width="512" height="512" loading="lazy">
       <figcaption>AI-generated photo for listing use · Example</figcaption>
     </figure>
+  </div>
+</div></section>
+
+<section class="band" id="tools"><div class="in">
+  <span class="eyebrow">Three tools, one account</span>
+  <h2>Posts, sites and audits for 86 home services.</h2>
+  <div class="tools3">
+    <a class="tool" href="/app#posts"><span class="tk">01</span><h3>Marketplace posts</h3><p class="muted">Unique listings, images and Messenger replies in 15 listing styles, checked against the posting rules before you copy them.</p><span class="tc">From 1 credit per listing →</span></a>
+    <a class="tool" href="/app#sites"><span class="tk">02</span><h3>SEO sites</h3><p class="muted">Landing pages and multi-city sites built around your tracking number, in 8 themes, with schema, sitemaps and your own domain.</p><span class="tc">From 3 credits per page →</span></a>
+    <a class="tool" href="/app#audit"><span class="tk">03</span><h3>Site audit</h3><p class="muted">Score any website on local SEO, tap-to-call, schema, speed and pay-per-call compliance, with the fixes that matter most.</p><span class="tc">1 credit per audit →</span></a>
   </div>
 </div></section>
 

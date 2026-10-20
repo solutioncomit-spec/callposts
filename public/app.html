@@ -160,6 +160,22 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .onb li.done{color:var(--muted);text-decoration:line-through}
 .onb li.done .bx{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .onb .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.onb .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tools a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tools a b{font:600 14px var(--body)}.tools a span{font-size:12px;color:var(--muted)}
+.tools a:hover,.tools a[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+@media (max-width:560px){.tools{grid-template-columns:minmax(0,1fr)}.tools a{flex-direction:row;justify-content:space-between;align-items:center}}
+.au-score{display:flex;align-items:center;gap:14px;margin:6px 0}
+.au-score .n{font:700 40px var(--body);line-height:1}
+.au-groups{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.au-g{display:grid;grid-template-columns:130px minmax(0,1fr) 34px;gap:8px;align-items:center}
+.au-g .b{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.au-g .b i{display:block;height:100%}
+.au-fix{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.au-checks{display:flex;flex-direction:column;gap:4px;font-size:12.5px;margin-top:6px}
+.au-checks li{list-style:none;display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px}
+.au-checks ul{margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.au-checks .tip{color:var(--muted)}.au-checks .fd{color:var(--muted);font-family:var(--mono);font-size:11px}
+.au-checks h4{margin:8px 0 2px;font:600 12px var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .lp-tpls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .lp-tpl .th{position:relative;width:100%;aspect-ratio:390/470;overflow:hidden;border-radius:6px;border:1px solid var(--line);background:var(--panel)}
 .lp-tpl .th iframe{position:absolute;top:0;left:0;width:390px;height:470px;border:0;transform-origin:0 0;pointer-events:none}
@@ -222,8 +238,9 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 
 <div class="wrap">
   <header>
-    <h1>CallPosts Listing Agent</h1>
-    <p>Pick a paying market, add your tracking number, and the agent writes unique, ready-to-paste Facebook Marketplace service listings that push people to call.</p>
+    <h1>CallPosts</h1>
+    <p>Three tools for pay-per-call publishers, for 86 home services: Marketplace posts that follow the rules, SEO sites that rank for “service + city”, and audits that show what's stopping a site from getting calls.</p>
+    <nav class="tools" aria-label="Tools"><a href="#posts" data-tool="posts"><b>Marketplace posts</b><span>Listings, images and replies</span></a><a href="#sites" data-tool="sites"><b>SEO sites</b><span>Pages and city sites</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Score any website</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
@@ -262,7 +279,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">1 credit per listing · 3 per AI photo · 1 for market picks</p>
+          <p class="status" id="acctHint" style="margin:0">1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
         </div>
         <details id="codeBox"><summary class="label" style="cursor:pointer">Have an access code?</summary>
@@ -286,7 +303,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="picks" id="picks"></div>
       </details>
       <details class="field" id="lpBox">
-        <summary class="label" style="cursor:pointer">✦ Landing page builder</summary>
+        <summary class="label" style="cursor:pointer">✦ SEO sites: landing pages and city sites</summary>
         <p class="status" style="margin:0">Call sites hosted on callposts.com with tap-to-call buttons, built to rank on Google for “service + city”: long, unique, local copy with search-ready titles and structured data. Use them for Google Business, ads or SEO. Don't put links in Marketplace listings.</p>
         <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">City site (up to 10 cities)</button></div>
         <div id="lpSiteFields" hidden style="display:flex;flex-direction:column;gap:8px">
@@ -303,6 +320,16 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="lp-prog" id="lpProg"></div>
         <div class="picks" id="lpSites"></div>
         <div class="picks" id="lpList"></div>
+      </details>
+      <details class="field" id="auditBox">
+        <summary class="label" style="cursor:pointer">✦ Site audit: score any website</summary>
+        <p class="status" style="margin:0">Checks a page for local SEO, tap-to-call, schema, speed and pay-per-call compliance, then lists the fixes that matter most. Works on your sites, your clients' and your competitors'.</p>
+        <input id="auUrl" type="url" inputmode="url" placeholder="https://yourdomain.com/page" aria-label="Website address">
+        <div class="row"><input id="auKw" placeholder="Target service (optional)" aria-label="Target service"><input id="auCity" placeholder="City, State (optional)" aria-label="Target city"></div>
+        <button class="btn ai" id="auGo" type="button">Run audit · 1 credit</button>
+        <div class="status" id="auStatus" role="status"></div>
+        <div id="auReport"></div>
+        <div class="picks" id="auHist"></div>
       </details>
       <details class="field" id="histBox">
         <summary class="label" style="cursor:pointer">Your listing history</summary>
@@ -950,6 +977,49 @@ $("edSave").onclick=async()=>{
 };
 $("lpBox").addEventListener("toggle",()=>{if($("lpBox").open){loadPages();requestAnimationFrame(fitThumbs)}});
 
+// Tool switcher: Marketplace posts / SEO sites / Site audit (also reachable as /app#posts, #sites, #audit)
+function showTool(t){
+  document.querySelectorAll(".tools a").forEach(a=>a.setAttribute("aria-current",String(a.dataset.tool===t)));
+  if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="audit"){$("auditBox").open=true;if(!$("auKw").value)$("auKw").value=$("service").value;if(!$("auCity").value)$("auCity").value=$("city").value;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="posts"){$("service").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("service").focus({preventScroll:true}),400)}
+}
+document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
+if(/^#(posts|sites|audit)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+
+// Site audit
+const auColor=n=>n>=85?"#22c55e":n>=65?"#f59e0b":"#ef4444";
+function renderAudit(a){
+  const r=a.report,by={};r.checks.forEach(c=>(by[c.group]=by[c.group]||[]).push(c));
+  const failed=r.checks.filter(c=>!c.ok).length;
+  $("auReport").innerHTML=`<div class="kit-row" style="gap:10px">
+    <div class="au-score"><span class="n" style="color:${auColor(r.score)}">${r.score}</span><div><b style="overflow-wrap:anywhere">${esc(r.finalUrl)}</b><div class="km">${failed} of ${r.checks.length} checks need work · HTTP ${r.status} · ${(r.ms/1000).toFixed(2)} s · ${new Date(a.at).toLocaleString()}</div></div></div>
+    <div class="au-groups">${r.groups.map(g=>`<div class="au-g"><span>${esc(g.name)}</span><span class="b"><i style="width:${g.score}%;background:${auColor(g.score)}"></i></span><b style="text-align:right">${g.score}</b></div>`).join("")}</div>
+    ${a.fixes&&a.fixes.length?`<div><span class="label">Fix these first</span><ol class="au-fix">${a.fixes.map(f=>`<li>${esc(f)}</li>`).join("")}</ol></div>`:""}
+    <details><summary class="km" style="cursor:pointer">All ${r.checks.length} checks</summary><div class="au-checks">${Object.entries(by).map(([g,cs])=>`<h4>${esc(g)}</h4><ul>${cs.map(c=>`<li><span style="color:${c.ok?"#22c55e":"#ef4444"}">${c.ok?"✓":"✕"}</span><span><b>${esc(c.name)}</b> <span class="fd">${esc(c.found)}</span>${c.ok?"":`<br><span class="tip">${esc(c.tip)}</span>`}</span></li>`).join("")}</ul>`).join("")}</div></details>
+  </div>`;
+}
+async function loadAudits(){
+  if(!window.cpUser&&!$("code").value.trim()){$("auHist").innerHTML="";return}
+  try{const r=await fetch("/api/audit",{headers:authHeaders(),cache:"no-store"});if(!r.ok)return;const j=await r.json();
+    $("auHist").innerHTML=(j.audits||[]).length?`<span class="label">Recent audits</span>`+j.audits.map(x=>`<div class="kit-row" data-id="${esc(x.id)}"><div class="kh"><span style="overflow-wrap:anywhere">${esc(x.url)}</span><span class="seo-badge ${x.score>=85?"good":x.score>=65?"ok":"bad"}">${x.score}</span></div><div class="kn"><span class="km">${new Date(x.at).toLocaleDateString(undefined,{month:"short",day:"numeric"})}${x.keyword?" · "+esc(x.keyword):""}${x.city?" · "+esc(x.city):""}</span><button type="button" class="copy auopen">Open</button></div></div>`).join(""):""}catch(e){}
+}
+$("auGo").onclick=async()=>{
+  if(!canUseAI($("auStatus")))return;
+  const url=$("auUrl").value.trim();if(!url){$("auStatus").textContent="Enter a website address.";$("auUrl").focus();return}
+  $("auGo").disabled=true;$("auStatus").innerHTML=`<span class="spin"></span> Checking the site and writing a fix list… about 15–30 seconds`;
+  try{const r=await fetch("/api/audit",{method:"POST",headers:authHeaders(),body:JSON.stringify({url,keyword:$("auKw").value.trim(),city:$("auCity").value.trim()})});
+    let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+    if(!r.ok||!j.ok)throw new Error(r.ok?(j.error||"The audit didn't finish. Try again."):aiError(r,j,"The audit didn't finish. Try again."));
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+    $("auStatus").textContent="";renderAudit(j);loadAudits();
+  }catch(err){$("auStatus").textContent=err.message}finally{$("auGo").disabled=false}
+};
+$("auUrl").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("auGo").click()}});
+$("auHist").addEventListener("click",async e=>{if(!e.target.closest(".auopen"))return;const id=e.target.closest(".kit-row").dataset.id;
+  const r=await fetch(`/api/audit?id=${encodeURIComponent(id)}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));if(r.ok&&j.audit){renderAudit(j.audit);$("auReport").scrollIntoView({behavior:"smooth",block:"start"})}});
+$("auditBox").addEventListener("toggle",()=>{if($("auditBox").open)loadAudits()});
+
 // First-steps checklist
 const ONB=[["market","Pick a paying market"],["phone","Add your tracking number"],["write","Write your first listings"],["photo","Make an AI photo creative"],["notes","Post it, then note your calls in history"]];
 function onbState(){try{return JSON.parse(localStorage.getItem("cp-onb")||"{}")}catch(e){return{}}}
@@ -964,7 +1034,7 @@ function renderOnb(){
 $("onbHide").onclick=()=>{const st=onbState();st.hidden=1;onbSave(st);renderOnb()};
 $("mkt").addEventListener("click",e=>{if(e.target.closest("tr[data-s]"))onbDone("market")});
 $("phone").addEventListener("change",()=>{if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone")});
-window.cpAfterAuth=()=>{loadHistory();if($("lpBox").open)loadPages()};
+window.cpAfterAuth=()=>{loadHistory();if($("lpBox").open)loadPages();if($("auditBox").open)loadAudits()};
 renderOnb();if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone");if($("service").value&&$("city").value&&(window.cpKits||[]).length)onbDone("market");
 
 // History for AI market picks: saved kits (with result notes) first, then the older simple log.
@@ -1021,7 +1091,7 @@ async function refresh(){
     const plans=me.plans||[];$("buyBtn").hidden=!plans.length;$("adminLink").hidden=!me.admin;
     $("buyBox").innerHTML=plans.map(p=>`<a class="copy" style="display:flex;justify-content:space-between;gap:8px" href="${p.url}" target="_blank" rel="noopener"><span><b>${p.name}</b> · ${p.credits}</span><span>${p.price}</span></a>`).join("");
     if(location.hash==="#buy"&&plans.length){$("buyBox").hidden=false}
-    if(!me.buyUrl)$("acctHint").textContent="1 credit per listing · 3 per AI photo · 1 for market picks. Need more? Message CallPosts to top up.";}
+    if(!me.buyUrl)$("acctHint").textContent="1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks. Need more? Message CallPosts to top up.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }
