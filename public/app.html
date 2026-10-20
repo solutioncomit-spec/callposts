@@ -981,7 +981,7 @@ $("lpBox").addEventListener("toggle",()=>{if($("lpBox").open){loadPages();reques
 function showTool(t){
   document.querySelectorAll(".tools a").forEach(a=>a.setAttribute("aria-current",String(a.dataset.tool===t)));
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
-  else if(t==="audit"){$("auditBox").open=true;if(!$("auKw").value)$("auKw").value=$("service").value;if(!$("auCity").value)$("auCity").value=$("city").value;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="posts"){$("service").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("service").focus({preventScroll:true}),400)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
