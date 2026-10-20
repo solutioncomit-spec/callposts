@@ -9,6 +9,8 @@ import { makeZip } from "../lib/zip.mts";
 //   /s/:slug            a city site's hub page       /s/:slug/site.zip  the whole site as a ZIP
 //   /theme/:key         theme preview with sample copy
 //   /cd/:site/...       a city site on its own custom domain (the domains edge function rewrites requests here)
+// A real generated page used for the theme previews (copied into the templates store on first use).
+const PREVIEW_SOURCE = "water-heater-repair-mesa-61c1a";
 const pagesStore = () => getStore({ name: "pages", consistency: "strong" });
 const sitesStore = () => getStore({ name: "sites", consistency: "strong" });
 const html = (body: string, extra: Record<string, string> = {}) => new Response(body, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60", ...extra } });
@@ -34,7 +36,19 @@ export default async (req: Request, context: Context) => {
     if (!isTheme(key)) return notFound();
     const nav: SiteNav = { hubName: "Water Heater Repair in Colorado", hubHref: "#", cities: [{ name: "Aurora, CO", href: "#", current: true }, { name: "Denver, CO", href: "#" }, { name: "Lakewood, CO", href: "#" }] };
     const photo = url.searchParams.get("photo") === "0" ? undefined : `${origin}/img/water-heater.jpg`;
-    return html(renderLanding(samplePage(key), { photoUrl: photo, site: nav }), { "x-robots-tag": "noindex", "cache-control": "public, max-age=600" });
+    // Previews use a real, full-length generated page (kept as a copy in the templates store), so people see
+    // what they'll actually get. Falls back to the short built-in sample.
+    const tpl = getStore("templates");
+    let real = (await tpl.get("preview-page", { type: "json" })) as LandingPage | null;
+    if (!real) {
+      real = (await pagesStore().get(PREVIEW_SOURCE, { type: "json" })) as LandingPage | null;
+      if (real) await tpl.setJSON("preview-page", real);
+    }
+    const sample: LandingPage = real
+      ? { ...real, slug: "preview", owner: "", template: key, phone: "(555) 123-4567", brand: "Mesa Water Heater Help", photo: "sample", site: undefined, variant: 0 }
+      : samplePage(key);
+    if (real) { nav.hubName = "Water Heater Repair in Arizona"; nav.cities = [{ name: "Mesa, AZ", href: "#", current: true }, { name: "Tempe, AZ", href: "#" }, { name: "Chandler, AZ", href: "#" }]; }
+    return html(renderLanding(sample, { photoUrl: photo, site: nav }), { "x-robots-tag": "noindex", "cache-control": "public, max-age=600" });
   }
 
   if (path.startsWith("/cd/")) return customDomain(url);
