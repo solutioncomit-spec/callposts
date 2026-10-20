@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import { payFor, creditHeaders, clean, whoAmI } from "../lib/access.mts";
-import { seoScore, isTheme, TEMPLATES, cityFile, type LandingPage, type PageCopy, type Site } from "../lib/landing.mts";
+import { seoScore, isTheme, TEMPLATES, siteServices, comboFile, type LandingPage, type PageCopy, type Site } from "../lib/landing.mts";
 import { pingIndexNow } from "../lib/domains.mts";
 
 // Landing page builder.
@@ -19,6 +19,8 @@ const index = () => getStore({ name: "page-index", consistency: "strong" });
 const images = () => getStore("page-images");
 const sites = () => getStore({ name: "sites", consistency: "strong" });
 const MAX_PAGES = 150;
+// Position of a service-in-city page within its site, used to vary structure between sibling pages.
+const comboIndex = (site: Site, service: string, city: string) => siteServices(site).indexOf(service) * site.cities.length + site.cities.indexOf(city);
 
 // Add or remove a page on its city site. Retries on concurrent writes (sites build 2 pages at once).
 async function updateSite(siteSlug: string, fn: (s: Site) => void) {
@@ -270,9 +272,11 @@ export default async (req: Request) => {
   if (siteSlug) {
     site = (await sites().get(siteSlug, { type: "json" })) as Site | null;
     if (!site || site.owner !== owner) return Response.json({ error: "Site not found." }, { status: 404 });
+    const svcs = siteServices(site);
+    const wanted = service && svcs.includes(service) ? service : svcs[0];
     if (!site.cities.includes(city)) return Response.json({ error: "That city isn't part of this site." }, { status: 400 });
-    if (site.pages.some((x) => x.city === city)) return Response.json({ error: `${city} is already built.`, already: true }, { status: 409 });
-    service = site.service; phone = site.phone; brand = site.brand; template = site.theme; withPhoto = site.photo;
+    if (site.pages.some((x) => x.city === city && (x.service || site!.service) === wanted)) return Response.json({ error: `${wanted} in ${city} is already built.`, already: true }, { status: 409 });
+    service = wanted; phone = site.phone; brand = site.brand; template = site.theme; withPhoto = site.photo;
   }
   if (!service || !city) return Response.json({ error: "Add a service and a city in the brief first." }, { status: 400 });
   if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: "Add your tracking number in the brief first. The page is built around it." }, { status: 400 });
@@ -291,13 +295,13 @@ export default async (req: Request) => {
       const finish = (obj: unknown) => { clearInterval(tick); controller.enqueue(enc.encode(JSON.stringify(obj))); controller.close(); };
       try {
         const [copy, photo] = await Promise.all([
-          writeCopy(service, city, angle, extra, site ? { variant: site.cities.indexOf(city), siblings: site.cities.filter((x) => x !== city) } : { variant: Math.floor(Math.random() * 5) }),
+          writeCopy(service, city, angle, extra, site ? { variant: comboIndex(site, service, city), siblings: [...site.cities.filter((x) => x !== city).map((x) => `${service} in ${x}`), ...siteServices(site).filter((v) => v !== service).map((v) => `${v} in ${city}`)] } : { variant: Math.floor(Math.random() * 5) }),
           withPhoto ? makePhoto(service, city, TEMPLATES[template].dark) : Promise.resolve(null),
         ]);
         const base = slugify(`${service} ${city.split(",")[0]}`);
         let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
         while (await pages().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug, variant: site.cities.indexOf(city) } : {}) };
+        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug, variant: comboIndex(site, service, city) } : {}) };
         let credits = payer.credits;
         if (photo) {
           page.photo = `img/${slug}`;
@@ -318,12 +322,16 @@ export default async (req: Request) => {
         }
         if (site) {
           const order = site.cities;
-          await updateSite(site.slug, (s) => { s.pages = [...s.pages.filter((x) => x.city !== city), { slug, city }].sort((a, b) => order.indexOf(a.city) - order.indexOf(b.city)); });
+          const svcOrder = siteServices(site);
+          await updateSite(site.slug, (s) => {
+            s.pages = [...s.pages.filter((x) => !(x.city === city && (x.service || s.service) === service)), { slug, city, service }]
+              .sort((a, b) => svcOrder.indexOf(a.service || s.service) - svcOrder.indexOf(b.service || s.service) || order.indexOf(a.city) - order.indexOf(b.city));
+          });
         }
         const words = seoScore(page).words;
         // Tell search engines about the new page right away (IndexNow; best effort).
         const origin = new URL(req.url).origin;
-        const fresh = site?.domain ? [`https://${site.domain}/${cityFile(page)}`, `https://${site.domain}/`] : [`${origin}/p/${slug}`, ...(site ? [`${origin}/s/${site.slug}`] : [])];
+        const fresh = site?.domain ? [`https://${site.domain}/${comboFile(site, page)}`, `https://${site.domain}/`] : [`${origin}/p/${slug}`, ...(site ? [`${origin}/s/${site.slug}`] : [])];
         await pingIndexNow(fresh).catch(() => null);
         console.log(`page created ${slug} owner=${owner} site=${site?.slug || "-"} template=${template} photo=${!!photo} words=${words}`);
         finish({ ok: true, slug, url: `/p/${slug}`, photo: !!photo, words, credits });

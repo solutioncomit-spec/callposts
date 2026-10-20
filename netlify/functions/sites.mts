@@ -1,21 +1,40 @@
 import type { Config } from "@netlify/functions";
 import { getStore } from "@netlify/blobs";
 import { clean, whoAmI } from "../lib/access.mts";
-import { defaultRegion, isTheme, seoScore, cityFile, type LandingPage, type Site } from "../lib/landing.mts";
+import { defaultRegion, isTheme, seoScore, siteServices, isMulti, siteLinks, type LandingPage, type Site } from "../lib/landing.mts";
 import { cleanHost, checkDns, setAlias, pingIndexNow, domainsStore, domainsEnabled, NETLIFY_APEX_IP, NETLIFY_HOST } from "../lib/domains.mts";
 
-// City sites: one service across up to 10 cities, with a hub page linking them all.
+// City sites: one service across up to 10 cities, or up to 5 services across several cities (every service in every city),
+// with a home page, service and area pages, and optional blog posts (see /api/posts).
 // The site record is created here (no charge); each city page is then built through
 // POST /api/pages with { site }, which charges per page like any landing page.
 //   GET    /api/sites            list the caller's sites
 //   GET    /api/sites?slug=...   one site with its pages
-//   POST   /api/sites            create { service, cities[], phone, brand?, region?, theme, photo? }
+//   POST   /api/sites            create { service | services[], cities[], phone, brand?, region?, theme, photo? }
 //   PATCH  /api/sites            update { slug, theme?, phone?, brand?, region? } (applies to every page)
 //                                { slug, domain: "www.example.com" } connect a custom domain ("" disconnects)
 //                                { slug, ping: true } submit the site's URLs to search engines (IndexNow)
 //   DELETE /api/sites?slug=...   delete the site and all its pages
 const MAX_CITIES = 10;
 const MAX_SITES = 10;
+const MAX_SERVICES = 5;
+const MAX_COMBO_PAGES = 24; // services x cities on a multi-service site
+
+// Every service-in-city page the site should have, and which are still missing.
+const combos = (s: Site) => siteServices(s).flatMap((service) => s.cities.map((city) => ({ service, city })));
+const missingOf = (s: Site) => {
+  const have = new Set(s.pages.map((x) => `${x.service || s.service}|${x.city}`));
+  return combos(s).filter((c) => !have.has(`${c.service}|${c.city}`));
+};
+// Every public URL of a site, on its own domain when connected, otherwise on callposts.com.
+function allUrls(s: Site, origin: string): string[] {
+  const L = siteLinks(s, s.domain ? "domain" : "hosted");
+  const abs = (x: string) => (s.domain ? `https://${s.domain}${x}` : `${origin}${x}`);
+  const out = [L.home, ...s.pages.map((p) => L.combo(p))];
+  if (isMulti(s)) out.push(...siteServices(s).map((v) => L.service(v)), ...s.cities.map((c) => L.area(c)));
+  if (s.posts?.length) out.push(L.blogIndex, ...s.posts.map((x) => L.post(x.slug)));
+  return out.map(abs);
+}
 
 const sites = () => getStore({ name: "sites", consistency: "strong" });
 const pages = () => getStore({ name: "pages", consistency: "strong" });
@@ -39,8 +58,7 @@ export default async (req: Request) => {
       if (!mine.includes(one)) return Response.json({ error: "Site not found." }, { status: 404 });
       const s = (await sites().get(one, { type: "json" })) as Site | null;
       if (!s) return Response.json({ error: "Site not found." }, { status: 404 });
-      const built = new Set(s.pages.map((x) => x.city));
-      return Response.json({ site: { ...s, owner: undefined, missing: s.cities.filter((c) => !built.has(c)) } }, { headers: { "cache-control": "no-store" } });
+      return Response.json({ site: { ...s, owner: undefined, services: siteServices(s), missing: missingOf(s) } }, { headers: { "cache-control": "no-store" } });
     }
     const list = [];
     for (const slug of mine) {
@@ -48,11 +66,10 @@ export default async (req: Request) => {
       if (!s) continue;
       const ps = await Promise.all(s.pages.map((x) => pages().get(x.slug, { type: "json" }) as Promise<LandingPage | null>));
       const live = ps.filter((p): p is LandingPage => !!p);
-      const built = new Set(live.map((p) => p.city));
       list.push({
-        slug: s.slug, service: s.service, region: s.region, theme: s.theme, phone: s.phone, photo: s.photo, created: s.created,
-        domain: s.domain || null, pingedAt: s.pingedAt || null,
-        cities: s.cities, built: live.length, missing: s.cities.filter((c) => !built.has(c)),
+        slug: s.slug, service: s.service, services: siteServices(s), region: s.region, theme: s.theme, phone: s.phone, photo: s.photo, created: s.created,
+        domain: s.domain || null, pingedAt: s.pingedAt || null, posts: (s.posts || []).map((x) => ({ slug: x.slug, title: x.title })),
+        cities: s.cities, total: combos(s).length, built: live.length, missing: missingOf(s),
         views: (s.views || 0) + live.reduce((a, p) => a + (p.views || 0), 0),
         seo: live.length ? Math.round(live.reduce((a, p) => a + seoScore(p).score, 0) / live.length) : null,
       });
@@ -65,6 +82,7 @@ export default async (req: Request) => {
     if (!mine.includes(slug)) return Response.json({ error: "Site not found." }, { status: 404 });
     const s = (await sites().get(slug, { type: "json" })) as Site | null;
     if (s) {
+      for (const x of s.posts || []) await getStore({ name: "posts", consistency: "strong" }).delete(`${s.slug}/${x.slug}`);
       for (const x of s.pages) {
         const p = (await pages().get(x.slug, { type: "json" })) as LandingPage | null;
         if (p?.photo) await getStore("page-images").delete(p.photo);
@@ -93,12 +111,7 @@ export default async (req: Request) => {
     const s = (await sites().get(slug, { type: "json" })) as Site | null;
     if (!s) return Response.json({ error: "Site not found." }, { status: 404 });
     // Public URLs of the site: on its own domain when connected, otherwise on callposts.com.
-    const siteUrls = () => {
-      const origin = new URL(req.url).origin;
-      return s.domain
-        ? [`https://${s.domain}/`, ...s.pages.map((x) => `https://${s.domain}/${cityFile(x)}`)]
-        : [`${origin}/s/${s.slug}`, ...s.pages.map((x) => `${origin}/p/${x.slug}`)];
-    };
+    const siteUrls = () => allUrls(s, new URL(req.url).origin);
 
     if (body.ping === true) {
       if (!s.pages.length) return Response.json({ error: "Build at least one city page first." }, { status: 400 });
@@ -166,7 +179,12 @@ export default async (req: Request) => {
 
   if (req.method !== "POST") return Response.json({ error: "Unsupported method." }, { status: 405 });
 
-  const service = clean(body.service, 80);
+  const svcSeen = new Set<string>();
+  const services = (Array.isArray(body.services) ? body.services : String(body.services || body.service || "").split(/\n|;/))
+    .map((v: unknown) => clean(v, 80))
+    .filter((v: string) => v && !svcSeen.has(v.toLowerCase()) && svcSeen.add(v.toLowerCase()));
+  const service = services[0] || "";
+  const multi = services.length > 1;
   const phone = clean(body.phone, 30);
   const theme = isTheme(body.theme) ? body.theme : "clean";
   const seen = new Set<string>();
@@ -175,21 +193,24 @@ export default async (req: Request) => {
     .filter((c: string) => c && !seen.has(c.toLowerCase()) && seen.add(c.toLowerCase()));
   if (!service) return Response.json({ error: "Add a service in the brief first." }, { status: 400 });
   if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: "Add your tracking number in the brief first. Every page is built around it." }, { status: 400 });
-  if (cities.length < 2) return Response.json({ error: "Add at least 2 cities, one per line, like \"Aurora, CO\"." }, { status: 400 });
+  if (services.length > MAX_SERVICES) return Response.json({ error: `A site can have up to ${MAX_SERVICES} services.` }, { status: 400 });
+  if (!multi && cities.length < 2) return Response.json({ error: "Add at least 2 cities, one per line, like \"Aurora, CO\"." }, { status: 400 });
+  if (multi && cities.length < 1) return Response.json({ error: "Add at least 1 city, like \"Aurora, CO\"." }, { status: 400 });
+  if (multi && services.length * cities.length > MAX_COMBO_PAGES) return Response.json({ error: `${services.length} services × ${cities.length} cities is ${services.length * cities.length} pages. A site can have up to ${MAX_COMBO_PAGES}; remove some services or cities.` }, { status: 400 });
   if (cities.length > MAX_CITIES) return Response.json({ error: `A site can have up to ${MAX_CITIES} cities. Split the rest into another site.` }, { status: 400 });
   if (cities.some((c: string) => !/,\s*[A-Za-z]{2}$/.test(c))) return Response.json({ error: "Write each city with its state code, like \"Aurora, CO\"." }, { status: 400 });
   if (mine.length >= MAX_SITES) return Response.json({ error: `You have ${MAX_SITES} sites already. Delete one before making another.` }, { status: 400 });
 
   const region = clean(body.region, 60) || defaultRegion(cities);
-  const brand = clean(body.brand, 60) || `${region} ${service.replace(/\b\w/g, (m) => m.toUpperCase())} Help`.slice(0, 60);
-  const base = slugify(`${service} ${region}`);
+  const brand = clean(body.brand, 60) || (multi ? `${region} Home Service Help` : `${region} ${service.replace(/\b\w/g, (m) => m.toUpperCase())} Help`).slice(0, 60);
+  const base = slugify(multi ? `home services ${region}` : `${service} ${region}`);
   let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
   while (await sites().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-  const site: Site = { slug, owner, theme, service, region, phone, brand, cities, pages: [], photo: body.photo === true, created: new Date().toISOString(), views: 0 };
+  const site: Site = { slug, owner, theme, service, region, phone, brand, cities, pages: [], photo: body.photo === true, created: new Date().toISOString(), views: 0, ...(multi ? { services } : {}), posts: [] };
   await sites().setJSON(slug, site);
   await index().setJSON(siteKey, [slug, ...mine]);
-  console.log(`site created ${slug} owner=${owner} cities=${cities.length} theme=${theme}`);
-  return Response.json({ ok: true, slug, url: `/s/${slug}`, cities, region, brand });
+  console.log(`site created ${slug} owner=${owner} services=${services.length} cities=${cities.length} theme=${theme}`);
+  return Response.json({ ok: true, slug, url: `/s/${slug}`, cities, services, combos: combos(site), region, brand });
 };
 
 export const config: Config = {

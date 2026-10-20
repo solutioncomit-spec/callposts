@@ -34,7 +34,7 @@ window.COURSE = [
 <h4>Pick the service</h4>
 <p>Look for services where homeowners call fast or where jobs are big: water heaters, water damage, heating and AC, roofing, mold, septic, plumbing. People with a flooded basement call; they don't browse.</p>
 <h4>Pick the city</h4>
-<p>Start with mid-size cities and suburbs (roughly 50,000 to 300,000 people). “Water heater repair Los Angeles” is a war; “water heater repair Lakewood” is a chance. Plan one service across 5 to 10 nearby towns: that becomes one city site.</p>
+<p>Start with mid-size cities and suburbs (roughly 50,000 to 300,000 people). “Water heater repair Los Angeles” is a war; “water heater repair Lakewood” is a chance. Plan one service across 5 to 10 nearby towns, or 2 to 4 related services (like water heaters and drain cleaning) across a few towns: either becomes one site.</p>
 <h4>The 10-minute competition check</h4>
 <p>Search “service + city” on Google and look at the first page:</p>
 <ul>
@@ -55,7 +55,7 @@ window.COURSE = [
 <ol>
 <li>Get a tracking number for your service from your network. One number for the whole site is fine.</li>
 <li>In the brief, type the service and paste the tracking number.</li>
-<li>Open <b>Landing pages</b>, choose <b>City site</b>, and list your towns, one per line, like “Lakewood, CO”.</li>
+<li>Open <b>Landing pages</b>, choose <b>Full site</b>, list your service (or up to 5 related services) and your towns, one per line, like “Lakewood, CO”. Add 2 blog posts if you like.</li>
 <li>Pick a theme. Emergency suits leaks and floods; Meadow suits lawn and pest; Clean works for anything.</li>
 <li>Build. Each city page costs 3 credits (6 with an AI photo) and takes about 20 to 30 seconds.</li>
 </ol>

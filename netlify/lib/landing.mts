@@ -51,7 +51,9 @@ export type Site = {
   phone: string;
   brand: string;
   cities: string[];
-  pages: { slug: string; city: string }[];
+  pages: { slug: string; city: string; service?: string }[];
+  services?: string[]; // multi-service sites: every service in every city
+  posts?: { slug: string; title: string; service?: string; created: string }[];
   photo: boolean;
   created: string;
   views?: number;
@@ -100,7 +102,7 @@ export function defaultRegion(cities: string[]): string {
   return towns.length > 2 ? `${towns[0]}, ${towns[1]} & nearby` : towns.join(" & ");
 }
 
-export type SiteNav = { hubName: string; hubHref: string; cities: { name: string; href: string; current?: boolean }[] };
+export type SiteNav = { hubName: string; hubHref: string; cities: { name: string; href: string; current?: boolean }[]; related?: { title: string; links: { name: string; href: string }[] }[] };
 
 function css(t: Theme, extra = ""): string {
   const btnBg = t.btn === "solid" ? "var(--accent)" : "linear-gradient(90deg,var(--accent),var(--accent2))";
@@ -276,6 +278,8 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
 
 ${body}
 
+${(nav?.related || []).filter((r) => r.links.length).map((r) => `<section><div class="wrap"><h2>${esc(r.title)}</h2><div class="areas">${r.links.map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}</div></div></section>`).join("\n")}
+
 ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2><div class="areas">${others.map((x) => `<a href="${esc(x.href)}">${esc(KW)} in ${esc(x.name.split(",")[0])}</a>`).join("")}<a href="${esc(nav!.hubHref)}">All service areas</a></div></div></section>` : ""}
 
 <section class="band"><div class="wrap">
@@ -295,7 +299,7 @@ ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2
 }
 
 // Hub page of a city site: one service across a region, linking to every city page.
-export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string; canonical?: string; noindex?: boolean; privacyHref?: string }): string {
+export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string; canonical?: string; noindex?: boolean; privacyHref?: string; blog?: { name: string; href: string }[]; blogIndex?: string }): string {
   const t = TEMPLATES[site.theme] || TEMPLATES.clean;
   const first = pages[0];
   const kw = first?.copy.keyword || site.service.toLowerCase();
@@ -346,6 +350,8 @@ export function renderHub(site: Site, pages: LandingPage[], opts: { base?: strin
 ${bullets.length ? `<section><div class="wrap"><h2>Why homeowners in ${esc(site.region)} call</h2><div class="grid">${bullets.map((b) => `<div class="card check"><i>✓</i><span>${esc(b)}</span></div>`).join("")}</div></div></section>` : ""}
 
 ${steps.length ? `<section><div class="wrap"><h2>How it works</h2><div class="steps">${steps.map((s) => `<div class="card"><b>${esc(s.title)}</b>${esc(s.text)}</div>`).join("")}</div></div></section>` : ""}
+
+${opts.blog?.length ? `<section><div class="wrap"><h2>From the blog</h2><div class="areas">${opts.blog.map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}${opts.blogIndex ? `<a href="${esc(opts.blogIndex)}">All articles</a>` : ""}</div></div></section>` : ""}
 
 <section class="band"><div class="wrap">
   <h2>Talk to a local ${esc(kw)} pro today</h2>
@@ -451,4 +457,235 @@ export function seoScore(p: LandingPage): { score: number; words: number; checks
   const total = checks.reduce((a, x) => a + x.w, 0);
   const got = checks.reduce((a, x) => a + (x.ok ? x.w : 0), 0);
   return { score: Math.round((got / total) * 100), words, checks: checks.map(({ w, ...rest }) => rest) };
+}
+
+
+// ---------- Multi-service sites and blog posts ----------
+
+export type Post = {
+  slug: string; site: string; title: string; metaDescription: string; service?: string; keyword?: string;
+  intro: string; sections: { heading: string; body: string }[]; faqs?: { q: string; a: string }[]; created: string;
+};
+
+export const slugPart = (v: string) => v.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+export const siteServices = (s: Site) => (s.services && s.services.length ? s.services : [s.service]);
+export const isMulti = (s: Site) => siteServices(s).length > 1;
+
+// Where each kind of page lives. One resolver per hosting mode keeps every link consistent.
+export type SiteLinks = {
+  home: string; blogIndex: string; privacy: string;
+  service: (svc: string) => string; area: (city: string) => string;
+  combo: (p: { slug: string; city: string; service?: string }) => string; post: (slug: string) => string;
+};
+// File name (no extension) of a service-in-city page on a custom domain or in a ZIP.
+export const comboFile = (site: Site, p: { slug: string; city: string; service?: string }) =>
+  isMulti(site) ? `${slugPart(p.service || site.service)}-${cityFile(p)}` : cityFile(p);
+export function siteLinks(site: Site, mode: "hosted" | "domain" | "zip"): SiteLinks {
+  if (mode === "hosted") {
+    const b = `/s/${site.slug}`;
+    return { home: b, blogIndex: `${b}/blog`, privacy: `${b}/privacy`, service: (v) => `${b}/service/${slugPart(v)}`, area: (c) => `${b}/area/${cityFile({ city: c, slug: "" })}`, combo: (p) => `/p/${p.slug}`, post: (x) => `${b}/blog/${x}` };
+  }
+  if (mode === "domain") {
+    return { home: "/", blogIndex: "/blog", privacy: "/privacy", service: (v) => `/${slugPart(v)}`, area: (c) => `/${cityFile({ city: c, slug: "" })}`, combo: (p) => `/${comboFile(site, p)}`, post: (x) => `/blog/${x}` };
+  }
+  return { home: "index.html", blogIndex: "blog.html", privacy: "privacy.html", service: (v) => `${slugPart(v)}.html`, area: (c) => `${cityFile({ city: c, slug: "" })}.html`, combo: (p) => `${comboFile(site, p)}.html`, post: (x) => `blog-${x}.html` };
+}
+
+// Navigation for a service-in-city page: same service in other cities, other services in this city, and the blog.
+export function comboNav(site: Site, pages: LandingPage[], cur: LandingPage, L: SiteLinks): SiteNav {
+  const svc = cur.service;
+  const same = pages.filter((p) => p.service === svc);
+  const otherSvcs = pages.filter((p) => p.city === cur.city && p.service !== svc);
+  const town = cur.city.split(",")[0];
+  const related: { title: string; links: { name: string; href: string }[] }[] = [];
+  if (otherSvcs.length) related.push({ title: `Other services in ${town}`, links: otherSvcs.map((p) => ({ name: `${p.service} in ${town}`, href: L.combo(p) })) });
+  if (isMulti(site)) related.push({ title: `More about ${svc}`, links: [{ name: `${svc} across ${site.region}`, href: L.service(svc) }, { name: `All services in ${town}`, href: L.area(cur.city) }] });
+  const posts = (site.posts || []).filter((x) => !x.service || x.service === svc).slice(0, 4);
+  if (posts.length) related.push({ title: "From the blog", links: posts.map((x) => ({ name: x.title, href: L.post(x.slug) })) });
+  return {
+    hubName: isMulti(site) ? (site.brand || site.region) : `${site.service} in ${site.region}`, hubHref: L.home,
+    cities: same.map((p) => ({ name: p.city, href: L.combo(p), current: p.slug === cur.slug })), related,
+  };
+}
+
+type Card = { title: string; text: string; href: string; cta: string };
+
+// A navigational page in a site's theme: the multi-service home, a service page, an area page or the blog index.
+export function renderListPage(site: Site, o: {
+  L: SiteLinks; title: string; desc: string; h1: string; pill: string; sub: string; canonical?: string; noindex?: boolean; photoUrl?: string;
+  lists: { title: string; intro?: string; cards: Card[] }[]; bullets?: string[]; steps?: { title: string; text: string }[];
+  footer: { name: string; href: string }[]; areasServed?: string[]; serviceTypes?: string[];
+}): string {
+  const t = TEMPLATES[site.theme] || TEMPLATES.clean;
+  const phone = site.phone || "(555) 000-0000";
+  const tel = telHref(phone);
+  const brand = site.brand || `${site.region} Home Services`;
+  const ld: unknown[] = [{
+    "@context": "https://schema.org", "@type": "Service", name: o.h1, description: o.desc,
+    ...(o.serviceTypes?.length ? { serviceType: o.serviceTypes } : {}),
+    areaServed: (o.areasServed || site.cities).map((c) => ({ "@type": "City", name: c })),
+    provider: { "@type": "Organization", name: brand, telephone: phone },
+    ...(o.canonical ? { url: o.canonical } : {}),
+  }];
+  const visual = t.hero === "split"
+    ? (o.photoUrl ? `<img class="side" src="${esc(o.photoUrl)}" alt="${esc(o.h1)}" width="600" height="600">` : `<div class="card" style="color:var(--ink)"><b>${esc(o.lists[0]?.title || "Explore")}</b><div class="areas" style="margin-top:10px">${(o.lists[0]?.cards || []).slice(0, 10).map((c) => `<a href="${esc(c.href)}">${esc(c.title)}</a>`).join("")}</div></div>`)
+    : t.hero === "center" && o.photoUrl ? `<img class="wide" src="${esc(o.photoUrl)}" alt="${esc(o.h1)}" width="880" height="495">`
+      : `<div class="chips">${(o.lists[0]?.cards || []).slice(0, 6).map((c) => `<span>${esc(c.title)}</span>`).join("")}</div>`;
+  return `${head(t, { title: o.title.slice(0, 70), desc: o.desc.slice(0, 160), canonical: o.canonical, image: o.photoUrl, ld, noindex: o.noindex })}
+<style>${css(t)}</style>
+</head>
+<body>
+<div class="hero ${t.hero}"${heroStyle(t, o.photoUrl)}><div class="wrap">
+  <header><div class="hl"><a class="brand" href="${esc(o.L.home)}">${esc(brand)}</a>${site.posts?.length ? `<a class="navlink" href="${esc(o.L.blogIndex)}">Blog</a>` : ""}</div><a class="call sm" href="${tel}">📞 <span class="num">${esc(phone)}</span><span class="lbl">Call</span></a></header>
+  <div class="in">
+    <div>
+      <span class="pill">${esc(o.pill)}</span>
+      <h1>${esc(o.h1)}</h1>
+      <p class="sub">${esc(o.sub)}</p>
+      <a class="call" href="${tel}">📞 <span class="ctatxt">Call now: </span>${esc(phone)}</a>
+      <div class="ph">Tap to call. We connect you with independent local pros.</div>
+    </div>
+    ${visual}
+  </div>
+</div></div>
+
+${o.lists.filter((l) => l.cards.length).map((l) => `<section><div class="wrap"><h2>${esc(l.title)}</h2>${l.intro ? `<p style="color:var(--muted);margin:-6px 0 18px;max-width:68ch">${esc(l.intro)}</p>` : ""}<div class="grid3">${l.cards.map((c) => `<a class="card" href="${esc(c.href)}"><h3 style="font-size:18px;margin:0 0 6px">${esc(c.title)}</h3><span style="color:var(--muted);font-size:15px">${esc(c.text)}</span><span style="display:block;margin-top:10px;font-weight:600;color:var(--link)">${esc(c.cta)} →</span></a>`).join("")}</div></div></section>`).join("\n")}
+
+${o.bullets?.length ? `<section><div class="wrap"><h2>Why homeowners in ${esc(site.region)} call</h2><div class="grid">${o.bullets.map((b) => `<div class="card check"><i>✓</i><span>${esc(b)}</span></div>`).join("")}</div></div></section>` : ""}
+
+${o.steps?.length ? `<section><div class="wrap"><h2>How it works</h2><div class="steps">${o.steps.map((x) => `<div class="card"><b>${esc(x.title)}</b>${esc(x.text)}</div>`).join("")}</div></div></section>` : ""}
+
+<section class="band"><div class="wrap">
+  <h2>Talk to a local pro today</h2>
+  <p>Call now and we'll connect you with an independent pro near you in ${esc(site.region)}.</p>
+  <a class="call" href="${tel}">📞 ${esc(phone)}</a>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="links">${o.footer.map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}</div>
+  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
+  <p>© ${new Date().getFullYear()} ${esc(brand)} · <a href="${esc(o.L.privacy)}">Privacy policy</a></p>
+</div></footer>
+<div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
+</body>
+</html>`;
+}
+
+const cut = (x: string, n = 150) => (x.length > n ? x.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : x);
+function siteFooter(site: Site, pages: LandingPage[], L: SiteLinks) {
+  const links = isMulti(site)
+    ? [...siteServices(site).map((v) => ({ name: v, href: L.service(v) })), ...site.cities.map((c) => ({ name: c.split(",")[0], href: L.area(c) }))]
+    : pages.map((p) => ({ name: `${p.service} ${p.city.split(",")[0]}`, href: L.combo(p) }));
+  return [{ name: "Home", href: L.home }, ...links, ...(site.posts?.length ? [{ name: "Blog", href: L.blogIndex }] : [])];
+}
+
+// Home page of a multi-service site.
+export function renderSiteHome(site: Site, pages: LandingPage[], o: { L: SiteLinks; canonical?: string; noindex?: boolean; photoUrl?: string }): string {
+  const svcs = siteServices(site);
+  const brand = site.brand || `${site.region} Home Services`;
+  const first = pages[0];
+  const svcList = svcs.length > 3 ? `${svcs.slice(0, 3).join(", ")} and more` : svcs.join(", ").replace(/, ([^,]*)$/, " and $1");
+  return renderListPage(site, {
+    L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
+    title: `${brand} | ${svcs[0]} and more in ${site.region}`, desc: `${svcList} across ${site.region}. Call ${site.phone} to be connected with an independent local pro.`,
+    h1: `${svcs.length > 2 ? "Home services" : svcs.join(" & ")} in ${site.region}`, pill: `${svcs.length} services · ${site.cities.length} areas`,
+    sub: `One call connects you with an independent local pro for ${svcList.toLowerCase()} in ${site.region}. Pick a service or an area below, or call now.`,
+    lists: [
+      { title: "Services", cards: svcs.map((v) => { const p = pages.find((x) => x.service === v); return { title: v, text: p ? cut(p.copy.subheadline) : `${v} across ${site.region}.`, href: o.L.service(v), cta: `See ${v.toLowerCase()}` }; }) },
+      { title: "Areas we serve", cards: site.cities.map((c) => ({ title: c.split(",")[0], text: `${svcs.length} services available in ${c}.`, href: o.L.area(c), cta: `See ${c.split(",")[0]}` })) },
+      { title: "From the blog", cards: (site.posts || []).slice(0, 6).map((x) => ({ title: x.title, text: x.service ? `A guide for ${site.region} homeowners about ${x.service.toLowerCase()}.` : `A guide for ${site.region} homeowners.`, href: o.L.post(x.slug), cta: "Read" })) },
+    ],
+    bullets: first?.copy.bullets, steps: first?.copy.steps, footer: siteFooter(site, pages, o.L), serviceTypes: svcs,
+  });
+}
+
+// A service across all of the site's cities.
+export function renderServicePage(site: Site, pages: LandingPage[], svc: string, o: { L: SiteLinks; canonical?: string; noindex?: boolean; photoUrl?: string }): string {
+  const mine = pages.filter((p) => p.service === svc);
+  const first = mine[0];
+  const kw = first?.copy.keyword || svc.toLowerCase();
+  return renderListPage(site, {
+    L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
+    title: `${titleCase(kw)} in ${site.region} | ${site.brand || site.region}`, desc: `Need ${kw} in ${site.region}? Call ${site.phone} to be connected with an independent local pro in ${mine.map((p) => p.city.split(",")[0]).slice(0, 4).join(", ")}.`,
+    h1: `${titleCase(kw)} in ${site.region}`, pill: `${svc} · ${mine.length} areas`,
+    sub: first ? first.copy.subheadline : `One call connects you with an independent local ${kw} pro.`,
+    lists: [
+      { title: `${svc} by city`, cards: mine.map((p) => ({ title: `${svc} in ${p.city.split(",")[0]}`, text: cut(p.copy.subheadline), href: o.L.combo(p), cta: `See ${p.city.split(",")[0]}` })) },
+      { title: "Other services", cards: siteServices(site).filter((v) => v !== svc).map((v) => ({ title: v, text: `${v} across ${site.region}.`, href: o.L.service(v), cta: `See ${v.toLowerCase()}` })) },
+      { title: "From the blog", cards: (site.posts || []).filter((x) => x.service === svc).slice(0, 6).map((x) => ({ title: x.title, text: `A guide about ${svc.toLowerCase()} for ${site.region} homeowners.`, href: o.L.post(x.slug), cta: "Read" })) },
+    ],
+    bullets: first?.copy.bullets, steps: first?.copy.steps, footer: siteFooter(site, pages, o.L), areasServed: mine.map((p) => p.city), serviceTypes: [svc],
+  });
+}
+
+// All services in one city.
+export function renderAreaPage(site: Site, pages: LandingPage[], city: string, o: { L: SiteLinks; canonical?: string; noindex?: boolean; photoUrl?: string }): string {
+  const here = pages.filter((p) => p.city === city);
+  const town = city.split(",")[0];
+  return renderListPage(site, {
+    L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
+    title: `Home services in ${town} | ${site.brand || site.region}`, desc: `${here.map((p) => p.service).join(", ")} in ${city}. Call ${site.phone} to be connected with an independent local pro.`,
+    h1: `Home services in ${city}`, pill: `${town} · ${here.length} services`,
+    sub: `One call connects you with an independent local pro in ${town} for ${here.map((p) => p.service.toLowerCase()).join(", ").replace(/, ([^,]*)$/, " or $1")}.`,
+    lists: [
+      { title: `Services in ${town}`, cards: here.map((p) => ({ title: `${p.service} in ${town}`, text: cut(p.copy.subheadline), href: o.L.combo(p), cta: "See details" })) },
+      { title: "Other areas", cards: site.cities.filter((c) => c !== city).map((c) => ({ title: c.split(",")[0], text: `Services available in ${c}.`, href: o.L.area(c), cta: `See ${c.split(",")[0]}` })) },
+    ],
+    footer: siteFooter(site, pages, o.L), areasServed: [city], serviceTypes: here.map((p) => p.service),
+  });
+}
+
+export function renderBlogIndex(site: Site, pages: LandingPage[], o: { L: SiteLinks; canonical?: string; noindex?: boolean }): string {
+  return renderListPage(site, {
+    L: o.L, canonical: o.canonical, noindex: o.noindex,
+    title: `Homeowner guides | ${site.brand || site.region}`, desc: `Practical guides for homeowners in ${site.region}.`,
+    h1: `Homeowner guides for ${site.region}`, pill: `${(site.posts || []).length} articles`, sub: `Practical answers to common questions about ${siteServices(site).join(", ").toLowerCase()}.`,
+    lists: [{ title: "Articles", cards: (site.posts || []).map((x) => ({ title: x.title, text: x.service ? `About ${x.service.toLowerCase()}.` : "", href: o.L.post(x.slug), cta: "Read" })) }],
+    footer: siteFooter(site, pages, o.L),
+  });
+}
+
+// A blog article in the site's theme, linked into the service and city pages.
+export function renderPost(site: Site, pages: LandingPage[], post: Post, o: { L: SiteLinks; canonical?: string; noindex?: boolean }): string {
+  const t = TEMPLATES[site.theme] || TEMPLATES.clean;
+  const phone = site.phone || "(555) 000-0000";
+  const tel = telHref(phone);
+  const brand = site.brand || `${site.region} Home Services`;
+  const paras = (txt?: string) => (txt || "").split(/\n\n+/).filter(Boolean).map((x) => `<p>${esc(x)}</p>`).join("");
+  const svc = post.service;
+  const rel = pages.filter((p) => !svc || p.service === svc);
+  const ld: unknown[] = [
+    { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.metaDescription, datePublished: post.created, author: { "@type": "Organization", name: brand }, publisher: { "@type": "Organization", name: brand }, ...(o.canonical ? { mainEntityOfPage: o.canonical } : {}) },
+    ...(post.faqs?.length ? [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: post.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }] : []),
+  ];
+  const date = new Date(post.created).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return `${head(t, { title: `${post.title} | ${brand}`.slice(0, 70), desc: post.metaDescription, canonical: o.canonical, ld, noindex: o.noindex })}
+<style>${css(t, ".article{max-width:760px;padding:24px 0 48px}.article h1{font-size:clamp(30px,4.6vw,46px)}.article h2{margin-top:34px}.article p,.article li{font-size:17.5px;line-height:1.75}.meta{color:var(--muted);font-size:14px;margin-bottom:22px}.callbox{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:18px 20px;margin:30px 0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}")}</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="hl"><a class="brand" href="${esc(o.L.home)}">${esc(brand)}</a><a class="navlink" href="${esc(o.L.blogIndex)}">Blog</a></div><a class="call sm" href="${tel}">📞 <span class="num">${esc(phone)}</span><span class="lbl">Call</span></a></header>
+  <nav class="crumbs" aria-label="Breadcrumb" style="color:var(--muted)"><a href="${esc(o.L.home)}">Home</a> › <a href="${esc(o.L.blogIndex)}">Blog</a></nav>
+  <main class="article prose">
+    <h1>${esc(post.title)}</h1>
+    <div class="meta">${esc(date)}${svc ? ` · ${esc(svc)}` : ""}</div>
+    ${paras(post.intro)}
+    ${post.sections.map((x, i) => `<h2>${esc(x.heading)}</h2>${paras(x.body)}${i === 1 ? `<div class="callbox"><span><b>Need help now?</b> One call connects you with an independent local pro.</span><a class="call sm" href="${tel}">📞 ${esc(phone)}</a></div>` : ""}`).join("")}
+    ${post.faqs?.length ? `<h2>Common questions</h2>${post.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p style="margin:10px 0 0;color:var(--muted)">${esc(f.a)}</p></details>`).join("")}` : ""}
+    ${rel.length ? `<h2>${svc ? `${esc(svc)} by area` : "Services by area"}</h2><div class="areas">${rel.map((p) => `<a href="${esc(o.L.combo(p))}">${esc(p.service)} in ${esc(p.city.split(",")[0])}</a>`).join("")}</div>` : ""}
+  </main>
+</div>
+<section class="band"><div class="wrap">
+  <h2>Talk to a local pro today</h2>
+  <p>Call now and we'll connect you with an independent pro near you in ${esc(site.region)}.</p>
+  <a class="call" href="${tel}">📞 ${esc(phone)}</a>
+</div></section>
+<footer><div class="wrap">
+  <div class="links">${siteFooter(site, pages, o.L).map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}</div>
+  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. This article is general information, not professional advice for your home. Calls may be recorded for quality.</p>
+  <p>© ${new Date().getFullYear()} ${esc(brand)} · <a href="${esc(o.L.privacy)}">Privacy policy</a></p>
+</div></footer>
+<div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
+</body>
+</html>`;
 }

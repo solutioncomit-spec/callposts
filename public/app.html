@@ -306,7 +306,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · site audit 1 · market picks 1</p>
+          <p class="status" id="acctHint" style="margin:0">Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · blog post 2 · site audit 1 · market picks 1</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
@@ -338,12 +338,16 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
       <details class="field" id="lpBox">
         <summary class="label" style="cursor:pointer">✦ Landing pages: service-and-city pages and city sites</summary>
         <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months.</p>
-        <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">City site (up to 10 cities)</button></div>
+        <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">Full site (services × cities)</button></div>
         <div id="lpSiteFields" hidden style="display:flex;flex-direction:column;gap:8px">
+          <label class="label" for="lpServices" style="margin:0">Services, one per line (up to 5)</label>
+          <textarea id="lpServices" rows="3" placeholder="Water Heater Repair&#10;Drain Cleaning" list="svcList"></textarea>
           <label class="label" for="lpCities" style="margin:0">Cities, one per line, with state code</label>
           <textarea id="lpCities" rows="5" placeholder="Aurora, CO&#10;Denver, CO&#10;Lakewood, CO"></textarea>
           <input id="lpRegion" placeholder="Region name (optional), e.g. Denver Metro" aria-label="Region name">
-          <p class="status" style="margin:0">You get a hub page for the region plus one full page per city, all linked together and listed in the sitemap. Same service and tracking number on every page.</p>
+          <label class="label" for="lpPostsN" style="margin:0">Blog posts to write now</label>
+          <select id="lpPostsN"><option value="0">None (add later)</option><option value="2" selected>2 posts · 4 credits</option><option value="4">4 posts · 8 credits</option></select>
+          <p class="status" style="margin:0" id="lpSiteHelp">One service: a page per city plus a home page. Several services: a page for every service in every city, plus a home page, a page per service and a page per city. All linked together and listed in the sitemap, with one tracking number. Up to 24 service-and-city pages.</p>
         </div>
         <span class="label" style="margin:2px 0 -2px">Theme <span class="status" style="font-weight:400">· tap Preview to see it full size</span></span>
         <div class="lp-tpls" id="lpThemes" role="radiogroup" aria-label="Theme"></div>
@@ -844,16 +848,19 @@ $("lpThemes").addEventListener("click",e=>{if(e.target.closest("a"))return;const
 $("lpThemes").addEventListener("keydown",e=>{const el=e.target.closest(".lp-tpl");if(el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();pickTheme(el)}});
 function fitThumbs(){document.querySelectorAll("#lpThemes .th").forEach(th=>{const f=th.querySelector("iframe");if(!f.src&&f.dataset.src)f.src=f.dataset.src;f.style.transform=`scale(${th.clientWidth/390})`})}
 if(window.ResizeObserver)new ResizeObserver(()=>{if($("lpBox").open)fitThumbs()}).observe($("lpThemes"));
+const lpServices=()=>{const seen=new Set();return $("lpServices").value.split(/\n|;/).map(x=>x.trim().replace(/\s+/g," ")).filter(x=>x&&!seen.has(x.toLowerCase())&&seen.add(x.toLowerCase()))};
 const lpCities=()=>{const seen=new Set();return $("lpCities").value.split(/\n|;/).map(x=>x.trim().replace(/\s*,\s*/g,", ").replace(/\s+/g," ")).filter(x=>x&&!seen.has(x.toLowerCase())&&seen.add(x.toLowerCase()))};
 function lpLabel(){
   const per=3+($("lpPhoto").checked?3:0);
   if(lpMode==="page"){$("lpGo").textContent=`Build landing page · ${per} credits`;$("lpPhotoLbl").textContent="Add an AI hero photo (+3 credits)";return}
-  const n=lpCities().length;$("lpPhotoLbl").textContent="Add an AI hero photo to every page (+3 credits each)";
-  $("lpGo").textContent=n>=2?`Build city site · ${n} pages · ${n*per} credits`:"Build city site · add 2+ cities";
+  const sv=Math.max(1,lpServices().length),c=lpCities().length,n=sv*c,posts=+$("lpPostsN").value||0;$("lpPhotoLbl").textContent="Add an AI hero photo to every page (+3 credits each)";
+  const ok=sv>1?c>=1:c>=2;
+  $("lpGo").textContent=!ok?(sv>1?"Build site · add a city":"Build site · add 2+ cities"):n>24?`${n} pages is over the 24-page limit`:`Build site · ${n} pages${posts?` + ${posts} posts`:""} · ${n*per+posts*2} credits`;
 }
 document.querySelectorAll(".lp-mode button").forEach(b=>b.onclick=()=>{lpMode=b.dataset.m;document.querySelectorAll(".lp-mode button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));$("lpSiteFields").hidden=lpMode!=="site";
-  if(lpMode==="site"&&!$("lpCities").value.trim()&&$("city").value.trim())$("lpCities").value=$("city").value.trim()+"\n";lpLabel()});
-$("lpCities").addEventListener("input",lpLabel);
+  if(lpMode==="site"&&!$("lpCities").value.trim()&&$("city").value.trim())$("lpCities").value=$("city").value.trim()+"\n";
+  if(lpMode==="site"&&!$("lpServices").value.trim()&&$("service").value.trim())$("lpServices").value=$("service").value.trim()+"\n";lpLabel()});
+$("lpCities").addEventListener("input",lpLabel);$("lpServices").addEventListener("input",lpLabel);$("lpPostsN").addEventListener("change",lpLabel);
 $("lpPhoto").onchange=lpLabel;
 async function loadPages(){
   if(!window.cpUser&&!$("code").value.trim()){$("lpList").innerHTML="";$("lpSites").innerHTML="";return}
@@ -875,43 +882,57 @@ function domainBox(x){
     </div></details>`;
 }
 function renderSites(list){
-  $("lpSites").innerHTML=list.map(x=>`<div class="kit-row" data-site="${esc(x.slug)}"><div class="kh"><span>🌐 ${esc(x.service)} · ${esc(x.region)}</span><span style="display:flex;gap:8px;align-items:center">${x.seo!=null?`<span class="seo-badge ${x.seo>=85?"good":x.seo>=65?"ok":"bad"}" title="Average SEO score">SEO ${x.seo}</span>`:""}<span class="km">${x.views||0} views</span></span></div>
-    <div class="km">${x.built} of ${x.cities.length} city pages built${x.missing.length?` · missing: ${esc(x.missing.join("; "))}`:""}</div>
+  const miss=m=>m.map(x=>`${x.service} in ${x.city}`).join("; ");
+  $("lpSites").innerHTML=list.map(x=>`<div class="kit-row" data-site="${esc(x.slug)}"><div class="kh"><span>🌐 ${esc((x.services||[x.service]).join(", "))} · ${esc(x.region)}</span><span style="display:flex;gap:8px;align-items:center">${x.seo!=null?`<span class="seo-badge ${x.seo>=85?"good":x.seo>=65?"ok":"bad"}" title="Average SEO score">SEO ${x.seo}</span>`:""}<span class="km">${x.views||0} views</span></span></div>
+    <div class="km">${x.built} of ${x.total||x.cities.length} pages built${x.missing.length?` · missing: ${esc(miss(x.missing))}`:""} · ${(x.posts||[]).length} blog post${(x.posts||[]).length===1?"":"s"}</div>
     <div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}?preview=1" target="_blank" rel="noopener">Open site</a><button type="button" class="copy scopy">Copy link</button><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/site.zip" download>Download ZIP</a>
     <select class="stheme" aria-label="Site theme" style="width:auto;padding:4px 8px;font-size:12px">${THEMES.map(t=>`<option value="${t.k}"${t.k===x.theme?" selected":""}>${esc(t.n)}</option>`).join("")}</select>
     <button type="button" class="copy sping" title="Submit every page to Bing, Yandex and other IndexNow search engines">${x.pingedAt?`Submitted ${ago(x.pingedAt)} · Resubmit`:"Submit to search engines"}</button>
-    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy sdel">Delete site</button></div>${domainBox(x)}</div>`).join("")+(list.length?`<p class="status" style="margin:0;font-size:12px">Pages are sent to Bing, Yandex and other IndexNow engines automatically when they're built. For Google, add your domain (or callposts.com pages) in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:var(--accent)">Google Search Console</a> and submit <code>/sitemap.xml</code>.</p>`:"");
+    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy spost">Write a blog post · 2 credits</button>${(x.posts||[]).length?`<a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/blog" target="_blank" rel="noopener">Open blog</a>`:""}<button type="button" class="copy sdel">Delete site</button></div>${domainBox(x)}</div>`).join("")+(list.length?`<p class="status" style="margin:0;font-size:12px">Pages are sent to Bing, Yandex and other IndexNow engines automatically when they're built. For Google, add your domain (or callposts.com pages) in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:var(--accent)">Google Search Console</a> and submit <code>/sitemap.xml</code>.</p>`:"");
 }
 function renderPages(list){
   $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)} ${p.site?`<span class="site-tag">in site</span>`:""}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)} · ${esc(themeName(p.template))}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button>${p.site?"":`<button type="button" class="copy lpdl">Download HTML</button>`}<button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
+}
+async function writePost(slug,service){
+  try{const r=await fetch("/api/posts",{method:"POST",headers:authHeaders(),body:JSON.stringify({site:slug,service})});let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+    if(r.ok&&j.ok)return{ok:true,...j};return{ok:false,stop:r.status===402||r.status===401,error:r.ok?(j.error||"The article didn't come through."):aiError(r,j,"The article didn't come through.")}}
+  catch(e){return{ok:false,error:"The article didn't come through."}}
 }
 async function postPage(body){
   const r=await fetch("/api/pages",{method:"POST",headers:authHeaders(),body:JSON.stringify(body)});
   let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
   return {r,j};
 }
-// Builds the given cities of a site one after another (pages share the site record, so no parallel writes). Stops early if credits run out.
-async function buildSiteCities(slug,cities,photo){
-  const total=cities.length,queue=[...cities],lines={};let done=0,stop="",okN=0;
-  const draw=()=>{$("lpProg").innerHTML=cities.map(c=>`<span class="${lines[c]?.cls||""}">${lines[c]?.txt||"○"} ${esc(c)}</span>`).join("")};
+// Builds a site's service-in-city pages one after another (pages share the site record, so no parallel writes), then
+// any blog posts. Stops early if credits run out.
+async function buildSiteCities(slug,combos,photo,postsN=0){
+  const items=combos.map(c=>typeof c==="string"?{service:"",city:c}:c);
+  const key=c=>`${c.service}|${c.city}`,label=c=>c.service?`${c.service} · ${c.city}`:c.city;
+  const total=items.length,queue=[...items],lines={};let done=0,stop="",okN=0,postOk=0;
+  const postRows=Array.from({length:postsN},(_,i)=>({service:"",city:`Blog post ${i+1}`,post:true}));
+  const draw=()=>{$("lpProg").innerHTML=[...items,...postRows].map(c=>`<span class="${lines[key(c)]?.cls||""}">${lines[key(c)]?.txt||"○"} ${esc(label(c))}</span>`).join("")};
   draw();
   async function worker(){
     while(queue.length&&!stop){
-      const c=queue.shift();lines[c]={txt:"…",cls:""};draw();
-      $("lpStatus").innerHTML=`<span class="spin"></span> Writing city pages: ${done} of ${total} done. Each takes about 20–30 seconds; keep this tab open.`;
-      try{const {r,j}=await postPage({site:slug,city:c});
-        if(r.ok&&j.ok){okN++;lines[c]={txt:"✓",cls:"ok"}}
-        else if(j.already){okN++;lines[c]={txt:"✓",cls:"ok"}}
-        else{lines[c]={txt:"✕",cls:"bad"};if(r.status===402||r.status===401){stop=aiError(r,j,"Stopped.");}}
-      }catch(e){lines[c]={txt:"✕",cls:"bad"}}
+      const c=queue.shift(),k=key(c);lines[k]={txt:"…",cls:""};draw();
+      $("lpStatus").innerHTML=`<span class="spin"></span> Writing pages: ${done} of ${total} done. Each takes about 20–30 seconds; keep this tab open.`;
+      try{const {r,j}=await postPage({site:slug,city:c.city,service:c.service||undefined});
+        if(r.ok&&j.ok){okN++;lines[k]={txt:"✓",cls:"ok"}}
+        else if(j.already){okN++;lines[k]={txt:"✓",cls:"ok"}}
+        else{lines[k]={txt:"✕",cls:"bad"};if(r.status===402||r.status===401){stop=aiError(r,j,"Stopped.");}}
+      }catch(e){lines[k]={txt:"✕",cls:"bad"}}
       done++;draw();
     }
   }
   await worker();
+  for(const p of postRows){if(stop||!okN)break;const k=key(p);lines[k]={txt:"…",cls:""};draw();
+    $("lpStatus").innerHTML=`<span class="spin"></span> Writing blog posts… about 30 seconds each`;
+    const res=await writePost(slug);if(res.ok){postOk++;lines[k]={txt:"✓",cls:"ok"}}else{lines[k]={txt:"✕",cls:"bad"};if(res.stop)stop=res.error}draw()}
   if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
   const link=`<a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your site ↗</a>`;
-  $("lpStatus").innerHTML=stop?`${esc(stop)} ${okN} of ${total} pages were built; use “Finish” on the site below after topping up. ${okN?link:""}`
-    :okN===total?`Done: ${total} city pages plus a hub page, all linked. ${link}`
+  const postTxt=postsN?` and ${postOk} of ${postsN} blog posts`:"";
+  $("lpStatus").innerHTML=stop?`${esc(stop)} ${okN} of ${total} pages were built${postTxt}; use “Finish” on the site below after topping up. ${okN?link:""}`
+    :okN===total?`Done: ${total} pages${postTxt}, all linked. Read every page before you use it. ${link}`
     :`${okN} of ${total} pages were built; any that failed had their credits returned. Use “Finish” on the site below to retry. ${okN?link:""}`;
   loadPages();
 }
@@ -922,14 +943,17 @@ $("lpGo").onclick=async()=>{
   if(b.phone.replace(/\D/g,"").length<10){$("lpStatus").textContent="Add your tracking number in the brief first. The page is built around it.";$("phone").focus();return}
   $("lpProg").innerHTML="";
   if(lpMode==="site"){
-    const cities=lpCities(),per=3+($("lpPhoto").checked?3:0);
-    if(cities.length<2){$("lpStatus").textContent="Add at least 2 cities, one per line, like “Aurora, CO”.";$("lpCities").focus();return}
-    if(cities.length>10){$("lpStatus").textContent="A site can have up to 10 cities. Split the rest into another site.";return}
-    if(window.cpUser&&!$("code").value.trim()&&window.cpUser.credits<cities.length*per){$("lpStatus").textContent=`This site needs ${cities.length*per} credits and you have ${window.cpUser.credits}. Remove some cities or top up first.`;return}
+    const cities=lpCities(),svcs=lpServices().length?lpServices():[b.service],per=3+($("lpPhoto").checked?3:0),postsN=+$("lpPostsN").value||0,n=svcs.length*cities.length,need=n*per+postsN*2;
+    if(svcs.length>5){$("lpStatus").textContent="A site can have up to 5 services.";return}
+    if(svcs.length===1&&cities.length<2){$("lpStatus").textContent="Add at least 2 cities, one per line, like “Aurora, CO”, or add a second service.";$("lpCities").focus();return}
+    if(!cities.length){$("lpStatus").textContent="Add at least 1 city, like “Aurora, CO”.";$("lpCities").focus();return}
+    if(svcs.length===1&&cities.length>10){$("lpStatus").textContent="A site can have up to 10 cities. Split the rest into another site.";return}
+    if(n>24){$("lpStatus").textContent=`${svcs.length} services × ${cities.length} cities is ${n} pages. The limit is 24; remove some services or cities.`;return}
+    if(window.cpUser&&!$("code").value.trim()&&window.cpUser.credits<need){$("lpStatus").textContent=`This site needs ${need} credits and you have ${window.cpUser.credits}. Remove some services, cities or posts, or top up first.`;return}
     $("lpGo").disabled=true;$("lpStatus").innerHTML=`<span class="spin"></span> Setting up your site…`;
-    try{const r=await fetch("/api/sites",{method:"POST",headers:authHeaders(),body:JSON.stringify({service:b.service,cities,phone:b.phone,brand:b.brand,region:$("lpRegion").value.trim(),theme:lpTemplate,photo:$("lpPhoto").checked})});
+    try{const r=await fetch("/api/sites",{method:"POST",headers:authHeaders(),body:JSON.stringify({services:svcs,cities,phone:b.phone,brand:b.brand,region:$("lpRegion").value.trim(),theme:lpTemplate,photo:$("lpPhoto").checked})});
       const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(aiError(r,j,"Couldn't create the site. Try again."));
-      await buildSiteCities(j.slug,j.cities,$("lpPhoto").checked);
+      await buildSiteCities(j.slug,j.combos||j.cities,$("lpPhoto").checked,postsN);
     }catch(err){$("lpStatus").textContent=err.message}finally{$("lpGo").disabled=false}
     return;
   }
@@ -954,6 +978,10 @@ $("lpSites").addEventListener("click",async e=>{
     if(!j.site.missing.length){loadPages();return}
     $("lpGo").disabled=true;try{await buildSiteCities(slug,j.site.missing,j.site.photo)}finally{$("lpGo").disabled=false}
   }
+  if(e.target.closest(".spost")){if(!canUseAI($("lpStatus")))return;const b=e.target;b.disabled=true;b.textContent="Writing… about 30 s";
+    const res=await writePost(slug);b.disabled=false;b.textContent="Write a blog post · 2 credits";
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+    $("lpStatus").innerHTML=res.ok?`New post: <a href="${esc(res.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(res.title)} ↗</a> (${res.words} words). Read it before you share it.`:esc(res.error);if(res.ok)loadPages()}
   if(e.target.closest(".sping")){const b=e.target;b.disabled=true;b.textContent="Submitting…";
     const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,ping:true})});const j=await r.json().catch(()=>({}));
     b.disabled=false;b.textContent=r.ok?`Submitted ${j.urls} URLs`:"Submit to search engines";$("lpStatus").textContent=r.ok?`Sent ${j.urls} pages to Bing, Yandex and other IndexNow search engines.`:(j.error||"Couldn't submit. Try again later.")}
@@ -1172,7 +1200,7 @@ async function refresh(){
     if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
       $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
     if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
-    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · site audit 1 · market picks 1. Need more? Message CallPosts to top up.";}
+    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · blog post 2 · site audit 1 · market picks 1. Need more? Message CallPosts to top up.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }
