@@ -421,10 +421,15 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <label class="field"><span class="label">Intro <span class="cnt words" data-for="edIntro"></span></span><textarea id="edIntro" rows="6"></textarea></label>
         <label class="field"><span class="label">Signs you need the service · one per line: Title | text</span><textarea id="edSigns" rows="5"></textarea></label>
         <label class="field"><span class="label">Benefits · one per line</span><textarea id="edBullets" rows="4"></textarea></label>
+        <label class="field"><span class="label">Types of help · one per line: Title | text</span><textarea id="edServices" rows="5"></textarea></label>
+        <label class="field"><span class="label">Repair or replace <span class="cnt words" data-for="edRvr"></span></span><textarea id="edRvr" rows="5"></textarea></label>
         <label class="field"><span class="label">Local conditions <span class="cnt words" data-for="edLocal"></span></span><textarea id="edLocal" rows="5"></textarea></label>
+        <label class="field"><span class="label">Seasonal tips · one per line: Season | tip</span><textarea id="edSeasonal" rows="4"></textarea></label>
+        <label class="field"><span class="label">How to choose a pro · one per line</span><textarea id="edChoose" rows="4"></textarea></label>
         <label class="field"><span class="label">What affects the cost · one per line (no prices)</span><textarea id="edCost" rows="4"></textarea></label>
         <label class="field"><span class="label">How it works · one per line: Title | text</span><textarea id="edSteps" rows="3"></textarea></label>
         <label class="field"><span class="label">FAQs · Q: question, then A: answer, blank line between</span><textarea id="edFaqs" rows="10"></textarea></label>
+        <label class="field"><span class="label">Area guide <span class="cnt words" data-for="edAreaGuide"></span></span><textarea id="edAreaGuide" rows="4"></textarea></label>
         <label class="field"><span class="label">Areas served · comma separated</span><input id="edAreas"></label>
       </div>
       <aside class="ed-score">
@@ -999,6 +1004,7 @@ async function openEditor(slug){
   $("edSigns").value=(c.signs||[]).map(x=>`${x.title} | ${x.text}`).join("\n");$("edBullets").value=(c.bullets||[]).join("\n");
   $("edCost").value=(c.costFactors||[]).join("\n");$("edSteps").value=(c.steps||[]).map(x=>`${x.title} | ${x.text}`).join("\n");
   $("edFaqs").value=faqText(c.faqs||[]);$("edAreas").value=(c.areas||[]).join(", ");
+  $("edServices").value=(c.services||[]).map(x=>`${x.title} | ${x.text}`).join("\n");$("edRvr").value=c.repairReplace||"";$("edSeasonal").value=(c.seasonal||[]).map(x=>`${x.season} | ${x.tip}`).join("\n");$("edChoose").value=(c.choosing||[]).join("\n");$("edAreaGuide").value=c.areaGuide||"";
   $("edView").href=`/p/${slug}?preview=1`;$("edMsg").textContent="";showScore(j.seo);updCounts();$("lpEdit").showModal();
 }
 $("edSave").onclick=async()=>{
@@ -1006,7 +1012,8 @@ $("edSave").onclick=async()=>{
   const body={slug:edSlug,template:$("edTemplate").value,phone:$("edPhone").value.trim(),brand:$("edBrand").value.trim(),copy:{
     keyword:$("edKeyword").value.trim(),seoTitle:$("edTitle").value.trim(),metaDescription:$("edMeta").value.trim(),headline:$("edH1").value.trim(),subheadline:$("edSub").value.trim(),cta:$("edCta").value.trim(),
     intro:$("edIntro").value.trim(),localNote:$("edLocal").value.trim(),signs:pairLines($("edSigns").value,"title","text"),bullets:lines($("edBullets").value),
-    costFactors:lines($("edCost").value),steps:pairLines($("edSteps").value,"title","text"),faqs:faqParse($("edFaqs").value),areas:$("edAreas").value.split(",").map(x=>x.trim()).filter(Boolean)}};
+    costFactors:lines($("edCost").value),steps:pairLines($("edSteps").value,"title","text"),faqs:faqParse($("edFaqs").value),areas:$("edAreas").value.split(",").map(x=>x.trim()).filter(Boolean),
+    services:pairLines($("edServices").value,"title","text"),repairReplace:$("edRvr").value.trim(),seasonal:pairLines($("edSeasonal").value,"season","tip"),choosing:lines($("edChoose").value),areaGuide:$("edAreaGuide").value.trim()}};
   try{const r=await fetch("/api/pages",{method:"PATCH",headers:authHeaders(),body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(j.error||"Couldn't save. Try again.");showScore(j.seo);$("edMsg").textContent="Saved. The live page is updated.";loadPages()}
   catch(err){$("edMsg").textContent=err.message}finally{$("edSave").disabled=false}

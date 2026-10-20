@@ -60,13 +60,25 @@ async function askJson(anthropic: Anthropic, prompt: string, maxTokens: number):
   throw lastErr;
 }
 
-async function writeCopy(service: string, city: string, angle: string, extra: string): Promise<PageCopy> {
+// Opening styles rotate across the pages of a city site so their first lines don't follow one pattern.
+const OPENINGS = [
+  "Open the intro with the most common problem homeowners in this town notice first.",
+  "Open the intro with a short, practical fact about homes or climate in this town that affects this service.",
+  "Open the intro with the question a homeowner here is most likely asking.",
+  "Open the intro by explaining in plain words what this service covers and when people need it.",
+  "Open the intro with what to do in the first hour when this problem appears.",
+];
+
+async function writeCopy(service: string, city: string, angle: string, extra: string, o: { variant?: number; siblings?: string[] } = {}): Promise<PageCopy> {
   const town = city.split(",")[0];
+  const variety = o.siblings && o.siblings.length
+    ? `\nThis page is one of several city pages for the same service (${o.siblings.join("; ")}). Make it read clearly differently from the others: local details specific to ${town}, its own examples, and different sentence structures. ${OPENINGS[(o.variant ?? 0) % OPENINGS.length]}`
+    : `\n${OPENINGS[(o.variant ?? 0) % OPENINGS.length]}`;
   const context = `This is for an SEO landing page that should rank in Google for "${service} ${town}" and close variations ("near me" searches in ${town}, "${service.toLowerCase()} ${city}"). It is a pay-per-call page for a US home-services referral business.
 Service: ${service}
 City: ${city}
 Angle: ${angle || "Local & trusted"}
-Publisher notes / extra keywords: ${extra || "(none)"}
+Publisher notes / extra keywords: ${extra || "(none)"}${variety}
 
 Writing rules:
 - Specific and genuinely useful to a homeowner in ${town}. No filler, no keyword stuffing, no repeated sentences. It must read as a real local page, not a city-swapped template.
@@ -84,7 +96,7 @@ Write the top of the page. JSON keys:
 "metaDescription": 140-155 characters with the keyword, ${town} and a call to action,
 "headline": the H1, max 70 characters, with the keyword and ${town},
 "subheadline": max 170 characters,
-"intro": two paragraphs separated by \n\n, 160-220 words total, first sentence uses the keyword and ${town},
+"intro": three paragraphs separated by \n\n, 220-300 words total, first sentence uses the keyword and ${town},
 "bullets": array of 4 short benefit lines,
 "steps": array of 3 objects {"title", "text"} explaining call, get matched, get it fixed,
 "cta": 2-5 words.`;
@@ -95,13 +107,22 @@ Write the detail sections of the page. JSON keys:
 "signs": array of 5 objects {"title", "text"} — signs a ${town} homeowner needs this service, text is 2 sentences,
 "localNote": one paragraph of 100-140 words on why this service matters in ${town} specifically (climate, typical housing age or style, seasonal issues),
 "costFactors": array of 5 one-sentence factors that affect the cost, no numbers; a call gets an exact quote,
-"faqs": array of 6 objects {"q", "a"} — questions people actually search (cost, how long, repair vs replace, same day, signs, choosing a pro), answers 2-3 sentences,
+"faqs": array of 8 objects {"q", "a"} — questions people actually search (cost factors, how long, repair vs replace, same day, signs, choosing a pro, what to do while waiting, prevention), answers 2-3 sentences,
 "areas": array of 8-10 real neighborhoods or nearby suburbs of ${town} you are confident exist.`;
 
+  const promptC = `${context}
+
+Write the in-depth guidance sections of the page. JSON keys:
+"services": array of 4-5 objects {"title", "text"} — the main types of ${service.toLowerCase()} help homeowners in ${town} call about (e.g. repair, replacement, installation, maintenance, emergency), text is 2-3 sentences each,
+"repairReplace": two paragraphs separated by \n\n, 140-200 words total, on how homeowners decide between repairing and replacing (age, condition, safety, efficiency); a local pro can assess it on the call,
+"choosing": array of 5 one-to-two sentence tips for choosing a provider (ask about experience with the specific job, written estimates, permits where required, clear scheduling); never claim the providers are licensed or vetted,
+"seasonal": array of 4 objects {"season", "tip"} — "Spring", "Summer", "Fall", "Winter" tips that fit ${town}'s climate, 1-2 sentences each,
+"areaGuide": one paragraph of 90-130 words describing the area served around ${town} in general terms (neighborhoods, nearby towns, typical housing), only things you are confident are true.`;
+
   const anthropic = new Anthropic();
-  const [A, B] = await Promise.all([askJson(anthropic, promptA, 3000), askJson(anthropic, promptB, 3500)]);
-  const j: any = { ...A, ...B };
-  for (const k of ["bullets", "signs", "costFactors", "steps", "faqs", "areas"]) {
+  const [A, B, Cc] = await Promise.all([askJson(anthropic, promptA, 3500), askJson(anthropic, promptB, 4000), askJson(anthropic, promptC, 3500)]);
+  const j: any = { ...A, ...B, ...Cc };
+  for (const k of ["bullets", "signs", "costFactors", "steps", "faqs", "areas", "services", "choosing", "seasonal"]) {
     if (typeof j[k] === "string") { try { j[k] = JSON.parse(j[k]); } catch { j[k] = String(j[k]).split(/\n+/).map((x: string) => x.replace(/^[-*\d.\s]+/, "").trim()).filter(Boolean); } }
   }
   const noFree = (v: unknown, n: number) => clean(String(v ?? "").replace(/\n/g, "\u2029"), n).replace(/\u2029/g, "\n").replace(/\bfree\b\s*/gi, "");
@@ -118,7 +139,12 @@ Write the detail sections of the page. JSON keys:
     localNote: noFree(j.localNote, 1300),
     costFactors: arr(j.costFactors, 6).map((x) => noFree(x, 220)),
     steps: arr(j.steps, 3).map((x: any) => ({ title: noFree(x?.title, 60), text: noFree(x?.text, 220) })),
-    faqs: arr(j.faqs, 8).map((f: any) => ({ q: noFree(f?.q, 160), a: noFree(f?.a, 600) })),
+    faqs: arr(j.faqs, 10).map((f: any) => ({ q: noFree(f?.q, 160), a: noFree(f?.a, 600) })),
+    services: arr(j.services, 6).map((x: any) => ({ title: noFree(x?.title, 80), text: noFree(x?.text, 400) })).filter((x) => x.title && x.text),
+    repairReplace: noFree(j.repairReplace, 1600),
+    choosing: arr(j.choosing, 6).map((x) => noFree(x, 260)).filter(Boolean),
+    seasonal: arr(j.seasonal, 4).map((x: any) => ({ season: noFree(x?.season, 20), tip: noFree(x?.tip, 300) })).filter((x) => x.season && x.tip),
+    areaGuide: noFree(j.areaGuide, 1200),
     areas: arr(j.areas, 12).map((a) => clean(a, 40)),
     cta: noFree(j.cta, 40) || "Talk to a local pro",
   };
@@ -210,7 +236,12 @@ export default async (req: Request) => {
     if (c.areas !== undefined) next.areas = list(c.areas, 16, 50);
     if (c.signs !== undefined) next.signs = pairs(c.signs, "title", "text", 8) as any;
     if (c.steps !== undefined) next.steps = pairs(c.steps, "title", "text", 4) as any;
-    if (c.faqs !== undefined) next.faqs = pairs(c.faqs, "q", "a", 10) as any;
+    if (c.faqs !== undefined) next.faqs = pairs(c.faqs, "q", "a", 12) as any;
+    if (c.services !== undefined) next.services = pairs(c.services, "title", "text", 8) as any;
+    if (c.seasonal !== undefined) next.seasonal = pairs(c.seasonal, "season", "tip", 6) as any;
+    if (c.choosing !== undefined) next.choosing = list(c.choosing, 8, 300);
+    if (c.repairReplace !== undefined) next.repairReplace = txt(c.repairReplace, 3000);
+    if (c.areaGuide !== undefined) next.areaGuide = txt(c.areaGuide, 2000);
     if (!next.headline) return Response.json({ error: "The main heading can't be empty." }, { status: 400 });
     const flat = JSON.stringify(next);
     if (/\bfree\b/i.test(flat)) return Response.json({ error: "The copy uses the word \"free\". Remove it before saving; it breaks the listing rules." }, { status: 400 });
@@ -260,13 +291,13 @@ export default async (req: Request) => {
       const finish = (obj: unknown) => { clearInterval(tick); controller.enqueue(enc.encode(JSON.stringify(obj))); controller.close(); };
       try {
         const [copy, photo] = await Promise.all([
-          writeCopy(service, city, angle, extra),
+          writeCopy(service, city, angle, extra, site ? { variant: site.cities.indexOf(city), siblings: site.cities.filter((x) => x !== city) } : { variant: Math.floor(Math.random() * 5) }),
           withPhoto ? makePhoto(service, city, TEMPLATES[template].dark) : Promise.resolve(null),
         ]);
         const base = slugify(`${service} ${city.split(",")[0]}`);
         let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
         while (await pages().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug } : {}) };
+        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug, variant: site.cities.indexOf(city) } : {}) };
         let credits = payer.credits;
         if (photo) {
           page.photo = `img/${slug}`;
@@ -289,7 +320,7 @@ export default async (req: Request) => {
           const order = site.cities;
           await updateSite(site.slug, (s) => { s.pages = [...s.pages.filter((x) => x.city !== city), { slug, city }].sort((a, b) => order.indexOf(a.city) - order.indexOf(b.city)); });
         }
-        const words = [copy.intro, copy.localNote, ...(copy.signs || []).map((x) => x.text), ...copy.faqs.map((f) => f.a), ...(copy.costFactors || [])].join(" ").split(/\s+/).length;
+        const words = seoScore(page).words;
         // Tell search engines about the new page right away (IndexNow; best effort).
         const origin = new URL(req.url).origin;
         const fresh = site?.domain ? [`https://${site.domain}/${cityFile(page)}`, `https://${site.domain}/`] : [`${origin}/p/${slug}`, ...(site ? [`${origin}/s/${site.slug}`] : [])];

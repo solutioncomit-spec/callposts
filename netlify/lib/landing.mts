@@ -8,6 +8,11 @@ export type PageCopy = {
   signs?: { title: string; text: string }[];
   localNote?: string;
   costFactors?: string[];
+  services?: { title: string; text: string }[]; // types of help offered
+  repairReplace?: string; // repair vs replace guidance, paragraphs
+  choosing?: string[]; // how to choose a provider
+  seasonal?: { season: string; tip: string }[];
+  areaGuide?: string; // short guide to the service area
   headline: string;
   subheadline: string;
   bullets: string[];
@@ -31,6 +36,7 @@ export type LandingPage = {
   copy: PageCopy;
   photo?: string; // blob key in "page-images"
   site?: string; // slug of the city site this page belongs to
+  variant?: number; // layout variant, so pages in one city site don't share a structure
   created: string;
   views?: number;
 };
@@ -231,6 +237,30 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
       <div class="ph">Tap to call. We connect you with trusted local pros.</div>
     </div>`;
 
+  // Body sections. Pages in a city site use different orders (by variant) so they don't share one structure.
+  const card = (t: string, x: string) => `<div class="card"><h3 style="font-size:17px;margin:0 0 6px">${esc(t)}</h3><span style="color:var(--muted)">${esc(x)}</span></div>`;
+  const sec: Record<string, string> = {
+    intro: c.intro ? `<section><div class="wrap prose"><h2>${esc(KW)} in ${esc(town)}: what to know</h2>${paras(c.intro)}</div></section>` : "",
+    signs: c.signs && c.signs.length ? `<section><div class="wrap"><h2>Signs you need ${esc(kw)} in ${esc(town)}</h2><div class="grid">${c.signs.map((x) => card(x.title, x.text)).join("")}</div></div></section>` : "",
+    services: c.services && c.services.length ? `<section><div class="wrap"><h2>Types of ${esc(kw)} help in ${esc(town)}</h2><div class="grid">${c.services.map((x) => card(x.title, x.text)).join("")}</div></div></section>` : "",
+    why: c.bullets.length ? `<section><div class="wrap"><h2>Why ${esc(town)} homeowners call</h2><div class="grid">${c.bullets.map((b) => `<div class="card check"><i>✓</i><span>${esc(b)}</span></div>`).join("")}</div></div></section>` : "",
+    how: c.steps.length ? `<section><div class="wrap"><h2>How it works</h2><div class="steps">${c.steps.map((x) => `<div class="card"><b>${esc(x.title)}</b>${esc(x.text)}</div>`).join("")}</div></div></section>` : "",
+    rvr: c.repairReplace ? `<section><div class="wrap prose"><h2>Repair or replace? How ${esc(town)} homeowners decide</h2>${paras(c.repairReplace)}</div></section>` : "",
+    local: c.localNote ? `<section><div class="wrap prose"><h2>${esc(KW)} in ${esc(town)}: local conditions</h2>${paras(c.localNote)}</div></section>` : "",
+    cost: c.costFactors && c.costFactors.length ? `<section><div class="wrap"><h2>What affects the cost of ${esc(kw)} in ${esc(town)}</h2><ul class="factors">${c.costFactors.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><p style="color:var(--muted);margin-top:14px">Every job is different. Call <a href="${tel}">${esc(phone)}</a> for an exact quote from a local pro.</p></div></section>` : "",
+    seasonal: c.seasonal && c.seasonal.length ? `<section><div class="wrap"><h2>Seasonal ${esc(kw)} tips for ${esc(town)}</h2><div class="grid">${c.seasonal.map((x) => card(x.season, x.tip)).join("")}</div></div></section>` : "",
+    choose: c.choosing && c.choosing.length ? `<section><div class="wrap"><h2>How to choose a ${esc(kw)} pro in ${esc(town)}</h2><ul class="factors">${c.choosing.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></section>` : "",
+    faq: c.faqs.length ? `<section><div class="wrap"><h2>${esc(KW)} questions from ${esc(town)} homeowners</h2>${c.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p style="margin:10px 0 0;color:var(--muted)">${esc(f.a)}</p></details>`).join("")}</div></section>` : "",
+    areas: c.areas.length || c.areaGuide ? `<section><div class="wrap"><h2>${esc(KW)} near ${esc(town)}: areas we help</h2>${c.areaGuide ? `<div class="prose" style="margin-bottom:16px">${paras(c.areaGuide)}</div>` : ""}${c.areas.length ? `<div class="areas">${c.areas.map((a) => `<span>${esc(a)}</span>`).join("")}</div>` : ""}</div></section>` : "",
+  };
+  const ORDERS = [
+    ["intro", "signs", "services", "why", "how", "rvr", "local", "cost", "seasonal", "choose", "faq", "areas"],
+    ["intro", "services", "rvr", "signs", "how", "local", "why", "cost", "choose", "seasonal", "faq", "areas"],
+    ["intro", "local", "signs", "services", "cost", "rvr", "why", "seasonal", "how", "choose", "faq", "areas"],
+    ["intro", "why", "seasonal", "signs", "services", "choose", "local", "rvr", "how", "cost", "faq", "areas"],
+  ];
+  const seed = p.variant ?? [...p.slug].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  const body = ORDERS[Math.abs(seed) % ORDERS.length].map((k) => sec[k]).filter(Boolean).join("\n\n");
   return `${head(t, { title, desc: c.metaDescription, canonical, image: opts.photoUrl, ld, noindex: opts.noindex })}
 <style>${css(t)}</style>
 </head>
@@ -244,30 +274,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
   </div>
 </div></div>
 
-${c.intro ? `<section><div class="wrap prose"><h2>${esc(KW)} in ${esc(town)}: what to know</h2>${paras(c.intro)}</div></section>` : ""}
-
-${c.signs && c.signs.length ? `<section><div class="wrap"><h2>Signs you need ${esc(kw)} in ${esc(town)}</h2><div class="grid">${c.signs.map((x) => `<div class="card"><h3 style="font-size:17px;margin:0 0 6px">${esc(x.title)}</h3><span style="color:var(--muted)">${esc(x.text)}</span></div>`).join("")}</div></div></section>` : ""}
-
-<section><div class="wrap">
-  <h2>Why ${esc(town)} homeowners call</h2>
-  <div class="grid">${c.bullets.map((b) => `<div class="card check"><i>✓</i><span>${esc(b)}</span></div>`).join("")}</div>
-</div></section>
-
-<section><div class="wrap">
-  <h2>How it works</h2>
-  <div class="steps">${c.steps.map((s) => `<div class="card"><b>${esc(s.title)}</b>${esc(s.text)}</div>`).join("")}</div>
-</div></section>
-
-${c.localNote ? `<section><div class="wrap prose"><h2>${esc(KW)} in ${esc(town)}: local conditions</h2>${paras(c.localNote)}</div></section>` : ""}
-
-${c.costFactors && c.costFactors.length ? `<section><div class="wrap"><h2>What affects the cost of ${esc(kw)} in ${esc(town)}</h2><ul class="factors">${c.costFactors.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><p style="color:var(--muted);margin-top:14px">Every job is different. Call <a href="${tel}">${esc(phone)}</a> for an exact quote from a local pro.</p></div></section>` : ""}
-
-<section><div class="wrap">
-  <h2>${esc(KW)} questions from ${esc(town)} homeowners</h2>
-  ${c.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p style="margin:10px 0 0;color:var(--muted)">${esc(f.a)}</p></details>`).join("")}
-</div></section>
-
-${c.areas.length ? `<section><div class="wrap"><h2>${esc(KW)} near ${esc(town)}: areas we help</h2><div class="areas">${c.areas.map((a) => `<span>${esc(a)}</span>`).join("")}</div></div></section>` : ""}
+${body}
 
 ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2><div class="areas">${others.map((x) => `<a href="${esc(x.href)}">${esc(KW)} in ${esc(x.name.split(",")[0])}</a>`).join("")}<a href="${esc(nav!.hubHref)}">All service areas</a></div></div></section>` : ""}
 
@@ -423,19 +430,19 @@ export function seoScore(p: LandingPage): { score: number; words: number; checks
   const kwCore = kw.split(/\s+/).filter((w) => w.length > 3)[0] || kw;
   const title = c.seoTitle || "";
   const meta = c.metaDescription || "";
-  const body = [c.subheadline, c.intro, c.localNote, ...(c.signs || []).flatMap((x) => [x.title, x.text]), ...c.bullets, ...(c.costFactors || []), ...c.steps.flatMap((s) => [s.title, s.text]), ...c.faqs.flatMap((f) => [f.q, f.a])].join(" ");
+  const body = [c.subheadline, c.intro, c.localNote, c.repairReplace, c.areaGuide, ...(c.signs || []).flatMap((x) => [x.title, x.text]), ...(c.services || []).flatMap((x) => [x.title, x.text]), ...(c.seasonal || []).flatMap((x) => [x.season, x.tip]), ...(c.choosing || []), ...c.bullets, ...(c.costFactors || []), ...c.steps.flatMap((s) => [s.title, s.text]), ...c.faqs.flatMap((f) => [f.q, f.a])].join(" ");
   const words = body.split(/\s+/).filter(Boolean).length;
   const all = `${title} ${meta} ${c.headline} ${body}`;
   const has = (s: string, w: string) => s.toLowerCase().includes(w);
   const checks: { name: string; ok: boolean; tip: string; w: number }[] = [
-    { name: `Enough content (${words} words)`, ok: words >= 800, tip: "Aim for 800+ words of useful local copy. Expand the intro, local conditions or FAQs.", w: 15 },
+    { name: `Enough content (${words} words)`, ok: words >= 1200, tip: "Aim for 1,200+ words of useful local copy. Expand the intro, local conditions, repair-or-replace guidance or FAQs.", w: 15 },
     { name: `Title length (${title.length} chars)`, ok: title.length >= 30 && title.length <= 62, tip: "Keep the SEO title between 30 and 60 characters so Google shows it in full.", w: 10 },
     { name: "Title has keyword and city", ok: has(title, kwCore) && has(title, town), tip: `Put "${kw}" and "${p.city.split(",")[0]}" in the SEO title.`, w: 12 },
     { name: `Meta description length (${meta.length} chars)`, ok: meta.length >= 110 && meta.length <= 160, tip: "Write a 110-160 character meta description with a reason to call.", w: 8 },
     { name: "Meta description has keyword or city", ok: has(meta, kwCore) || has(meta, town), tip: "Mention the service or city in the meta description.", w: 5 },
     { name: "Main heading has keyword and city", ok: has(c.headline, kwCore) && has(c.headline, town), tip: `The H1 should include "${kw}" and the city.`, w: 10 },
     { name: "Intro mentions keyword early", ok: has((c.intro || "").slice(0, 220), kwCore), tip: "Use the main keyword in the first sentence or two of the intro.", w: 8 },
-    { name: `FAQs (${c.faqs.length})`, ok: c.faqs.length >= 5, tip: "Have at least 5 FAQs. They can show up as rich results and answer real searches.", w: 8 },
+    { name: `FAQs (${c.faqs.length})`, ok: c.faqs.length >= 6, tip: "Have at least 6 FAQs. They can show up as rich results and answer real searches.", w: 8 },
     { name: `Nearby areas listed (${c.areas.length})`, ok: c.areas.length >= 6, tip: "List 6+ real neighborhoods or suburbs you serve.", w: 6 },
     { name: "Tracking number on the page", ok: p.phone.replace(/\D/g, "").length >= 10, tip: "Add a 10-digit tracking number so every call button works.", w: 8 },
     { name: "Hero photo", ok: !!p.photo, tip: "Pages with a relevant image tend to keep visitors longer. Add an AI photo when you build the page.", w: 4 },
