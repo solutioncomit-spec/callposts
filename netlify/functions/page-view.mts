@@ -1,6 +1,6 @@
 import type { Config, Context } from "@netlify/functions";
 import { getStore } from "@netlify/blobs";
-import { renderLanding, renderHub, samplePage, isTheme, cityFile, type LandingPage, type Site, type SiteNav } from "../lib/landing.mts";
+import { renderLanding, renderHub, renderPrivacy, samplePage, isTheme, cityFile, type LandingPage, type Site, type SiteNav } from "../lib/landing.mts";
 import { INDEXNOW_KEY } from "../lib/domains.mts";
 import { makeZip } from "../lib/zip.mts";
 
@@ -13,6 +13,10 @@ const pagesStore = () => getStore({ name: "pages", consistency: "strong" });
 const sitesStore = () => getStore({ name: "sites", consistency: "strong" });
 const html = (body: string, extra: Record<string, string> = {}) => new Response(body, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60", ...extra } });
 const notFound = () => new Response(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Page not found</title><body style="font:16px system-ui;background:#0b0c10;color:#f4f4f5;display:grid;place-items:center;min-height:90vh;text-align:center"><div><h1>This page isn't available</h1><p>It may have been removed by its owner.</p></div>`, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+
+const pageBrand = (p: LandingPage) => p.brand || `${p.city.split(",")[0]} ${(p.copy.keyword || p.service).replace(/\b\w/g, (m) => m.toUpperCase())} Help`;
+const siteBrand = (s: Site) => s.brand || `${s.region} ${s.service} Help`;
+const privacyFor = (s: Site, homeHref: string) => renderPrivacy({ theme: s.theme, brand: siteBrand(s), phone: s.phone, homeHref, homeName: siteBrand(s) });
 
 async function sitePages(site: Site): Promise<LandingPage[]> {
   const list = await Promise.all(site.pages.map((x) => pagesStore().get(x.slug, { type: "json" }) as Promise<LandingPage | null>));
@@ -47,6 +51,7 @@ export default async (req: Request, context: Context) => {
   if (path.startsWith("/s/")) {
     const site = (await sitesStore().get(slug, { type: "json" })) as Site | null;
     if (!site) return notFound();
+    if (path.endsWith("/privacy")) return html(privacyFor(site, `/s/${slug}`), { "x-robots-tag": "noindex" });
     const pages = await sitePages(site);
     if (!pages.length) return notFound();
     const withPhoto = pages.find((p) => p.photo);
@@ -67,8 +72,9 @@ export default async (req: Request, context: Context) => {
       // Friendly file names for self-hosting: aurora-co.html, denver-co.html ...
       const cityHref = (p: LandingPage) => `${cityFile(p)}.html`;
       const nav = (cur: LandingPage): SiteNav => ({ hubName: `${site.service} in ${site.region}`, hubHref: "index.html", cities: pages.map((p) => ({ name: p.city, href: cityHref(p), current: p.slug === cur.slug })) });
-      files.unshift({ name: "index.html", data: renderHub(site, pages, { cityHref, selfHref: "index.html", photoUrl: withPhoto ? imgName.get(withPhoto.slug) : undefined }) });
-      for (const p of pages) files.push({ name: cityHref(p), data: renderLanding(p, { photoUrl: imgName.get(p.slug), site: nav(p) }) });
+      files.unshift({ name: "index.html", data: renderHub(site, pages, { cityHref, selfHref: "index.html", photoUrl: withPhoto ? imgName.get(withPhoto.slug) : undefined, privacyHref: "privacy.html" }) });
+      for (const p of pages) files.push({ name: cityHref(p), data: renderLanding(p, { photoUrl: imgName.get(p.slug), site: nav(p), privacyHref: "privacy.html" }) });
+      files.push({ name: "privacy.html", data: privacyFor(site, "index.html") });
       return new Response(makeZip(files), { headers: { "content-type": "application/zip", "content-disposition": `attachment; filename="${site.slug}.zip"`, "cache-control": "no-store" } });
     }
 
@@ -76,12 +82,15 @@ export default async (req: Request, context: Context) => {
       site.views = (site.views || 0) + 1;
       sitesStore().setJSON(slug, site).catch(() => {});
     }
-    return html(renderHub(site, pages, { base: origin, selfHref: `/s/${slug}`, cityHref: (p) => `/p/${p.slug}`, photoUrl: withPhoto ? `${origin}/p-img/${withPhoto.slug}` : undefined, canonical: site.domain ? `https://${site.domain}/` : undefined }));
+    return html(renderHub(site, pages, { base: origin, selfHref: `/s/${slug}`, cityHref: (p) => `/p/${p.slug}`, photoUrl: withPhoto ? `${origin}/p-img/${withPhoto.slug}` : undefined, canonical: site.domain ? `https://${site.domain}/` : undefined, privacyHref: `/s/${slug}/privacy` }));
   }
 
   const store = pagesStore();
   const page = (await store.get(slug, { type: "json" })) as LandingPage | null;
   if (!page) return notFound();
+  if (path.endsWith("/privacy")) {
+    return html(renderPrivacy({ theme: page.template, brand: pageBrand(page), phone: page.phone, homeHref: `/p/${slug}`, homeName: pageBrand(page) }), { "x-robots-tag": "noindex" });
+  }
 
   // Best-effort view counter (skip the owner's own previews).
   if (url.searchParams.get("preview") !== "1" && url.searchParams.get("download") !== "1") {
@@ -102,7 +111,9 @@ export default async (req: Request, context: Context) => {
       if (s.domain) canonical = `https://${s.domain}/${cityFile(page)}`;
     }
   }
-  return html(renderLanding(page, { photoUrl, base: download ? undefined : origin, site, canonical }));
+  // A downloaded page keeps a full link to its hosted privacy policy; hosted pages link within the site.
+  const privacyHref = download ? `${origin}/p/${slug}/privacy` : page.site && site ? `/s/${page.site}/privacy` : `/p/${slug}/privacy`;
+  return html(renderLanding(page, { photoUrl, base: download ? undefined : origin, site, canonical, privacyHref }));
 };
 
 // A city site served on its own domain: / is the hub, /aurora-co a city page, plus sitemap, robots and images.
@@ -118,6 +129,7 @@ async function customDomain(url: URL): Promise<Response> {
   const text = (body: string, type: string) => new Response(body, { headers: { "content-type": `${type}; charset=utf-8`, "cache-control": "public, max-age=300" } });
 
   if (rest === `${INDEXNOW_KEY}.txt`) return text(INDEXNOW_KEY, "text/plain");
+  if (rest === "privacy") return html(privacyFor(site, "/"), { "x-robots-tag": "noindex" });
   if (rest === "robots.txt") return text(`User-agent: *\nAllow: /\n\nSitemap: ${base}/sitemap.xml\n`, "text/plain");
 
   const pages = await sitePages(site);
@@ -137,14 +149,14 @@ async function customDomain(url: URL): Promise<Response> {
   const cityHref = (p: LandingPage) => `/${cityFile(p)}`;
   if (!rest || rest === "index.html") {
     if (!offDomain) { site.views = (site.views || 0) + 1; sitesStore().setJSON(site.slug, site).catch(() => {}); }
-    return html(renderHub(site, pages, { base, selfHref: "/", cityHref, canonical: `${base}/`, photoUrl: img(pages.find((p) => p.photo)), noindex: offDomain }));
+    return html(renderHub(site, pages, { base, selfHref: "/", cityHref, canonical: `${base}/`, photoUrl: img(pages.find((p) => p.photo)), noindex: offDomain, privacyHref: "/privacy" }));
   }
   const file = rest.replace(/\.html$/, "");
   const page = pages.find((p) => cityFile(p) === file);
   if (!page) return notFound();
   if (!offDomain) { page.views = (page.views || 0) + 1; pagesStore().setJSON(page.slug, page).catch(() => {}); }
   const nav: SiteNav = { hubName: `${site.service} in ${site.region}`, hubHref: "/", cities: pages.map((p) => ({ name: p.city, href: cityHref(p), current: p.slug === page.slug })) };
-  return html(renderLanding(page, { base, photoUrl: img(page), site: nav, canonical: `${base}/${file}`, noindex: offDomain }));
+  return html(renderLanding(page, { base, photoUrl: img(page), site: nav, canonical: `${base}/${file}`, noindex: offDomain, privacyHref: "/privacy" }));
 }
 
-export const config: Config = { path: ["/p/:slug", "/p-img/:slug", "/s/:slug", "/s/:slug/site.zip", "/theme/:key", "/cd/*"], method: "GET" };
+export const config: Config = { path: ["/p/:slug", "/p/:slug/privacy", "/p-img/:slug", "/s/:slug", "/s/:slug/privacy", "/s/:slug/site.zip", "/theme/:key", "/cd/*"], method: "GET" };

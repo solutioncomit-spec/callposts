@@ -191,7 +191,7 @@ function heroStyle(t: Theme, photoUrl?: string) {
   return t.hero === "photo" && photoUrl ? ` style="background-image:linear-gradient(rgba(12,7,3,.64),rgba(12,7,3,.64)),url('${esc(photoUrl)}')"` : "";
 }
 
-export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: string; site?: SiteNav; canonical?: string; noindex?: boolean } = {}): string {
+export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: string; site?: SiteNav; canonical?: string; noindex?: boolean; privacyHref?: string } = {}): string {
   const t = TEMPLATES[p.template] || TEMPLATES.clean;
   const c = p.copy;
   const phone = p.phone || "(555) 000-0000";
@@ -280,7 +280,7 @@ ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2
 <footer><div class="wrap">
   ${nav ? `<div class="links"><a href="${esc(nav.hubHref)}">${esc(nav.hubName)}</a>${nav.cities.map((x) => `<a href="${esc(x.href)}">${esc(x.name.split(",")[0])}</a>`).join("")}</div>` : ""}
   <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
-  <p>© ${new Date().getFullYear()} ${esc(brand)}</p>
+  <p>© ${new Date().getFullYear()} ${esc(brand)}${opts.privacyHref ? ` · <a href="${esc(opts.privacyHref)}">Privacy policy</a>` : ""}</p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
 </body>
@@ -288,7 +288,7 @@ ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2
 }
 
 // Hub page of a city site: one service across a region, linking to every city page.
-export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string; canonical?: string; noindex?: boolean }): string {
+export function renderHub(site: Site, pages: LandingPage[], opts: { base?: string; photoUrl?: string; cityHref: (p: LandingPage) => string; selfHref: string; canonical?: string; noindex?: boolean; privacyHref?: string }): string {
   const t = TEMPLATES[site.theme] || TEMPLATES.clean;
   const first = pages[0];
   const kw = first?.copy.keyword || site.service.toLowerCase();
@@ -349,9 +349,45 @@ ${steps.length ? `<section><div class="wrap"><h2>How it works</h2><div class="st
 <footer><div class="wrap">
   <div class="links">${pages.map((p) => `<a href="${esc(opts.cityHref(p))}">${esc(KW)} ${esc(p.city.split(",")[0])}</a>`).join("")}</div>
   <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
-  <p>© ${new Date().getFullYear()} ${esc(brand)}</p>
+  <p>© ${new Date().getFullYear()} ${esc(brand)}${opts.privacyHref ? ` · <a href="${esc(opts.privacyHref)}">Privacy policy</a>` : ""}</p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
+</body>
+</html>`;
+}
+
+// Privacy policy page for a hosted page or city site, in the same theme. It describes what these pages actually do:
+// no forms, no tracking cookies, phone calls connected to independent providers.
+export function renderPrivacy(o: { theme: ThemeKey; brand: string; phone: string; homeHref: string; homeName: string }): string {
+  const t = TEMPLATES[o.theme] || TEMPLATES.clean;
+  const tel = telHref(o.phone || "");
+  const year = new Date().getFullYear();
+  return `${head(t, { title: `Privacy policy | ${o.brand}`, desc: `How ${o.brand} handles information when you visit this site or call.`, ld: [], noindex: true })}
+<style>${css(t, ".policy{max-width:760px;padding:28px 0 56px}.policy h1{font-size:clamp(28px,4vw,40px)}.policy h2{font-size:20px;margin:28px 0 8px}.policy p,.policy li{color:var(--ink)}.policy .muted{color:var(--muted)}")}</style>
+</head>
+<body style="padding-bottom:0">
+<div class="wrap">
+  <header><div class="hl"><a class="brand" href="${esc(o.homeHref)}">${esc(o.brand)}</a></div>${o.phone ? `<a class="call sm" href="${tel}">📞 <span class="num">${esc(o.phone)}</span><span class="lbl">Call</span></a>` : ""}</header>
+  <main class="policy">
+    <h1>Privacy policy</h1>
+    <p class="muted">Last updated ${year}</p>
+    <p>${esc(o.brand)} is a referral service that connects homeowners with independent local service providers. This page explains what information is involved when you visit this website or call the number on it.</p>
+    <h2>What this website collects</h2>
+    <p>This website has no forms and does not ask you to enter personal information. It does not use advertising or tracking cookies. Like most websites, our hosting provider keeps standard technical logs (such as IP address, browser type and the page requested) for security and to keep the site running, and we count page views without identifying you.</p>
+    <h2>When you call</h2>
+    <p>Calls to the number on this site are routed through a call tracking service so they can be connected to an independent local provider who can help with your request. The call system may record the phone number you call from, the time and length of the call, and the area you're calling about. Calls may be recorded for quality and training. The provider you are connected with receives the details you share on the call so they can help you, and handles them under their own privacy practices.</p>
+    <h2>How information is used</h2>
+    <ul><li>To connect you with a local provider for the service you asked about.</li><li>To keep the service working, prevent abuse and measure call quality.</li><li>To meet legal obligations.</li></ul>
+    <p>We do not sell your personal information, and we do not send you marketing messages from this website.</p>
+    <h2>Your choices</h2>
+    <p>You can end a call at any time. To ask about information related to a call you made, or to request that it be deleted where the law allows, call ${o.phone ? `<a href="${tel}">${esc(o.phone)}</a>` : "the number on this site"} and ask about your privacy request.</p>
+    <h2>Children</h2>
+    <p>This website is meant for adults arranging home services and is not directed at children under 13.</p>
+    <h2>Changes</h2>
+    <p>We may update this policy from time to time. The date above shows when it last changed.</p>
+    <p style="margin-top:28px"><a href="${esc(o.homeHref)}">← Back to ${esc(o.homeName)}</a></p>
+  </main>
+</div>
 </body>
 </html>`;
 }
