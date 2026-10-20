@@ -96,6 +96,7 @@ const STATES: Record<string, string> = { AL: "Alabama", AK: "Alaska", AZ: "Arizo
 
 // "Aurora, CO" + "Denver, CO" -> "Colorado"; mixed states -> "Aurora, Denver & nearby".
 export function defaultRegion(cities: string[]): string {
+  if (cities.length === 1) return cities[0].split(",")[0].trim();
   const states = [...new Set(cities.map((c) => (c.split(",")[1] || "").trim().toUpperCase()).filter(Boolean))];
   if (states.length === 1 && STATES[states[0]]) return STATES[states[0]];
   const towns = cities.map((c) => c.split(",")[0].trim());
