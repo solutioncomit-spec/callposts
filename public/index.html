@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="CallPosts writes Facebook Marketplace listings, images and Messenger replies for pay-per-call affiliates, checked against the listing rules.">
-<title>CallPosts · Marketplace listings for pay-per-call affiliates</title>
+<meta name="description" content="Content tools for home-service pay-per-call affiliates. Create marketing drafts, AI images and reply templates around your service, city and tracking number. Review every output and your channel’s rules before publishing.">
+<title>CallPosts · Content tools for home-service pay-per-call affiliates</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>if(/(confirmation|recovery|invite|email_change)_token=|access_token=/.test(location.hash))location.replace("/app"+location.hash);</script>
 <script>try{var rf=new URLSearchParams(location.search).get("ref");if(rf&&/^[A-Za-z0-9]{4,12}$/.test(rf))localStorage.setItem("cp-ref",JSON.stringify({c:rf.toUpperCase(),t:Date.now()}))}catch(e){}</script>
@@ -13,8 +13,8 @@
 <link rel="canonical" href="https://callposts.com/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://callposts.com/">
-<meta property="og:title" content="CallPosts · Rules-compliant Marketplace listings in under 5 minutes">
-<meta property="og:description" content="Unique titles, descriptions, AI photos and Messenger replies for pay-per-call affiliates, checked against the listing rules before you post. Start with 15 credits.">
+<meta property="og:title" content="CallPosts · Content tools for home-service pay-per-call affiliates">
+<meta property="og:description" content="Create marketing drafts, AI images and reply templates around your service, city and tracking number. Review every output and your channel’s rules before publishing. Try 15 free credits.">
 <meta property="og:image" content="https://callposts.com/img/water-heater.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b0c10">
@@ -99,6 +99,25 @@ p{margin:0;max-width:62ch}
 :root[data-theme="dark"] .mp-check b{color:#4ade80}
 .mp figcaption{grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:8px}
 /* Steps */
+.demo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px;counter-reset:d}
+.demo>li{counter-increment:d;display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:14px;row-gap:8px;align-items:start}
+.demo>li::before{content:counter(d);grid-row:1 / span 4;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);font-family:var(--mono);font-size:13px;color:var(--brand)}
+.demo>li>*{grid-column:2}
+.demo h3{margin:4px 0 0}
+.dkv{display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;margin:0;font-size:15px}.dkv dt{color:var(--muted)}.dkv dd{margin:0}
+.dcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:8px;font-size:15px;max-width:68ch}
+.dcard p{margin:0}.dcard .dsub{color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:8px}
+.dcard del{color:#ef4444;text-decoration:line-through}.dcard ins{color:#22c55e;text-decoration:none;border-bottom:1px solid currentColor}
+.dchecks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;font-size:14px}
+.dchecks span{color:#22c55e;margin-right:8px}
+@media (max-width:640px){.dchecks{grid-template-columns:minmax(0,1fr)}.demo>li{grid-template-columns:36px minmax(0,1fr)}.dkv{grid-template-columns:110px minmax(0,1fr)}}
+.dfinal{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:640px){.dfinal{grid-template-columns:minmax(0,1fr)}}
+.dfinal figure{margin:0}.dfinal img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);display:block}.dfinal figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+.costs{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--surface)}
+.costs h3{margin:0 0 10px}.costs table{width:100%;border-collapse:collapse;font-size:15px}
+.costs td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}.costs td.n{text-align:right;white-space:nowrap;padding-left:16px}
+@media (max-width:640px){.costs td.n{white-space:normal}}
 .tools3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media (max-width:860px){.tools3{grid-template-columns:minmax(0,1fr)}}
 .tool{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--ink)}
@@ -233,164 +252,212 @@ nav .ctas{align-items:center}
 </div></nav>
 
 <section class="band hero2"><div class="in">
-  <h1>Write unique, rules-compliant Marketplace listings in under 5 minutes</h1>
-  <p class="lede">CallPosts generates the full kit — unique title, description, AI photo, and Messenger replies — then checks it against Lead Smart's listing rules so your posts stay up and your tracking number gets the call.</p>
-  <p class="small">Built for home-service offers: water heaters, plumbing, HVAC, windows, remodeling, and 40+ more.</p>
+  <h1>Content tools for home-service pay-per-call affiliates.</h1>
+  <p class="lede">Create marketing drafts, AI images and reply templates around your service, city and tracking number. Review every output and your channel’s rules before publishing.</p>
+  <p class="small">For 86 home services: water heaters, plumbing, HVAC, roofing, water damage, remodeling and more.</p>
   <div class="cta-block">
-    <a class="btn pri big" href="/app#signup">Start free with 15 credits</a>
-    <p class="small">15 credits = 15 listings with Messenger replies, or mix in AI photos. No card required.</p>
+    <a class="btn pri big" href="/app#signup">Try 15 free credits</a>
+    <p class="small">No card required.</p>
     <p class="founder-pill"><b>Founding members:</b> first 50 subscribers keep launch pricing from $9/mo. <a href="#pricing">See plans</a></p>
   </div>
   <div class="examples">
     <figure class="mp" aria-label="Example listing made with CallPosts: water heaters in Peoria">
       <div class="mp-copy">
-        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Marketplace</div>
+        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Listing draft</div>
         <h3>Water Heater Help in Peoria – Same-Day Local Pros</h3>
-        <div class="mp-price">$1,111</div>
-        <div class="mp-meta"><span>📍 Peoria, AZ</span><span>🕒 Posted just now</span></div>
-        <div class="mp-check"><span class="ok">✓</span> Rules check: <b>Passed 10 of 10</b></div>
-        <div class="chips"><span class="chip pay">up to $41/call</span><span class="chip">Same-day angle</span></div>
+        <div class="mp-meta"><span>📍 Peoria, AZ</span><span>Example draft</span></div>
+        <div class="mp-check"><span class="ok">✓</span> Network-rule checks: <b>10 of 10</b></div>
+        <div class="chips"><span class="chip">Same-day style</span><span class="chip">Review before posting</span></div>
       </div>
       <img src="/img/water-heater.jpg" alt="AI-generated photo of a technician servicing a tank water heater" width="512" height="512" loading="eager">
-      <figcaption>AI-generated photo for listing use · Example</figcaption>
+      <figcaption>AI-generated image · not a real customer job</figcaption>
     </figure>
     <figure class="mp" aria-label="Example listing made with CallPosts: central AC in Scottsdale">
       <div class="mp-copy">
-        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Marketplace</div>
+        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Listing draft</div>
         <h3>AC Not Cooling? Scottsdale Central Air Repair, Call Today</h3>
-        <div class="mp-price">$1,111</div>
-        <div class="mp-meta"><span>📍 Scottsdale, AZ</span><span>🕒 Posted just now</span></div>
-        <div class="mp-check"><span class="ok">✓</span> Rules check: <b>Passed 10 of 10</b></div>
-        <div class="chips"><span class="chip pay">up to $25/call</span><span class="chip">Seasonal angle</span></div>
+        <div class="mp-meta"><span>📍 Scottsdale, AZ</span><span>Example draft</span></div>
+        <div class="mp-check"><span class="ok">✓</span> Network-rule checks: <b>10 of 10</b></div>
+        <div class="chips"><span class="chip">Seasonal style</span><span class="chip">Review before posting</span></div>
       </div>
       <img src="/img/central-ac.jpg" alt="AI-generated photo of an outdoor central air conditioner beside a stucco house" width="512" height="512" loading="lazy">
-      <figcaption>AI-generated photo for listing use · Example</figcaption>
+      <figcaption>AI-generated image · not a real customer job</figcaption>
     </figure>
   </div>
 </div></section>
 
 <section class="band" id="tools"><div class="in">
   <span class="eyebrow">Three tools, one account</span>
-  <h2>Posts, sites and audits for 86 home services.</h2>
-  <p class="lede">New to this? Start with 5 short lessons that take you from zero to your first ranking site. <a href="/app#learn" style="color:var(--brand)">Start learning →</a></p>
+  <h2>Drafts, pages and audits for 86 home services.</h2>
+  <p class="lede">New to this? Start with 5 short lessons that take you from zero to your first published site. <a href="/app#learn" style="color:var(--brand)">Start learning →</a></p>
   <div class="tools3">
-    <a class="tool" href="/app#posts"><span class="tk">01</span><h3>Marketplace posts</h3><p class="muted">Unique listings, images and Messenger replies in 15 listing styles, checked against the posting rules before you copy them.</p><span class="tc">From 1 credit per listing →</span></a>
-    <a class="tool" href="/app#sites"><span class="tk">02</span><h3>SEO sites</h3><p class="muted">Landing pages and multi-city sites built around your tracking number, in 8 themes, with schema, sitemaps and your own domain.</p><span class="tc">From 3 credits per page →</span></a>
-    <a class="tool" href="/app#audit"><span class="tk">03</span><h3>Site audit</h3><p class="muted">Score any website on local SEO, tap-to-call, schema, speed and pay-per-call compliance, with the fixes that matter most.</p><span class="tc">1 credit per audit →</span></a>
+    <a class="tool" href="/app#posts"><span class="tk">01</span><h3>Listing drafts</h3><p class="muted">Listing drafts, AI images and reply templates in 15 styles, with network-rule checks you review before you copy anything.</p><span class="tc">1 credit per draft · 4 with an image →</span></a>
+    <a class="tool" href="/app#sites"><span class="tk">02</span><h3>Landing pages</h3><p class="muted">Create service-and-city landing pages and multi-city sites around your tracking number, in 8 themes, with schema, sitemaps and your own domain.</p><span class="tc">From 3 credits per page →</span></a>
+    <a class="tool" href="/app#audit"><span class="tk">03</span><h3>Site audit</h3><p class="muted">Check any page for local SEO basics, tap-to-call, schema, speed, disclosures and claims, with a list of what to fix.</p><span class="tc">1 credit per audit →</span></a>
   </div>
 </div></section>
 
 <section class="band alt"><div class="in">
   <span class="eyebrow">How it works</span>
-  <h2>From payout list to live listing in about five minutes.</h2>
+  <h2>From brief to reviewed draft in a few minutes.</h2>
   <ol class="steps">
-    <li><h3>Pick a market</h3><p class="muted">Choose a service and city from the list of top-paying Lead Smart markets, or let AI market picks choose for you.</p></li>
-    <li><h3>Add your number</h3><p class="muted">Paste your tracking number and brand. Pick an angle: same-day, seasonal, local, or a mix.</p></li>
-    <li><h3>Generate the kit</h3><p class="muted">Get unique titles, descriptions, an AI photo creative and Messenger replies for each listing.</p></li>
-    <li><h3>Post, test, scale</h3><p class="muted">Post across services and cities, see which ones bring qualified calls, and add more of those.</p></li>
+    <li><h3>Write a brief</h3><p class="muted">Choose a service and a city. Optional AI market picks suggest where to post next from a reference list.</p></li>
+    <li><h3>Add your number</h3><p class="muted">Paste the tracking number from your network and pick a listing style: same-day, seasonal, local, or a mix.</p></li>
+    <li><h3>Generate drafts</h3><p class="muted">Get titles, descriptions, reply templates and optional AI images, each run through the network-rule checks.</p></li>
+    <li><h3>Review, edit, publish</h3><p class="muted">Read every draft, fix anything that isn't right, and confirm your channel permits the offer before you publish.</p></li>
   </ol>
 </div></section>
 
 <section class="band"><div class="in">
-  <span class="eyebrow">What's in the kit</span>
-  <h2>Everything a listing needs, nothing that gets it pulled.</h2>
+  <span class="eyebrow">What's included</span>
+  <h2>Drafts, images and replies for each service and city.</h2>
   <div class="kit">
-    <div><h3>Listing writer</h3><p class="muted">Unique titles and descriptions per city, so your posts don't read as duplicates.</p></div>
-    <div><h3>AI photo creatives</h3><p class="muted">A realistic AI photo for each job, laid out in a light or dark 1080×1080 design with the city and your number.</p></div>
-    <div><h3>Rules checker</h3><p class="muted">Flags banned words, real prices, links, licence claims and repeated openers before you post.</p></div>
+    <div><h3>Listing writer</h3><p class="muted">Different titles and descriptions for each city and style, so you're not starting from a blank page.</p></div>
+    <div><h3>AI images</h3><p class="muted">An AI-generated image laid out in a light or dark 1080×1080 design with the city and your number. Label it as illustrative; it isn't a real job.</p></div>
+    <div><h3>Network-rule checks</h3><p class="muted">Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.</p></div>
     <div><h3>Messenger replies</h3><p class="muted">Copy-ready answers for "how much?" that move the conversation to a phone call.</p></div>
-    <div><h3>AI market picks</h3><p class="muted">Tells you which service and city to post in next, weighing payouts, the season and what you posted recently.</p></div>
+    <div><h3>AI market picks</h3><p class="muted">Suggests a service and city to try next, weighing reported payouts, the season and what you posted recently. Suggestions, not forecasts.</p></div>
     <div><h3>Canva templates</h3><p class="muted">23 service templates in light and dark styles that open as a copy in your own Canva, plus AI headlines to paste in.</p></div>
   </div>
 </div></section>
 
-<section class="band alt"><div class="in">
-  <span class="eyebrow">Where the calls pay</span>
-  <h2>Reported top payouts from Lead Smart, 2026.</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Service</th><th>Top market</th><th style="text-align:right">Per call</th></tr></thead>
-    <tbody>
-      <tr><td>Water Heaters</td><td>Peoria, AZ</td><td class="n">$41</td></tr>
-      <tr><td>Windows</td><td>Tempe, AZ</td><td class="n">$40</td></tr>
-      <tr><td>Toxic Lead Abatement</td><td>Philadelphia, PA</td><td class="n">$37</td></tr>
-      <tr><td>Exterior Painting</td><td>Denver, CO</td><td class="n">$36</td></tr>
-      <tr><td>Plumbing</td><td>Boulder, CO</td><td class="n">$35</td></tr>
-      <tr><td>Shower Doors</td><td>San Dimas, CA</td><td class="n">$34</td></tr>
-      <tr><td>Bathroom Remodeling</td><td>Littleton, CO</td><td class="n">$33</td></tr>
-      <tr><td>Central AC</td><td>Farmington, AR</td><td class="n">$30</td></tr>
-    </tbody>
-  </table></div>
-  <p class="small">These are reported top payouts, not guaranteed rates. Payouts change with buyer demand, and results depend on your listings, markets and call quality. Check your Lead Smart dashboard for current numbers.</p>
-</div></section>
-
 <section class="band" id="leadsmart"><div class="in">
-  <span class="eyebrow">Lead Smart</span>
-  <h2>You need a call buyer. Lead Smart is ours.</h2>
-  <p class="lede">CallPosts writes the listings. Lead Smart is the private affiliate network that gives you tracking numbers and pays you for qualified calls.</p>
+  <span class="eyebrow">Networks</span>
+  <h2>Using Lead Smart? Bring your own tracking number.</h2>
+  <p class="lede">CallPosts is an independent tool, not affiliated with or endorsed by Lead Smart or Meta. Networks manage their own approvals, tracking numbers and payouts.</p>
   <div class="paths">
     <div class="path">
-      <h3>Already a Lead Smart affiliate</h3>
-      <p class="muted">Pull your tracking numbers from your dashboard, then start building listings in CallPosts.</p>
+      <h3>Using Lead Smart</h3>
+      <p class="muted">Copy a tracking number from your Lead Smart dashboard and paste it into your brief in CallPosts.</p>
       <div class="ctas"><a class="btn sec" href="https://dashboard.leadsmartinc.com" target="_blank" rel="noopener">Open Lead Smart dashboard</a></div>
     </div>
     <div class="path">
-      <h3>Not an affiliate yet</h3>
-      <p class="muted">Apply to Lead Smart directly. Once you're approved, add your tracking numbers to CallPosts and start posting.</p>
-      <div class="ctas"><a class="btn pri" id="joinLs" href="https://dashboard.leadsmartinc.com" target="_blank" rel="noopener">Join Lead Smart</a></div>
+      <h3>Using another network</h3>
+      <p class="muted">Any 10-digit tracking number works. Check your network's own rules too: the checks in CallPosts are set up for the rules listed below.</p>
     </div>
   </div>
 </div></section>
 
 <section class="band alt"><div class="in">
-  <span class="eyebrow">Listing rules built in</span>
-  <h2>The rules every listing follows.</h2>
+  <span class="eyebrow">Network-rule checks</span>
+  <h2>What the checks look for.</h2>
+  <p class="lede">Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.</p>
   <div class="rules">
-    <div class="rule"><b>✓</b><span>Price field uses the $1,111 placeholder.</span></div>
-    <div class="rule"><b class="x">✕</b><span>No real service prices in the listing.</span></div>
-    <div class="rule"><b class="x">✕</b><span>No price quotes in Messenger. Replies point to a call.</span></div>
-    <div class="rule"><b class="x">✕</b><span>Never says or implies the service costs nothing.</span></div>
-    <div class="rule"><b class="x">✕</b><span>No invented reviews, licences or guarantees.</span></div>
-    <div class="rule"><b>✓</b><span>Unique wording per listing to avoid duplicate flags.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No service prices, rates, discounts or coupons in drafts or replies.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No offers that say or imply the service costs nothing.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No invented reviews, ratings, licences, guarantees or warranties.</span></div>
+    <div class="rule"><b class="x">✕</b><span>No links or web addresses in listing drafts.</span></div>
+    <div class="rule"><b>✓</b><span>States that calls connect to independent local providers.</span></div>
+    <div class="rule"><b>✓</b><span>Your tracking number appears in the draft.</span></div>
   </div>
+  <p class="small">Rule source: Lead Smart's publisher guidance for home-service offers, as supplied to CallPosts. Last reviewed October 21, 2026. Before you promote an offer on any channel, confirm that the channel permits it.</p>
+</div></section>
+
+<section class="band" id="demo"><div class="in">
+  <span class="eyebrow">See it work</span>
+  <h2>One real draft, start to finish.</h2>
+  <p class="lede">This is actual output from CallPosts, unedited except where step 4 shows the changes a person made. The phone number is a 555 test number.</p>
+  <ol class="demo">
+    <li>
+      <h3>Brief</h3>
+      <dl class="dkv"><dt>Service</dt><dd>Water Heater Repair</dd><dt>City</dt><dd>Peoria, AZ</dd><dt>Tracking number</dt><dd>(623) 555-0147</dd><dt>Listing style</dt><dd>Question hook</dd><dt>Drafts</dt><dd>1 (1 credit)</dd></dl>
+    </li>
+    <li>
+      <h3>Generated draft</h3>
+      <div class="dcard">
+        <b>Water heater not giving hot water? Repair help in Peoria, AZ</b>
+        <p>Water heater not giving hot water?</p>
+        <p>It could be a failed heating element, a bad thermostat, or a pilot light that will not stay lit. A local pro can check the tank and tell you whether it needs a repair or a replacement.</p>
+        <p>Call 623-555-0147 and tell us what you are seeing. We connect you with trusted local pros serving Peoria, Vistancia, Fletcher Heights and nearby Glendale.</p>
+        <p>Cold showers are no way to start the day. Call 623-555-0147 to get an exact quote for your job.</p>
+        <p class="dsub">Reply template: “Hi, thanks for messaging. Pricing depends on the job, such as the type of water heater and what is wrong with it. The fastest way to get an exact quote is to call 623-555-0147.”</p>
+      </div>
+    </li>
+    <li>
+      <h3>Network-rule checks</h3>
+      <ul class="dchecks">
+        <li><span>✓</span>No “free” wording</li><li><span>✓</span>No prices or dollar amounts in the text</li><li><span>✓</span>No discounts or coupons</li><li><span>✓</span>No licence, guarantee or warranty claims</li><li><span>✓</span>No reviews, ratings or years in business</li><li><span>✓</span>No links or web addresses</li><li><span>✓</span>No long ALL-CAPS runs</li><li><span>✓</span>Tracking number included</li><li><span>✓</span>Title under 90 characters</li><li><span>✓</span>Opening line differs from other drafts</li>
+      </ul>
+      <p class="small">10 of 10 passed. That means the draft matches the network rules configured in CallPosts, not that a platform will accept it.</p>
+    </li>
+    <li>
+      <h3>Human edits</h3>
+      <div class="dcard">
+        <p>It could be a failed heating element, a bad thermostat, or a pilot light that <del>will not</del> <ins>won't</ins> stay lit. …</p>
+        <p>Call 623-555-0147 and tell us what you<del> are</del><ins>'re</ins> seeing. We connect you with <del>trusted </del>local pros serving Peoria, Vistancia<del>,</del> <ins>and</ins> Fletcher Heights<del> and nearby Glendale</del>.</p>
+      </div>
+      <p class="small">Why: plainer wording; “trusted” removed because the publisher can't vouch for each provider; Glendale removed because this tracking number doesn't cover it. Before publishing, the publisher also confirmed the channel permits this kind of offer.</p>
+    </li>
+    <li>
+      <h3>Finished output</h3>
+      <div class="dfinal">
+        <figure><img src="/img/water-heater.jpg" alt="AI-generated image of a technician servicing a tank water heater" width="512" height="512" loading="lazy"><figcaption>AI-generated image · illustrative, not a real customer job</figcaption></figure>
+        <div class="dcard">
+          <b>Water heater not giving hot water? Repair help in Peoria, AZ</b>
+          <p>Water heater not giving hot water?</p>
+          <p>It could be a failed heating element, a bad thermostat, or a pilot light that won't stay lit. A local pro can check the tank and tell you whether it needs a repair or a replacement.</p>
+          <p>Call 623-555-0147 and tell us what you're seeing. We connect you with local pros serving Peoria, Vistancia and Fletcher Heights.</p>
+          <p>Cold showers are no way to start the day. Call 623-555-0147 to get an exact quote for your job.</p>
+        </div>
+      </div>
+      <p class="small">Credits used: 4 (text 1 + AI image 3).</p>
+    </li>
+  </ol>
+  <div class="ctas"><a class="btn pri" href="/app#signup">Try 15 free credits</a><span class="small" style="align-self:center">No card required.</span></div>
 </div></section>
 
 <section class="band" id="pricing"><div class="in">
   <span class="eyebrow">Pricing</span>
-  <h2>One qualified call can pay for a whole month.</h2>
-  <p class="lede">Payouts run $15 to $41 per call. Every plan costs less than a single good call, and every account starts with 15 credits to try it first.</p>
+  <h2>Choose a credit plan that fits your workflow.</h2>
+  <p class="lede">Every account starts with 15 credits to try it first. Unused credits roll over.</p>
   <div class="founder"><b>Founding member offer:</b> the first 50 subscribers keep their launch price for as long as they stay subscribed.</div>
   <div class="plans">
     <div class="plan">
       <h3>Starter</h3>
       <div class="amt">$9<small> / month</small></div>
       <p class="muted small" style="margin:0">For testing a few markets.</p>
-      <ul><li><b>100 credits</b> a month</li><li>Up to 100 listings, or mix in AI photos</li><li>AI market picks</li><li>Rules checker and Messenger replies</li><li>All 23 Canva templates</li><li>Unused credits roll over</li></ul>
-      <a class="btn sec" href="/app#signup">Start with 15 credits</a>
+      <ul><li><b>100 credits</b> a month</li><li>Up to 100 text drafts, or 25 drafts with images</li><li>AI market picks</li><li>Network-rule checks and reply templates</li><li>All 23 Canva templates</li><li>Unused credits roll over</li></ul>
+      <a class="btn sec" href="/app#signup">Try 15 free credits</a>
     </div>
     <div class="plan hl">
       <span class="badge">Most popular</span>
       <h3>Pro</h3>
       <div class="amt">$19<small> / month</small></div>
-      <p class="muted small" style="margin:0">For posting every day across several cities.</p>
-      <ul><li><b>350 credits</b> a month</li><li>Enough for a full kit with AI photos every day</li><li>About 5¢ per listing</li><li>Everything in Starter</li><li>Unused credits roll over</li></ul>
-      <a class="btn pri" href="/app#signup">Start with 15 credits</a>
+      <p class="muted small" style="margin:0">For working across several services and cities.</p>
+      <ul><li><b>350 credits</b> a month</li><li>About 87 drafts with images, or 350 text drafts</li><li>About 5¢ per credit</li><li>Everything in Starter</li><li>Unused credits roll over</li></ul>
+      <a class="btn pri" href="/app#signup">Try 15 free credits</a>
     </div>
     <div class="plan">
       <h3>Agency</h3>
       <div class="amt">$49<small> / month</small></div>
       <p class="muted small" style="margin:0">For teams running many profiles.</p>
-      <ul><li><b>1,200 credits</b> a month</li><li>About 4¢ per listing, the lowest rate</li><li>Priority help setting up markets</li><li>Everything in Pro</li><li>Unused credits roll over</li></ul>
-      <a class="btn sec" href="/app#signup">Start with 15 credits</a>
+      <ul><li><b>1,200 credits</b> a month</li><li>About 4¢ per credit, the lowest rate</li><li>Priority help setting up</li><li>Everything in Pro</li><li>Unused credits roll over</li></ul>
+      <a class="btn sec" href="/app#signup">Try 15 free credits</a>
     </div>
   </div>
   <div class="payg"><div><b>Pay as you go:</b> $5 for 40 credits, no subscription. Credits never expire.</div><a class="btn sec" href="/app#signup">Create account</a></div>
-  <p class="small">1 credit = 1 listing (title, description, tags, Messenger replies and rules check). An AI photo creative is 3 credits and AI market picks are 1. Cancel any time and keep the credits you've already got.</p>
+  <div class="costs">
+    <h3>What each action costs</h3>
+    <table>
+      <tbody>
+        <tr><td>Listing draft (title, description, tags, reply templates, network-rule checks)</td><td class="n">1 credit</td></tr>
+        <tr><td>Listing draft + AI image</td><td class="n"><b>4 credits</b></td></tr>
+        <tr><td>Landing page</td><td class="n">3 credits</td></tr>
+        <tr><td>Landing page + AI image</td><td class="n">6 credits</td></tr>
+        <tr><td>City site</td><td class="n">3 credits per city page (6 with images) · hub page included</td></tr>
+        <tr><td>Site audit</td><td class="n">1 credit</td></tr>
+        <tr><td>AI market picks (optional)</td><td class="n">1 credit</td></tr>
+        <tr><td>Canva templates, network-rule checks on your own text, editing pages, theme changes, lessons</td><td class="n">No credits</td></tr>
+      </tbody>
+    </table>
+    <p class="small">The app shows the full charge before each generation. If a generation fails, its credits are returned automatically. Cancel any time and keep the credits you already have.</p>
+  </div>
 </div></section>
 
 <section class="band alt" id="access"><div class="in">
   <span class="eyebrow">Get started</span>
-  <h2>Create an account and post your first listings today.</h2>
-  <p class="muted">Every new account starts with 15 credits, enough for a full batch of listings plus AI photos and market picks.</p>
+  <h2>Create an account and make your first drafts today.</h2>
+  <p class="muted">Every new account starts with 15 credits. No card required.</p>
   <div class="ctas" style="margin:4px 0 18px"><a class="btn pri" href="/app#signup">Create account</a><a class="btn sec" href="/app">Log in</a></div>
   <p class="muted">Prefer to talk first, or setting up a team? Leave your details and we'll reach out.</p>
   <form id="wl" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company">
@@ -398,24 +465,21 @@ nav .ctas{align-items:center}
     <p hidden><label>Leave empty <input name="company"></label></p>
     <label for="wlName">Name<input id="wlName" name="name" required autocomplete="name"></label>
     <label for="wlContact">Email or WhatsApp<input id="wlContact" name="contact" required></label>
-    <label for="wlStatus">Lead Smart status
-      <select id="wlStatus" name="leadsmart"><option>Already an affiliate</option><option>Not yet, want to join</option><option>Use another network</option></select></label>
+    <label for="wlStatus">Your network
+      <select id="wlStatus" name="leadsmart"><option>Lead Smart</option><option>Another network</option><option>Not with a network yet</option></select></label>
     <button class="btn sec" type="submit">Send details</button>
   </form>
   <p class="small" id="wlMsg" role="status"></p>
-  <p class="small">Have an access code? <a href="/app" style="color:var(--brand)">Open the listing agent</a> and enter it under your account.</p>
+  <p class="small">Have an access code? <a href="/app" style="color:var(--brand)">Open the app</a> and enter it under your account.</p>
 </div></section>
 
 <footer class="band"><div class="in">
   <div class="logo" style="font-size:18px">Call<span>Posts</span></div>
-  <p class="small">CallPosts is an independent listing tool and isn't operated by Lead Smart or Meta. Facebook Marketplace is a trademark of Meta Platforms, Inc.</p>
+  <p class="small">CallPosts is an independent tool, not affiliated with or endorsed by Lead Smart or Meta. Networks manage their own approvals, tracking numbers and payouts. Facebook Marketplace is a trademark of Meta Platforms, Inc.</p>
   <p class="small"><a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/refunds" style="color:inherit">Refunds</a> · <a href="#access" style="color:inherit">Contact</a></p>
 </div></footer>
 
 <script>
-// Lead Smart signup link (no referral program; this is their standard dashboard).
-const LEADSMART_REFERRAL_URL = "https://dashboard.leadsmartinc.com";
-document.getElementById("joinLs").href = LEADSMART_REFERRAL_URL;
 
 document.getElementById("wl").addEventListener("submit", async (e) => {
   e.preventDefault();

@@ -103,10 +103,10 @@ export function auditHtml(o: { html: string; url: string; finalUrl: string; stat
   add("Technical", "lang", "Language set on the page", lang, lang ? "yes" : "missing", "Add lang=\"en\" to the <html> tag.", 1);
   add("Technical", "og", "Social sharing tags", !!(ogTitle && ogImage), ogTitle && ogImage ? "yes" : ogTitle ? "no image" : "missing", "Add og:title and og:image so shared links show a proper preview.", 2);
   // Compliance
-  add("Pay-per-call compliance", "free", "No “free” claims", !hasFree, hasFree ? "uses “free”" : "clean", "Remove “free” (free quote, free estimate); most call buyers and ad platforms flag it.", 6);
-  add("Pay-per-call compliance", "prices", "No prices or dollar amounts", prices.length === 0, prices.length ? prices.slice(0, 3).join(", ") : "none", "Remove prices and discounts; the price depends on the job and the call gets the quote.", 5);
-  add("Pay-per-call compliance", "disclosure", "Referral disclosure", disclosure, disclosure ? "found" : "not found", "State plainly that the site connects homeowners with independent local providers.", 5);
-  add("Pay-per-call compliance", "privacy", "Privacy policy link", privacy, privacy ? "found" : "not found", "Link a privacy policy in the footer; buyers and ad platforms expect one.", 3);
+  add("Disclosures & claims", "free", "No “free” claims", !hasFree, hasFree ? "uses “free”" : "clean", "Remove “free” (free quote, free estimate); most call buyers and ad platforms flag it.", 6);
+  add("Disclosures & claims", "prices", "No prices or dollar amounts", prices.length === 0, prices.length ? prices.slice(0, 3).join(", ") : "none", "Remove prices and discounts; the price depends on the job and the call gets the quote.", 5);
+  add("Disclosures & claims", "disclosure", "Referral disclosure", disclosure, disclosure ? "found" : "not found", "State plainly that the site connects homeowners with independent local providers.", 5);
+  add("Disclosures & claims", "privacy", "Privacy policy link", privacy, privacy ? "found" : "not found", "Link a privacy policy in the footer; buyers and ad platforms expect one.", 3);
 
   const pct = (xs: Check[]) => { const t = xs.reduce((a, x) => a + x.w, 0); return t ? Math.round((xs.reduce((a, x) => a + (x.ok ? x.w : 0), 0) / t) * 100) : 100; };
   const groupNames = [...new Set(C.map((c) => c.group))];

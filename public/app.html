@@ -255,13 +255,13 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 <div class="wrap">
   <header>
     <h1>CallPosts</h1>
-    <p>Three tools for pay-per-call publishers, for 86 home services: Marketplace posts that follow the rules, SEO sites that rank for “service + city”, and audits that show what's stopping a site from getting calls.</p>
-    <nav class="tools" aria-label="Tools"><a href="#learn" data-tool="learn"><b>Learn</b><span>5 lessons, start here</span></a><a href="#posts" data-tool="posts"><b>Marketplace posts</b><span>Listings, images and replies</span></a><a href="#sites" data-tool="sites"><b>SEO sites</b><span>Pages and city sites</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Score any website</span></a></nav>
+    <p>Content tools for home-service pay-per-call affiliates: listing drafts, AI images and reply templates, service-and-city landing pages, and site audits. Review every output and your channel’s rules before publishing.</p>
+    <nav class="tools" aria-label="Tools"><a href="#learn" data-tool="learn"><b>Learn</b><span>5 lessons, start here</span></a><a href="#posts" data-tool="posts"><b>Listing drafts</b><span>Drafts, images and replies</span></a><a href="#sites" data-tool="sites"><b>Landing pages</b><span>Service-and-city pages</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Check any web page</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
   <details class="panel tpl" id="learnBox">
-    <summary><h2>Start here: from zero to your first ranking site</h2><span class="sum" id="learnSum">5 short lessons · no credits needed</span></summary>
+    <summary><h2>Start here: from zero to your first published site</h2><span class="sum" id="learnSum">5 short lessons · no credits needed</span></summary>
     <div class="tpl-body">
       <div class="onb" style="padding:10px 12px"><div class="bar"><i id="learnBar" style="width:0"></i></div><span class="status" id="learnProg" style="margin:0"></span></div>
       <div class="learn">
@@ -306,7 +306,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks</p>
+          <p class="status" id="acctHint" style="margin:0">Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · site audit 1 · market picks 1</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
@@ -324,20 +324,20 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <ol id="onbList"></ol>
       </div>
       <div class="field">
-        <span class="label">Top-paying markets (Lead Smart, 2026)</span>
+        <span class="label">Reported payouts by market (reference only)</span>
         <input id="filter" placeholder="Filter by service, city or state">
         <div class="markets"><table id="mkt"></table></div>
       </div>
       <details class="field" id="pickBox">
         <summary class="label" style="cursor:pointer">✦ AI market picks: where to post next</summary>
         <textarea id="pickNotes" placeholder="Optional: states you cover, what has worked, services to skip"></textarea>
-        <button class="btn ghost ai" id="pickGo" type="button">Suggest markets</button>
+        <button class="btn ghost ai" id="pickGo" type="button">Suggest markets · 1 credit</button>
         <div class="status" id="pickStatus" role="status"></div>
         <div class="picks" id="picks"></div>
       </details>
       <details class="field" id="lpBox">
-        <summary class="label" style="cursor:pointer">✦ SEO sites: landing pages and city sites</summary>
-        <p class="status" style="margin:0">Call sites hosted on callposts.com with tap-to-call buttons, built to rank on Google for “service + city”: long, unique, local copy with search-ready titles and structured data. Use them for Google Business, ads or SEO. Don't put links in Marketplace listings.</p>
+        <summary class="label" style="cursor:pointer">✦ Landing pages: service-and-city pages and city sites</summary>
+        <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months.</p>
         <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">City site (up to 10 cities)</button></div>
         <div id="lpSiteFields" hidden style="display:flex;flex-direction:column;gap:8px">
           <label class="label" for="lpCities" style="margin:0">Cities, one per line, with state code</label>
@@ -355,8 +355,8 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="picks" id="lpList"></div>
       </details>
       <details class="field" id="auditBox">
-        <summary class="label" style="cursor:pointer">✦ Site audit: score any website</summary>
-        <p class="status" style="margin:0">Checks a page for local SEO, tap-to-call, schema, speed and pay-per-call compliance, then lists the fixes that matter most. Works on your sites, your clients' and your competitors'.</p>
+        <summary class="label" style="cursor:pointer">✦ Site audit: check any web page</summary>
+        <p class="status" style="margin:0">Checks a page for local SEO basics, tap-to-call, schema, speed, disclosures and claims, then lists what to fix. A higher score doesn't guarantee rankings or calls. Works on your sites, your clients' and your competitors'.</p>
         <input id="auUrl" type="url" inputmode="url" placeholder="https://yourdomain.com/page" aria-label="Website address">
         <div class="row"><input id="auKw" placeholder="Target service (optional)" aria-label="Target service"><input id="auCity" placeholder="City, State (optional)" aria-label="Target city"></div>
         <button class="btn ai" id="auGo" type="button">Run audit · 1 credit</button>
@@ -386,17 +386,18 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
       <div class="field"><label class="label" for="extra">Offer & notes (optional)</label>
         <textarea id="extra" placeholder="e.g. 24/7, call hours 8am–8pm, serves Peoria, Glendale, Surprise"></textarea></div>
       <div class="actions">
-        <button class="btn" id="go">Write listings</button><span class="status" id="costNote" style="align-self:center;margin:0"></span>
+        <button class="btn" id="go">Write drafts</button><span class="status" id="costNote" style="align-self:center;margin:0"></span>
         <button class="btn ghost" id="stop" hidden>Stop</button>
       </div>
       <div class="status" id="status" role="status"></div>
       <details class="field">
-        <summary class="label" style="cursor:pointer">Check your own listing against the rules</summary>
+        <summary class="label" style="cursor:pointer">Network-rule checks for a draft you wrote</summary>
+        <p class="status" style="margin:0">Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.</p>
         <textarea id="ownText" placeholder="Paste a title + description you wrote"></textarea>
-        <button class="btn ghost" id="ownCheck">Check listing</button>
+        <button class="btn ghost" id="ownCheck">Run network-rule checks</button>
         <div class="rules" id="ownResult"></div>
       </details>
-      <div class="note"><b>Lead Smart Marketplace rules built in:</b> price field is always the $1,111 placeholder, no real service prices in listings, and Messenger replies never quote a price, and the word “free” is never used. Listings also avoid invented reviews or licence claims.<br><br><b>Workflow:</b> pick strong-payout markets → post targeted listings → test several services and cities → scale what brings qualified calls. Payouts shown are reported 2026 top rates, not guaranteed; check your dashboard for current numbers.</div>
+      <div class="note"><b>Network-rule checks.</b> Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.<br><br><span style="color:var(--muted)">Rule source: Lead Smart publisher guidance for home-service offers, as supplied to CallPosts · last reviewed Oct 21, 2026.</span><br><br><b>Before you publish:</b> read every draft, edit what isn't right, and confirm the channel you're using permits this kind of offer. Payouts in the market list are reported figures, not guaranteed rates.</div>
     </section>
 
     <section class="out" id="out" aria-live="polite"></section>
@@ -524,14 +525,15 @@ function fallback(b){
     tags:[b.service,c,"home services","local pros"],headline:b.service,tagline:["Same-day help from local pros","Quick quotes from local pros","Trusted local pros near you","Book before the season turns","Compare options, call today"][i%5],photos:[`Before/after of a ${b.service.toLowerCase()} job you own rights to`,`Clean text graphic: "${b.service} – ${c}" with the phone number`,`Photo of a local ${c} home exterior you took`]}});
 }
 
-// Rules checker: every rule is listed with pass/fail so users see exactly why a listing passed or failed.
+// Network-rule checks: every configured rule is listed with pass/fail. Passing doesn't mean a platform permits the offer.
+const SRC_TXT="Rule source: Lead Smart publisher guidance for home-service offers, as supplied to CallPosts · last reviewed Oct 21, 2026";
 const RULES=[
-  {name:'No "free" wording',re:/\bfree\b/i,why:'Uses the word "free". Remove it; you can\'t imply any part of the service costs nothing.'},
-  {name:"Only the $1,111 placeholder price",re:/\$\s?(?!1,?111\b)\d[\d,]*(\.\d+)?/,why:"Shows a dollar amount. Only the $1,111 placeholder belongs in the price field; never put real prices in the listing."},
+  {name:'No "free" wording',re:/\bfree\b/i,why:'Uses the word "free". The configured network rules don\'t allow implying any part of the service costs nothing.'},
+  {name:"No prices or dollar amounts in the text",re:/\$\s?(?!1,?111\b)\d[\d,]*(\.\d+)?/,why:"Shows a dollar amount. The network rules configured here don't allow prices in drafts or replies."},
   {name:"No discounts or coupons",re:/\b\d+\s?%\s?off\b|\bdiscount\b|\bcoupon\b/i,why:"Mentions a discount. That implies pricing; take it out."},
   {name:"No licence, guarantee or warranty claims",re:/\b(licensed|insured|bonded|certified|guaranteed?|warranty)\b/i,why:"Claims a licence, guarantee or warranty. As a referral service you can't promise this."},
   {name:"No reviews, ratings or years in business",re:/\b\d(\.\d)?\s?(stars?|★)|\b\d+\+?\s?(reviews|years in business)\b/i,why:"Cites reviews, ratings or years in business. Remove unless verifiable."},
-  {name:"No links or web addresses",re:/https?:\/\/|www\.|\.com\b/i,why:"Contains a link or web address. Marketplace often removes these; use the phone number only."},
+  {name:"No links or web addresses",re:/https?:\/\/|www\.|\.com\b/i,why:"Contains a link or web address. The configured network rules call for the phone number only."},
   {name:"No long ALL-CAPS runs",re:/\b[A-Z]{5,}\b(?:\s+\b[A-Z]{4,}\b){2,}/,why:"Long ALL-CAPS run. Write in normal case."},
 ];
 function runChecks(text,phone){
@@ -547,15 +549,15 @@ function checkListing(it,phone,all){
   out.push({name:"Title under 90 characters",ok:tl<=90,why:tl<=90?"":`Title is ${tl} characters; keep it under 90.`});
   const open=(it.description||"").split("\n")[0].trim().toLowerCase();
   const dup=all.filter(x=>(x.description||"").split("\n")[0].trim().toLowerCase()===open).length>1;
-  out.push({name:"Unique opening line",ok:!dup,why:dup?"Same opening line as another listing. Vary it to avoid duplicate flags.":""});
+  out.push({name:"Unique opening line",ok:!dup,why:dup?"Same opening line as another draft. Vary it so each reads differently.":""});
   return out;
 }
 function checkText(text,phone){return runChecks(text,phone)}
 function rulesHTML(res){
   const bad=res.filter(r=>!r.ok&&!r.warn),warn=res.filter(r=>r.warn),pass=res.filter(r=>r.ok).length;
-  const head=bad.length?`<div class="bad"><b>✕ ${bad.length} rule${bad.length>1?"s":""} failed</b> · passed ${pass} of ${res.length}</div>`:`<div class="ok">✓ Passed ${pass} of ${res.length} checks${warn.length?" (1 needs your number)":""}</div>`;
+  const head=bad.length?`<div class="bad"><b>✕ ${bad.length} network-rule check${bad.length>1?"s":""} failed</b> · ${pass} of ${res.length} passed</div>`:`<div class="ok">✓ ${pass} of ${res.length} network-rule checks passed${warn.length?" (1 needs your number)":""}</div>`;
   const rows=res.map(r=>`<li class="${r.ok?"pass":r.warn?"warnr":"fail"}"><span class="mk">${r.ok?"✓":r.warn?"!":"✕"}</span><span><b>${esc(r.name)}</b>${r.why?`<br><span class="why">${esc(r.why)}</span>`:""}</span></li>`).join("");
-  return `${head}<details class="rulelist"${bad.length?" open":""}><summary>See every check</summary><ul>${rows}</ul></details>`;
+  return `${head}<details class="rulelist"${bad.length?" open":""}><summary>See every check</summary><ul>${rows}</ul><p class="why" style="margin:6px 0 0">Passing doesn't mean a platform permits your offer or guarantees approval. ${SRC_TXT}.</p></details>`;
 }
 $("ownCheck").onclick=()=>{const t=$("ownText").value.trim();$("ownResult").innerHTML=t?rulesHTML(checkText(t,$("phone").value)):"Paste a listing first."};
 
@@ -688,14 +690,14 @@ function render(items,b,live){
     return `<article class="card">
       <div class="card-head"><h3>${esc(it.title)}</h3><button class="copy" data-copy="${esc(it.title)}">Copy title</button></div>
       <div class="chips"><span class="chip">${esc(it.hook||"Listing "+(i+1))}</span>${pay}<span class="chip">${esc(b.city)}</span></div>
-      <dl class="kv"><dt>Category</dt><dd>${esc(it.category)}</dd><dt>Price field</dt><dd>$1,111 <span style="color:var(--muted)">(placeholder)</span></dd><dt>Tags</dt><dd>${esc((it.tags||[]).join(", "))}</dd></dl>
+      <dl class="kv"><dt>Category</dt><dd>${esc(it.category)}</dd><dt>Price field</dt><dd>$1,111 <span style="color:var(--muted)">(set by the configured network rules; confirm the platform permits your listing)</span></dd><dt>Tags</dt><dd>${esc((it.tags||[]).join(", "))}</dd></dl>
       <div class="desc">${esc(it.description)}</div>
       <div class="actions"><button class="copy" data-copy="${esc(it.description)}">Copy description</button><button class="copy" data-copy="${esc(full)}">Copy title + description</button></div>
-      <div><span class="label">Messenger replies (never quote a price)</span>${(it.replies||[]).map(r=>`<div class="desc" style="margin-top:6px">${esc(r)}</div><button class="copy" data-copy="${esc(r)}" style="margin-top:4px">Copy reply</button>`).join("")}</div>
-      <div><span class="label">Rules check</span><div class="rules">${rulesHTML(checkListing(it,b.phone,items))}</div></div>
+      <div><span class="label">Reply templates (no prices)</span>${(it.replies||[]).map(r=>`<div class="desc" style="margin-top:6px">${esc(r)}</div><button class="copy" data-copy="${esc(r)}" style="margin-top:4px">Copy reply</button>`).join("")}</div>
+      <div><span class="label">Network-rule checks</span><div class="rules">${rulesHTML(checkListing(it,b.phone,items))}</div></div>
       <div><span class="label">Image creative</span>
         <dl class="ctext"><dt>Headline</dt><dd>${esc(it.headline||b.service)}</dd><button class="copy" data-copy="${esc(it.headline||b.service)}">Copy</button><dt>Tagline</dt><dd>${esc(it.tagline||"")}</dd><button class="copy" data-copy="${esc(it.tagline||"")}">Copy</button></dl>
-        <div class="creative" data-i="${i}" style="margin-top:8px"><button class="btn ai aiimg" type="button">AI photo + design</button><button class="copy mk" type="button">Quick design (no photo)</button><a class="copy canva" href="${canvaFor(b.service).url}" target="_blank" rel="noopener">Customize in Canva ↗</a></div>
+        <div class="creative" data-i="${i}" style="margin-top:8px"><button class="btn ai aiimg" type="button">AI image + design · 3 credits</button><button class="copy mk" type="button">Quick design (no photo)</button><a class="copy canva" href="${canvaFor(b.service).url}" target="_blank" rel="noopener">Customize in Canva ↗</a></div>
         <p class="status" style="margin:6px 0 0">${esc(canvaFor(b.service).note)} Paste the headline and tagline above into the template.</p></div>
       <div><span class="label">Photo ideas</span><ul class="photos">${(it.photos||[]).map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>
     </article>`}).join("");
@@ -728,7 +730,7 @@ $("out").addEventListener("click",async e=>{
         if(!r.ok||!j.image)throw new Error(aiError(r,j,"The photo didn't come through. Try again."));
         noteCredits(r);
         photos[i]=j.image;onbDone("photo");
-      }catch(err){mk.disabled=false;mk.textContent="AI photo + design";box.insertAdjacentHTML("beforeend",`<span class="status" style="flex-basis:100%">${esc(err.message)}</span>`);return}
+      }catch(err){mk.disabled=false;mk.textContent="AI image + design · 3 credits";box.insertAdjacentHTML("beforeend",`<span class="status" style="flex-basis:100%">${esc(err.message)}</span>`);return}
     }
     await showCreative(box);return}
 
@@ -1145,7 +1147,7 @@ document.querySelectorAll("#acct .tabs button").forEach(b=>b.onclick=()=>setMode
 if(location.hash==="#signup")setMode("signup");
 
 window.cpSetCredits=n=>{$("acctBal").textContent=n;updateCost()};
-function updateCost(){const n=+$("count").value||5;$("costNote").textContent=window.cpUser&&!$("code").value.trim()?`Uses ${n} credit${n===1?"":"s"}`:""}
+function updateCost(){const n=+$("count").value||5;const code=!!$("code").value.trim();$("costNote").textContent=code?`Access code: no credits used`:`Charge: ${n} credit${n===1?"":"s"} for ${n} text draft${n===1?"":"s"} · each AI image adds 3 (text + image = 4)`}
 $("count").addEventListener("change",updateCost);$("code").addEventListener("input",updateCost);
 
 async function refresh(){
@@ -1163,7 +1165,7 @@ async function refresh(){
     if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
       $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
     if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
-    if(!me.buyUrl)$("acctHint").textContent="1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks. Need more? Message CallPosts to top up.";}
+    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · site audit 1 · market picks 1. Need more? Message CallPosts to top up.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }

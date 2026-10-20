@@ -55,7 +55,7 @@ window.COURSE = [
 <ol>
 <li>Get a tracking number for your service from your network. One number for the whole site is fine.</li>
 <li>In the brief, type the service and paste the tracking number.</li>
-<li>Open <b>SEO sites</b>, choose <b>City site</b>, and list your towns, one per line, like “Lakewood, CO”.</li>
+<li>Open <b>Landing pages</b>, choose <b>City site</b>, and list your towns, one per line, like “Lakewood, CO”.</li>
 <li>Pick a theme. Emergency suits leaks and floods; Meadow suits lawn and pest; Clean works for anything.</li>
 <li>Build. Each city page costs 3 credits (6 with an AI photo) and takes about 20 to 30 seconds.</li>
 </ol>
@@ -75,7 +75,7 @@ window.COURSE = [
 <ol>
 <li><b>Buy a domain</b> (usually $10 to $15 a year) at a registrar such as Cloudflare, Namecheap or Porkbun. Simple names work: region + service, like lakewoodwaterheaterhelp.com. Never use a real company's name or trademark.</li>
 <li><b>Add one DNS record</b> at the registrar: type <b>CNAME</b>, name <code>www</code>, value <code>callposts.netlify.app</code>.</li>
-<li><b>Connect it</b> in SEO sites: open your site, choose “Connect your own domain”, enter www.yourdomain.com and click Connect. HTTPS is set up automatically within minutes.</li>
+<li><b>Connect it</b> in Landing pages: open your site, choose “Connect your own domain”, enter www.yourdomain.com and click Connect. HTTPS is set up automatically within minutes.</li>
 <li><b>Tell Google.</b> Add the domain to Google Search Console (free), verify it with the TXT record it gives you, then submit <code>/sitemap.xml</code>.</li>
 </ol>
 <p class="tip">DNS changes can take from a few minutes to an hour. If Connect says no record yet, wait and try again.</p>`,
