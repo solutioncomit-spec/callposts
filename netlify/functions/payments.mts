@@ -1,6 +1,7 @@
 import type { Config } from "@netlify/functions";
 import { getStore } from "@netlify/blobs";
 import { changeCredits, claimOnce } from "../lib/credits.mts";
+import { rewardReferrer } from "../lib/referrals.mts";
 
 // Lemon Squeezy webhook: adds credits when someone pays.
 //  - order_created (paid): first payment of any plan or a one-time credit pack
@@ -64,6 +65,7 @@ export default async (req: Request) => {
     if (!(await claimOnce(`ls-order-${data.id}`))) return Response.json({ ok: true, duplicate: true });
     const acc = await changeCredits(userId, String(attrs.user_email || ""), credits, `purchase: order ${data.id}`);
     console.log(`payment credited ${credits} to ${userId} order=${data.id} balance=${acc?.credits}`);
+    try { await rewardReferrer(userId, credits, `order ${data.id}`); } catch (e) { console.error("referral reward failed", e); }
     return Response.json({ ok: true, credited: credits });
   }
 
@@ -81,6 +83,7 @@ export default async (req: Request) => {
     if (!(await claimOnce(`ls-invoice-${data.id}`))) return Response.json({ ok: true, duplicate: true });
     const acc = await changeCredits(userId, String(attrs.user_email || sub?.email || ""), credits, `renewal: subscription ${subId}`);
     console.log(`renewal credited ${credits} to ${userId} sub=${subId} balance=${acc?.credits}`);
+    try { await rewardReferrer(userId, credits, `renewal ${subId}`); } catch (e) { console.error("referral reward failed", e); }
     return Response.json({ ok: true, credited: credits });
   }
 

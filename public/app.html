@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CallPosts · Listing Agent</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<script>try{var rf=new URLSearchParams(location.search).get("ref");if(rf&&/^[A-Za-z0-9]{4,12}$/.test(rf))localStorage.setItem("cp-ref",JSON.stringify({c:rf.toUpperCase(),t:Date.now()}))}catch(e){}</script>
 <script>try{var t=localStorage.getItem("cp-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,11 +161,26 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .onb li.done{color:var(--muted);text-decoration:line-through}
 .onb li.done .bx{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .onb .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.onb .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
 .tools a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.learn{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.learn{grid-template-columns:minmax(0,1fr)}}
+.learn-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.learn-list button{width:100%;text-align:left;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:start;font:500 13px var(--body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 10px;cursor:pointer}
+.learn-list button[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.learn-list .ck{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:11px}
+.learn-list .done .ck{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.learn-list .mins{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.learn-body{font-size:14.5px;line-height:1.65;min-width:0}
+.learn-body h3{margin:0 0 4px;font-size:19px}
+.learn-body h4{margin:16px 0 4px;font-size:14px}
+.learn-body p,.learn-body li{color:var(--ink)}.learn-body ul,.learn-body ol{padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.learn-body .tip{border-left:3px solid var(--accent);padding:6px 10px;background:var(--field);border-radius:0 6px 6px 0}
+.learn-body code{font-family:var(--mono);font-size:12.5px;background:var(--field);padding:1px 5px;border-radius:4px}
+.learn-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .tools a b{font:600 14px var(--body)}.tools a span{font-size:12px;color:var(--muted)}
 .tools a:hover,.tools a[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-@media (max-width:560px){.tools{grid-template-columns:minmax(0,1fr)}.tools a{flex-direction:row;justify-content:space-between;align-items:center}}
+@media (max-width:760px){.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:420px){.tools{grid-template-columns:minmax(0,1fr)}.tools a{flex-direction:row;justify-content:space-between;align-items:center}}
 .au-score{display:flex;align-items:center;gap:14px;margin:6px 0}
 .au-score .n{font:700 40px var(--body);line-height:1}
 .au-groups{display:flex;flex-direction:column;gap:6px;font-size:12px}
@@ -240,9 +256,20 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   <header>
     <h1>CallPosts</h1>
     <p>Three tools for pay-per-call publishers, for 86 home services: Marketplace posts that follow the rules, SEO sites that rank for “service + city”, and audits that show what's stopping a site from getting calls.</p>
-    <nav class="tools" aria-label="Tools"><a href="#posts" data-tool="posts"><b>Marketplace posts</b><span>Listings, images and replies</span></a><a href="#sites" data-tool="sites"><b>SEO sites</b><span>Pages and city sites</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Score any website</span></a></nav>
+    <nav class="tools" aria-label="Tools"><a href="#learn" data-tool="learn"><b>Learn</b><span>5 lessons, start here</span></a><a href="#posts" data-tool="posts"><b>Marketplace posts</b><span>Listings, images and replies</span></a><a href="#sites" data-tool="sites"><b>SEO sites</b><span>Pages and city sites</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Score any website</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
+
+  <details class="panel tpl" id="learnBox">
+    <summary><h2>Start here: from zero to your first ranking site</h2><span class="sum" id="learnSum">5 short lessons · no credits needed</span></summary>
+    <div class="tpl-body">
+      <div class="onb" style="padding:10px 12px"><div class="bar"><i id="learnBar" style="width:0"></i></div><span class="status" id="learnProg" style="margin:0"></span></div>
+      <div class="learn">
+        <ol class="learn-list" id="learnList"></ol>
+        <article class="learn-body" id="learnBody" aria-live="polite"></article>
+      </div>
+    </div>
+  </details>
 
   <details class="panel tpl" id="tplBox" open>
     <summary><h2>Creative templates</h2><span class="sum" id="tplSum">Auto-match to your service</span></summary>
@@ -281,6 +308,12 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
           <p class="status" id="acctHint" style="margin:0">1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
+          <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+              <p class="status" style="margin:0" id="refExplain"></p>
+              <div style="display:flex;gap:6px"><input id="refLink" readonly aria-label="Your invite link" style="flex:1;font-size:12px"><button type="button" class="copy" id="refCopy">Copy</button></div>
+              <p class="status" style="margin:0" id="refStats"></p>
+            </div></details>
         </div>
         <details id="codeBox"><summary class="label" style="cursor:pointer">Have an access code?</summary>
           <input id="code" autocomplete="off" placeholder="Enter your CallPosts access code" style="margin-top:8px"></details>
@@ -402,6 +435,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
     <div class="ed-foot"><span class="status" id="edMsg" role="status"></span><a class="copy" id="edView" target="_blank" rel="noopener" style="text-decoration:none">View page ↗</a><button class="btn" type="button" id="edSave">Save changes</button></div>
   </form>
 </dialog>
+<script src="/js/course.js"></script>
 <script>
 const MARKETS=[
 ["Water Heaters","Peoria, AZ",41],["Water Heaters","Aurora, CO",34],["Water Heaters","Phoenix, AZ",34],["Water Heaters","Seffner, FL",33],["Water Heaters","Redmond, WA",31],["Water Heaters","Laguna Hills, CA",28],["Water Heaters","Fort Lauderdale, FL",28],["Water Heaters","Sacramento, CA",25],["Water Heaters","San Antonio, TX",24],["Water Heaters","San Jose, CA",23],
@@ -980,12 +1014,43 @@ $("lpBox").addEventListener("toggle",()=>{if($("lpBox").open){loadPages();reques
 // Tool switcher: Marketplace posts / SEO sites / Site audit (also reachable as /app#posts, #sites, #audit)
 function showTool(t){
   document.querySelectorAll(".tools a").forEach(a=>a.setAttribute("aria-current",String(a.dataset.tool===t)));
+  if(t==="learn"){$("learnBox").open=true;$("learnBox").scrollIntoView({behavior:"smooth",block:"start"});return}
+  if(t==="sites-city"){t="sites";const b=document.querySelector('.lp-mode button[data-m="site"]');if(b)b.click()}
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="posts"){$("service").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("service").focus({preventScroll:true}),400)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
-if(/^#(posts|sites|audit)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+if(/^#(learn|posts|sites|audit)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+
+// Course: lessons from /js/course.js; progress kept in this browser and, when logged in, on the account.
+const COURSE=window.COURSE||[];
+let learnDone=new Set(),learnCur=null;
+try{learnDone=new Set(JSON.parse(localStorage.getItem("cp-learn")||"[]"))}catch(e){}
+function learnSave(){try{localStorage.setItem("cp-learn",JSON.stringify([...learnDone]))}catch(e){}
+  if(window.cpUser||$("code").value.trim())fetch("/api/progress",{method:"POST",headers:authHeaders(),body:JSON.stringify({done:[...learnDone]})}).catch(()=>{})}
+async function learnSync(){if(!window.cpUser&&!$("code").value.trim())return;
+  try{const r=await fetch("/api/progress",{headers:authHeaders(),cache:"no-store"});if(!r.ok)return;const j=await r.json();const before=learnDone.size;(j.done||[]).forEach(x=>learnDone.add(x));
+    if(learnDone.size>(j.done||[]).length)learnSave();else if(learnDone.size!==before){try{localStorage.setItem("cp-learn",JSON.stringify([...learnDone]))}catch(e){}}renderLearn()}catch(e){}}
+function renderLearn(){
+  const n=COURSE.filter(l=>learnDone.has(l.id)).length;
+  $("learnBar").style.width=`${COURSE.length?n/COURSE.length*100:0}%`;
+  $("learnProg").textContent=n===COURSE.length&&n?"All lessons done. Now build, measure and repeat what works.":`${n} of ${COURSE.length} lessons done`;
+  $("learnSum").textContent=n?`${n} of ${COURSE.length} done`:"5 short lessons · no credits needed";
+  if(!learnCur)learnCur=(COURSE.find(l=>!learnDone.has(l.id))||COURSE[0]||{}).id;
+  $("learnList").innerHTML=COURSE.map((l,i)=>`<li class="${learnDone.has(l.id)?"done":""}"><button type="button" data-id="${l.id}" aria-current="${l.id===learnCur}"><span class="ck">${learnDone.has(l.id)?"✓":i+1}</span><span>${esc(l.title)}<span class="mins">${l.minutes} min</span></span></button></li>`).join("");
+  const l=COURSE.find(x=>x.id===learnCur);if(!l){$("learnBody").innerHTML="";return}
+  const i=COURSE.indexOf(l),next=COURSE[i+1];
+  $("learnBody").innerHTML=`<span class="label">Lesson ${i+1} of ${COURSE.length} · ${l.minutes} min</span><h3>${esc(l.title)}</h3><p class="status" style="margin:0 0 6px">${esc(l.summary)}</p>${l.body}
+    <div class="learn-acts">${l.action.tool?`<button type="button" class="btn" data-act="${l.action.tool}">${esc(l.action.label)}</button>`:""}<button type="button" class="btn ${l.action.tool?"ghost":""}" data-done="${l.id}">${learnDone.has(l.id)?(next?"Next lesson →":"Back to start"):(next?"Mark done, next lesson →":"Mark course complete ✓")}</button></div>`;
+}
+$("learnList").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(!b)return;learnCur=b.dataset.id;renderLearn();if(window.innerWidth<760)$("learnBody").scrollIntoView({behavior:"smooth",block:"start"})});
+$("learnBody").addEventListener("click",e=>{
+  const a=e.target.closest("[data-act]");if(a){learnDone.add(learnCur);learnSave();renderLearn();showTool(a.dataset.act);if(a.dataset.act==="posts")setTimeout(()=>$("filter").focus(),500);return}
+  const d=e.target.closest("[data-done]");if(!d)return;learnDone.add(d.dataset.done);learnSave();
+  const i=COURSE.findIndex(x=>x.id===d.dataset.done);learnCur=(COURSE[i+1]||COURSE[0]).id;renderLearn();$("learnBox").scrollIntoView({behavior:"smooth",block:"start"});
+});
+renderLearn();
 
 // Site audit
 const auColor=n=>n>=85?"#22c55e":n>=65?"#f59e0b":"#ef4444";
@@ -1018,6 +1083,7 @@ $("auGo").onclick=async()=>{
 $("auUrl").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("auGo").click()}});
 $("auHist").addEventListener("click",async e=>{if(!e.target.closest(".auopen"))return;const id=e.target.closest(".kit-row").dataset.id;
   const r=await fetch(`/api/audit?id=${encodeURIComponent(id)}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));if(r.ok&&j.audit){renderAudit(j.audit);$("auReport").scrollIntoView({behavior:"smooth",block:"start"})}});
+$("refCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("refLink").value);$("refCopy").textContent="Copied"}catch(e){$("refLink").select()}setTimeout(()=>$("refCopy").textContent="Copy",1500)};
 $("auditBox").addEventListener("toggle",()=>{if($("auditBox").open)loadAudits()});
 
 // First-steps checklist
@@ -1034,7 +1100,7 @@ function renderOnb(){
 $("onbHide").onclick=()=>{const st=onbState();st.hidden=1;onbSave(st);renderOnb()};
 $("mkt").addEventListener("click",e=>{if(e.target.closest("tr[data-s]"))onbDone("market")});
 $("phone").addEventListener("change",()=>{if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone")});
-window.cpAfterAuth=()=>{loadHistory();if($("lpBox").open)loadPages();if($("auditBox").open)loadAudits()};
+window.cpAfterAuth=()=>{loadHistory();learnSync();if($("lpBox").open)loadPages();if($("auditBox").open)loadAudits()};
 renderOnb();if($("phone").value.replace(/\D/g,"").length>=10)onbDone("phone");if($("service").value&&$("city").value&&(window.cpKits||[]).length)onbDone("market");
 
 // History for AI market picks: saved kits (with result notes) first, then the older simple log.
@@ -1084,13 +1150,19 @@ $("count").addEventListener("change",updateCost);$("code").addEventListener("inp
 
 async function refresh(){
   let me={loggedIn:false};
-  try{me=await fetch("/api/me",{cache:"no-store"}).then(r=>r.json())}catch(e){}
+  let ref=null;try{const v=JSON.parse(localStorage.getItem("cp-ref")||"null");if(v&&Date.now()-v.t<30*864e5)ref=v.c}catch(e){}
+  try{me=await fetch("/api/me",{cache:"no-store",headers:ref?{"x-ref":ref}:{}}).then(r=>r.json())}catch(e){}
+  if(me.loggedIn&&ref){try{localStorage.removeItem("cp-ref")}catch(e){}}
   window.cpUser=me.loggedIn?me:null;window.cpBuyUrl=me.buyUrl||"";
   $("acctOut").hidden=!!me.loggedIn;$("acctIn").hidden=!me.loggedIn;
   if(me.loggedIn){$("acctEmail").textContent=me.email||"";$("acctBal").textContent=me.credits;
     const plans=me.plans||[];$("buyBtn").hidden=!plans.length;$("adminLink").hidden=!me.admin;
     $("buyBox").innerHTML=plans.map(p=>`<a class="copy" style="display:flex;justify-content:space-between;gap:8px" href="${p.url}" target="_blank" rel="noopener"><span><b>${p.name}</b> · ${p.credits}</span><span>${p.price}</span></a>`).join("");
     if(location.hash==="#buy"&&plans.length){$("buyBox").hidden=false}
+    const rf=me.referral;$("refBox").hidden=!rf;
+    if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
+      $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
+    if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
     if(!me.buyUrl)$("acctHint").textContent="1 credit per listing or site audit · 3 per AI photo or landing page · 1 for market picks. Need more? Message CallPosts to top up.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
