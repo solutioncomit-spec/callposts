@@ -1,6 +1,7 @@
 import type { Config, Context } from "@netlify/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { payFor, creditHeaders, clean } from "../lib/access.mts";
+import { angleGuide } from "../lib/angles.mts";
 
 // Writes Marketplace listings for one service + city.
 // Access is gated by codes in the ACCESS_CODES env var (comma-separated).
@@ -26,7 +27,7 @@ Service: ${b.service}
 Market: ${b.city}
 Phone (tracking number): ${b.phone || "[PHONE]"}
 Brand/page name: ${b.brand || "(none, write without a brand)"}
-Angle: ${b.angle || "Mix of angles"}
+Listing style: ${angleGuide(b.angle)}
 Extra notes from the publisher: ${b.extra || "(none)"}
 
 Rules:
@@ -41,7 +42,7 @@ Rules:
 - Give 3 photo ideas per listing the publisher can shoot or source legally (no stock watermarks, no other companies' logos).
 - For each listing also write image text for a square ad creative: "headline" = the service in 2-5 words that fit on two short lines (e.g. "Water Heater Repair & Install"), and "tagline" = 3-6 words that match the listing's hook (e.g. "Same-day help from local pros"). No prices, no "free", no phone number in these two fields.
 
-Reply with only a JSON array, no other text. Each item: {"title": string, "hook": string (2-4 word label of the angle), "category": string, "price": "$1,111", "description": string, "tags": [up to 6 short search tags], "photos": [3 strings], "replies": [2 strings], "headline": string, "tagline": string}`;
+Reply with only a JSON array, no other text. Each item: {"title": string, "hook": string (2-4 word label of the style used), "category": string, "price": "$1,111", "description": string, "tags": [up to 6 short search tags], "photos": [3 strings], "replies": [2 strings], "headline": string, "tagline": string}`;
 }
 
 export default async (req: Request, _context: Context) => {

@@ -310,7 +310,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="picks" id="hist"></div>
       </details>
       <div class="row">
-        <div class="field"><label class="label" for="service">Service</label><input id="service"></div>
+        <div class="field"><label class="label" for="service">Service</label><input id="service" list="svcList" autocomplete="off"><datalist id="svcList"></datalist></div>
         <div class="field"><label class="label" for="city">City, State</label><input id="city"></div>
       </div>
       <div class="row">
@@ -318,11 +318,8 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="field"><label class="label" for="brand">Brand / page name</label><input id="brand" placeholder="e.g. Home Relay Pros"></div>
       </div>
       <div class="row">
-        <div class="field"><label class="label" for="angle">Angle</label>
-          <select id="angle">
-            <option>Mix of angles</option><option>Same-day / emergency</option><option>Quick quote</option>
-            <option>Seasonal / weather</option><option>Cost-saving / financing</option><option>Local &amp; trusted</option>
-          </select></div>
+        <div class="field"><label class="label" for="angle">Listing style</label>
+          <select id="angle"><option>Mix of angles</option></select></div>
         <div class="field"><label class="label" for="count">Variations</label>
           <select id="count"><option>3</option><option selected>5</option><option>8</option></select></div>
       </div>
@@ -393,9 +390,15 @@ const MARKETS=[
 ["Septic Repair","Maplewood, NJ",21],["Skylights","Lake Helen, FL",21],["Cabinet Installation","Clairton, PA",20],["Decks","Austin, TX",20],["Hardwood Flooring","Spring, TX",20],["Sewer/Water Main","Ronkonkoma, NY",20],
 ["Gutters","Georgetown, GA",19],["Outdoor Lighting","San Antonio, TX",18],["Retaining Walls","Austin, TX",18],["Garage Doors","Keyser, WV",17],["Pest Control","Gainesville, FL",16],["Tree Trimming","Allen, TX",16],["Tree Removal","Los Angeles, CA",16],["Solar Energy","Jupiter, FL",15],["Stump Grinding","Los Angeles, CA",15]
 ].sort((a,b)=>b[2]-a[2]);
+// Listing styles: same names as netlify/lib/angles.mts (the server holds the writing guide for each).
+const ANGLES=["Same-day / emergency","Quick quote","Seasonal / weather","Cost-saving / financing","Local & trusted","Warning signs","Question hook","Repair or replace?","Before winter / season prep","New homeowner","Landlords & property managers","Short & punchy","Homeowner story","Checklist","Upgrade & value"];
+// Services to suggest in the brief: everything in the payout table plus other common pay-per-call home services.
+const EXTRA_SERVICES=["Water Damage Restoration","Fire & Smoke Damage Restoration","Biohazard Cleanup","Wildlife Removal","Basement Waterproofing","Crawl Space Repair","Foundation Repair","Mold Remediation","Septic Inspection","Well Pump Repair","Water Softeners & Filtration","Tankless Water Heaters","Sump Pumps","Furnace Repair","Heat Pumps","Mini-Split AC","Boiler Repair","Generator Installation","EV Charger Installation","Ceiling Fan Installation","Appliance Repair","Garage Door Repair","Fence Installation","Gutter Guards","Roof Repair","Roof Replacement","Chimney Repair","Insulation","Kitchen Remodeling","Countertops","Tile Installation","Carpet Installation","Walk-in Tubs","Junk Removal","Pressure Washing","House Cleaning","Carpet Cleaning","Lawn Care","Landscaping","Irrigation & Sprinklers","Pool Repair","Termite Control","Bed Bug Treatment","Handyman","Locksmith","Home Security Systems","Moving Services"];
 
 const $=id=>document.getElementById(id);
 let selPay=41;
+$("angle").insertAdjacentHTML("beforeend",ANGLES.map(a=>`<option>${a.replace(/&/g,"&amp;")}</option>`).join(""));
+$("svcList").innerHTML=[...new Set([...MARKETS.map(m=>m[0]),...EXTRA_SERVICES])].sort().map(x=>`<option value="${x.replace(/&/g,"&amp;")}"></option>`).join("");
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 // Auth: an access code (unlimited pass) or a logged-in account paying with credits.
 window.cpUser=null;
@@ -546,27 +549,27 @@ let lastItems=[],lastBrief=null;
 
 // Canva templates. url = Canva template link (opens a copy in the user's own Canva); "" = link not added yet.
 const TEMPLATES=[
-  {k:"water",name:"Water Heaters",url:"https://canva.link/bfrlmzirdbk7owj",re:/water heater/},
-  {k:"plumbing",name:"Plumbing & Drains",url:"https://canva.link/dq4rgzcatn0avqq",re:/plumb|drain|sewer|water main/},
-  {k:"hvac",name:"Central AC & Heating",url:"https://canva.link/fsq1yknktfppfc4",re:/\bac\b|air cond|heating|hvac|duct|vent|swamp cooler/},
+  {k:"water",name:"Water Heaters",url:"https://canva.link/bfrlmzirdbk7owj",re:/water heater|tankless/},
+  {k:"plumbing",name:"Plumbing & Drains",url:"https://canva.link/dq4rgzcatn0avqq",re:/plumb|drain|sewer|water main|sump|well pump|softener|filtration/},
+  {k:"hvac",name:"Central AC & Heating",url:"https://canva.link/fsq1yknktfppfc4",re:/\bac\b|air cond|heating|hvac|duct|vent|swamp cooler|furnace|heat pump|mini-split|boiler|insulation/},
   {k:"windows",name:"Windows",url:"https://canva.link/37efqpt78yhk7vd",re:/window(?!.*(blind|drape|draper))/},
   {k:"blinds",name:"Blinds & Draperies",url:"https://canva.link/wc43ffos8hpwyvu",re:/blind|drape|draper|shade|shutter/},
   {k:"bath",name:"Bathroom & Showers",url:"https://canva.link/akmtrnbd6cqymzp",re:/bath|shower|tub/},
   {k:"paint",name:"Painting",url:"https://canva.link/b35i9sh1n9egvkq",re:/paint/},
-  {k:"electrical",name:"Electrical & Lighting",url:"https://canva.link/71vrsaavbcj62p5",re:/electric|panel|outdoor lighting/},
-  {k:"roofing",name:"Roofing & Gutters",url:"https://canva.link/yv49ner4ol4mku0",re:/roof|gutter|skylight/},
+  {k:"electrical",name:"Electrical & Lighting",url:"https://canva.link/71vrsaavbcj62p5",re:/electric|panel|outdoor lighting|generator|ev charger|ceiling fan/},
+  {k:"roofing",name:"Roofing & Gutters",url:"https://canva.link/yv49ner4ol4mku0",re:/roof|gutter|skylight|chimney/},
   {k:"mold",name:"Mold Removal",url:"https://canva.link/fbzzco0dfvazdky",re:/mold/},
   {k:"septic",name:"Septic",url:"https://canva.link/rrcisgytkfw3pj8",re:/septic/},
-  {k:"basement",name:"Basements",url:"https://canva.link/lbacq5se4fsk4ms",re:/basement/},
+  {k:"basement",name:"Basements",url:"https://canva.link/lbacq5se4fsk4ms",re:/basement|waterproof|crawl space|water damage/},
   {k:"lead",name:"Lead Abatement",url:"https://canva.link/xr6tqvzqyc43p6o",re:/\blead\b/},
   {k:"garage",name:"Garage Doors",url:"https://canva.link/2i7qh4hlxta52zf",re:/garage/},
   {k:"concrete",name:"Concrete & Foundations",url:"https://canva.link/uvmud6onazo086j",re:/concrete|foundation|retaining/},
-  {k:"decks",name:"Decks",url:"https://canva.link/wpqu63wb8yi4y6s",re:/deck/},
+  {k:"decks",name:"Decks",url:"https://canva.link/wpqu63wb8yi4y6s",re:/deck|fence/},
   {k:"tree",name:"Tree Service",url:"https://canva.link/vnz6ymls9vy3njd",re:/tree|stump/},
   {k:"siding",name:"Siding & Stucco",url:"https://canva.link/vscj1mnf08xfj4e",re:/siding|stucco/},
-  {k:"flooring",name:"Flooring",url:"https://canva.link/jm87gdl9z4cd4jl",re:/floor|hardwood/},
-  {k:"cabinets",name:"Cabinets",url:"https://canva.link/omvo0wmedxtejc1",re:/cabinet/},
-  {k:"pest",name:"Pest Control",url:"https://canva.link/nts4x5yl109nupv",re:/pest|termite|rodent/},
+  {k:"flooring",name:"Flooring",url:"https://canva.link/jm87gdl9z4cd4jl",re:/floor|hardwood|carpet install|tile/},
+  {k:"cabinets",name:"Cabinets",url:"https://canva.link/omvo0wmedxtejc1",re:/cabinet|countertop|kitchen/},
+  {k:"pest",name:"Pest Control",url:"https://canva.link/nts4x5yl109nupv",re:/pest|termite|rodent|wildlife|bed bug|animal/},
   {k:"solar",name:"Solar",url:"https://canva.link/mvrb5q30n2omk0q",re:/solar/},
   {k:"additions",name:"Additions & Remodels",url:"https://canva.link/bx0gx0r6vib9cf1",re:/addition|remodel/}
 ];

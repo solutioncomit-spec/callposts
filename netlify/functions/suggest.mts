@@ -1,3 +1,4 @@
+import { ANGLE_NAMES } from "../lib/angles.mts";
 import type { Config } from "@netlify/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { payFor, creditHeaders, clean } from "../lib/access.mts";
@@ -43,7 +44,7 @@ ${history.length ? history.join("\n") : "(nothing yet)"}
 
 Their notes: ${notes || "(none)"}
 
-Pick the 5 best markets to post in next. Weigh: payout; seasonal demand for this time of year in that city's climate (e.g. heating and water heaters ahead of winter in cold states, AC in hot states); spreading across services and cities so they are not posting the same thing again; their result notes (lean toward services and cities they say brought calls, away from ones they say did nothing); and their notes. Prefer markets they have not posted in during the last 7 days unless it is clearly the best payout. Only choose from the list above, copying service and city exactly. Do not invent data you do not have (no call volumes, competition counts or conversion rates). Keep each reason to one plain sentence. Suggest a listing angle from: "Same-day / emergency", "Quick quote", "Seasonal / weather", "Cost-saving / financing", "Local & trusted". Never use the word "free".
+Pick the 5 best markets to post in next. Weigh: payout; seasonal demand for this time of year in that city's climate (e.g. heating and water heaters ahead of winter in cold states, AC in hot states); spreading across services and cities so they are not posting the same thing again; their result notes (lean toward services and cities they say brought calls, away from ones they say did nothing); and their notes. Prefer markets they have not posted in during the last 7 days unless it is clearly the best payout. Only choose from the list above, copying service and city exactly. Do not invent data you do not have (no call volumes, competition counts or conversion rates). Keep each reason to one plain sentence. Suggest a listing angle from: ${ANGLE_NAMES.map((n) => `"${n}"`).join(", ")}. Never use the word "free".
 
 Reply with only a JSON array of 5 items: {"service": string, "city": string, "payout": number, "angle": string, "why": string}`;
 
