@@ -871,17 +871,55 @@ let lpDom={enabled:false,apexIp:"75.2.60.5",cname:"callposts.netlify.app"};
 const ago=t=>{const m=Math.round((Date.now()-Date.parse(t))/60000);return m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`};
 function domainBox(x){
   if(x.domain)return `<div class="km">🔗 <a href="https://${esc(x.domain)}/" target="_blank" rel="noopener" style="color:var(--accent)">${esc(x.domain)}</a> · connected <button type="button" class="copy sdisc" style="margin-left:6px">Disconnect</button></div>`;
-  return `<details class="sdom"><summary class="km" style="cursor:pointer">Connect your own domain</summary>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)">
+  return `<details class="sdom"><summary class="km" style="cursor:pointer">Find or connect your own domain</summary>
+    <div class="dfind" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)">
+      <b style="color:var(--ink)">Don't have a domain yet? Find one</b>
+      <span>We suggest names from your services and towns. Type your own idea to check it too. Never use a real company's name or trademark.</span>
+      <div style="display:flex;gap:6px"><input class="dfq" placeholder="Your idea, e.g. lakewoodwaterheaterhelp" aria-label="Domain idea" style="flex:1"><button type="button" class="copy dfgo">Check names</button></div>
+      <div class="dfres" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:12px;color:var(--muted)">
+      <b style="color:var(--ink)">Connect a domain you own</b>
       <span>1. At your domain registrar, add one DNS record:</span>
       <span>• For <b>www.yourdomain.com</b> (recommended): <b>CNAME</b> · name <code>www</code> · value <code>${esc(lpDom.cname)}</code></span>
       <span>• For the bare domain <b>yourdomain.com</b>: <b>A</b> · name <code>@</code> · value <code>${esc(lpDom.apexIp)}</code></span>
+      <details><summary style="cursor:pointer">Where do I add it?</summary><div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+        <span><b>Namecheap:</b> Domain List → Manage → Advanced DNS → Add new record → CNAME Record · Host <code>www</code> · Value <code>${esc(lpDom.cname)}</code>. Then add a “URL Redirect Record” for host <code>@</code> to <code>https://www.yourdomain.com</code> so the bare domain works too.</span>
+        <span><b>Porkbun:</b> Domain Management → DNS → Type CNAME · Host <code>www</code> · Answer <code>${esc(lpDom.cname)}</code>. Then use URL Forwarding to send the bare domain to <code>https://www.yourdomain.com</code>.</span>
+        <span><b>Cloudflare:</b> DNS → Add record → CNAME · Name <code>www</code> · Target <code>${esc(lpDom.cname)}</code> · set Proxy to <b>DNS only</b> (grey cloud).</span>
+      </div></details>
       <span>2. Wait a few minutes, enter the domain and click Connect. HTTPS is set up automatically.</span>
       <div style="display:flex;gap:6px"><input class="sdomin" placeholder="www.yourdomain.com" aria-label="Your domain" style="flex:1"><button type="button" class="copy sconn">Connect</button></div>
       ${lpDom.enabled?"":`<span>Custom domains are being switched on; connecting will work shortly.</span>`}
     </div></details>`;
 }
+// Domain name ideas from a site's services and towns (no AI, no credits).
+const lpSiteData={};
+function domainIdeas(x){
+  const flat=s=>String(s||"").toLowerCase().replace(/&/g," ").replace(/[^a-z ]/g,"").trim().split(/\s+/).filter(Boolean);
+  const svcKey=s=>{const w=flat(s).filter(t=>!/^(repair|repairs|service|services|installation|install|replacement|removal|and|cleaning|company|contractor|contractors|near|me)$/.test(t));return (w.length?w:flat(s)).slice(0,2).join("")};
+  const svcs=(x.services||[x.service]).filter(Boolean),towns=(x.cities||[]).map(c=>flat(String(c).split(",")[0]).join(""));
+  const reg=flat(x.region).join("");const place=towns.length===1?towns[0]:(reg&&reg.length<=14?reg:towns[0]||reg);
+  const svc=svcs.length===1?svcKey(svcs[0]):"home";
+  const out=["help","connect","match","finder","guide","line","hub"].map(s=>`${place}${svc}${s}.com`);
+  out.push(`${svc}${place}.com`,`${place}${svc}help.net`,`${place}${svc}.co`);
+  if(svcs.length>1)out.unshift(`${place}${svcKey(svcs[0])}help.com`);
+  return [...new Set(out)].filter(d=>d.split(".")[0].length>=4&&d.split(".")[0].length<=40).slice(0,10);
+}
+async function findDomains(row,names){
+  const box=row.querySelector(".dfres");box.innerHTML=`<span><span class="spin"></span> Checking ${names.length} names…</span>`;
+  try{const r=await fetch(`/api/domain-check?names=${encodeURIComponent(names.join(","))}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));
+    if(!r.ok){box.textContent=j.error||"Couldn't check names right now. Try again.";return}
+    const rank={available:0,unknown:1,taken:2},res=(j.results||[]).sort((a,b)=>rank[a.status]-rank[b.status]);
+    box.innerHTML=res.map(d=>`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0;border-top:1px solid var(--line)">
+      <b style="color:var(--ink);word-break:break-all">${esc(d.domain)}</b>
+      <span class="seo-badge ${d.status==="available"?"good":d.status==="taken"?"bad":"ok"}">${d.status==="available"?"Looks available":d.status==="taken"?"Taken":"Couldn't check"}</span>
+      ${d.status!=="taken"?d.links.map(l=>`<a class="copy" style="text-decoration:none" href="${esc(l.url)}" target="_blank" rel="noopener sponsored">Buy at ${esc(l.name)} ↗</a>`).join("")+`<button type="button" class="copy dfuse" data-d="${esc(d.domain)}">Use for this site</button>`:""}</div>`).join("")
+      +`<span>“Looks available” comes from the domain registry; the registrar's checkout has the final say (some names are premium). Compare the renewal price, not just the first year.${j.affiliate?" Registrar links may earn CallPosts a commission at no extra cost to you.":""} After buying, add the DNS record below and click Connect.</span>`;
+  }catch(e){box.textContent="Couldn't check names right now. Try again."}
+}
 function renderSites(list){
+  list.forEach(x=>lpSiteData[x.slug]=x);
   const miss=m=>m.map(x=>`${x.service} in ${x.city}`).join("; ");
   $("lpSites").innerHTML=list.map(x=>`<div class="kit-row" data-site="${esc(x.slug)}"><div class="kh"><span>🌐 ${esc((x.services||[x.service]).join(", "))} · ${esc(x.region)}</span><span style="display:flex;gap:8px;align-items:center">${x.seo!=null?`<span class="seo-badge ${x.seo>=85?"good":x.seo>=65?"ok":"bad"}" title="Average SEO score">SEO ${x.seo}</span>`:""}<span class="km">${x.views||0} views</span></span></div>
     <div class="km">${x.built} of ${x.total||x.cities.length} pages built${x.missing.length?` · missing: ${esc(miss(x.missing))}`:""} · ${(x.posts||[]).length} blog post${(x.posts||[]).length===1?"":"s"}</div>
@@ -985,6 +1023,12 @@ $("lpSites").addEventListener("click",async e=>{
   if(e.target.closest(".sping")){const b=e.target;b.disabled=true;b.textContent="Submitting…";
     const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,ping:true})});const j=await r.json().catch(()=>({}));
     b.disabled=false;b.textContent=r.ok?`Submitted ${j.urls} URLs`:"Submit to search engines";$("lpStatus").textContent=r.ok?`Sent ${j.urls} pages to Bing, Yandex and other IndexNow search engines.`:(j.error||"Couldn't submit. Try again later.")}
+  if(e.target.closest(".dfgo")){const q=row.querySelector(".dfq").value.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
+    let names;if(q){const base=q.replace(/\s+/g,"");names=base.includes(".")?[base,...["com","net","co"].map(t=>base.split(".")[0]+"."+t)]:["com","net","co","us"].map(t=>`${base}.${t}`)}
+    else names=domainIdeas(lpSiteData[slug]||{});
+    await findDomains(row,[...new Set(names)])}
+  if(e.target.closest(".dfuse")){const inp=row.querySelector(".sdomin");inp.value=`www.${e.target.dataset.d}`;inp.scrollIntoView({block:"center",behavior:"smooth"});
+    e.target.textContent="Added below ↓"}
   if(e.target.closest(".sconn")){const b=e.target,inp=row.querySelector(".sdomin"),d=inp.value.trim();if(!d){inp.focus();return}
     b.disabled=true;b.textContent="Checking DNS…";
     const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,domain:d})});const j=await r.json().catch(()=>({}));
@@ -996,6 +1040,7 @@ $("lpSites").addEventListener("click",async e=>{
   if(e.target.closest(".sdel")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again: deletes every page";return}
     const r=await fetch(`/api/sites?slug=${encodeURIComponent(slug)}`,{method:"DELETE",headers:authHeaders()});if(r.ok)loadPages()}
 });
+$("lpSites").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".dfq")){e.preventDefault();e.target.closest(".kit-row").querySelector(".dfgo").click()}});
 $("lpSites").addEventListener("change",async e=>{
   const sel=e.target.closest(".stheme");if(!sel)return;const slug=sel.closest(".kit-row").dataset.site;
   sel.disabled=true;const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,theme:sel.value})});sel.disabled=false;

@@ -73,7 +73,7 @@ window.COURSE = [
     summary: "A domain you own builds authority you keep, and you need one to rent the site out.",
     body: `
 <ol>
-<li><b>Buy a domain</b> (usually $10 to $15 a year) at a registrar such as Cloudflare, Namecheap or Porkbun. Simple names work: region + service, like lakewoodwaterheaterhelp.com. Never use a real company's name or trademark.</li>
+<li><b>Buy a domain</b> (usually $10 to $15 a year) at a registrar such as Cloudflare, Namecheap or Porkbun. In <b>Landing pages</b>, open your site and use “Find or connect your own domain” to get name ideas and check which are available. Simple names work: region + service, like lakewoodwaterheaterhelp.com. Never use a real company's name or trademark.</li>
 <li><b>Add one DNS record</b> at the registrar: type <b>CNAME</b>, name <code>www</code>, value <code>callposts.netlify.app</code>.</li>
 <li><b>Connect it</b> in Landing pages: open your site, choose “Connect your own domain”, enter www.yourdomain.com and click Connect. HTTPS is set up automatically within minutes.</li>
 <li><b>Tell Google.</b> Add the domain to Google Search Console (free), verify it with the TXT record it gives you, then submit <code>/sitemap.xml</code>.</li>
