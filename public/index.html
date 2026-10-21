@@ -118,8 +118,10 @@ p{margin:0;max-width:62ch}
 .costs{min-width:0;max-width:100%}.costs h3{margin:0 0 10px}.costs table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}.costs td{overflow-wrap:anywhere;white-space:normal;padding:8px 0}.costs td.n{width:34%;padding-left:16px;font-family:inherit;color:var(--ink)}
 .costs td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}.costs td.n{text-align:right;white-space:nowrap;padding-left:16px}
 @media (max-width:640px){.costs td.n{white-space:normal}}
-.tools3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-@media (max-width:860px){.tools3{grid-template-columns:minmax(0,1fr)}}
+.tools3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:16px}
+.tool.lead{border-color:var(--brand)}
+.navmore{display:flex;gap:2px;flex-wrap:wrap}
+@media (max-width:720px){.navmore{display:none}}
 .tool{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--ink)}
 .tool:hover{border-color:var(--brand)}
 .tool .tk{font-family:var(--mono);font-size:13px;color:var(--brand)}
@@ -248,7 +250,7 @@ nav .ctas{align-items:center}
 
 <nav class="band"><div class="in">
   <div class="logo">Call<span>Posts</span></div>
-  <div class="ctas"><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button><a class="navlink" href="/app">Log in</a><a class="btn outline" href="/app#signup">Create account</a></div>
+  <div class="ctas"><span class="navmore"><a class="navlink" href="/free-audit">Free SEO check</a><a class="navlink" href="/learn">Learn</a><a class="navlink" href="/networks">Networks</a></span><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button><a class="navlink" href="/app">Log in</a><a class="btn outline" href="/app#signup">Create account</a></div>
 </div></nav>
 
 <section class="band hero2"><div class="in">
@@ -257,7 +259,7 @@ nav .ctas{align-items:center}
   <p class="small">For 86 home services: water heaters, plumbing, HVAC, roofing, water damage, remodeling and more.</p>
   <div class="cta-block">
     <a class="btn pri big" href="/app#signup">Try 15 free credits</a>
-    <p class="small">No card required.</p>
+    <p class="small">No card required. Or <a href="/free-audit" style="color:var(--brand)">run a free SEO check on any page</a>, no sign-up.</p>
     <p class="founder-pill"><b>Founding members:</b> first 50 subscribers keep launch pricing from $9/mo. <a href="#pricing">See plans</a></p>
   </div>
   <div class="examples">
@@ -287,13 +289,15 @@ nav .ctas{align-items:center}
 </div></section>
 
 <section class="band" id="tools"><div class="in">
-  <span class="eyebrow">Three tools, one account</span>
-  <h2>Drafts, pages and audits for 86 home services.</h2>
-  <p class="lede">New to this? Start with 5 short lessons that take you from zero to your first published site. <a href="/app#learn" style="color:var(--brand)">Start learning →</a></p>
+  <span class="eyebrow">Five steps, one account</span>
+  <h2>Build, check, promote, learn and find a network.</h2>
+  <p class="lede">New to pay-per-call? <a href="/learn" style="color:var(--brand)">Read the 6 short lessons</a> first: they take you from choosing a service and city to a live site and a network to apply to.</p>
   <div class="tools3">
-    <a class="tool" href="/app#posts"><span class="tk">01</span><h3>Listing drafts</h3><p class="muted">Listing drafts, AI images and reply templates in 15 styles, with network-rule checks you review before you copy anything.</p><span class="tc">1 credit per draft · 4 with an image →</span></a>
-    <a class="tool" href="/app#sites"><span class="tk">02</span><h3>Landing pages</h3><p class="muted">Create service-and-city landing pages, or full sites with every service in every city plus service, area and blog pages, around your tracking number, in 8 themes, on your own domain.</p><span class="tc">From 3 credits per page →</span></a>
-    <a class="tool" href="/app#audit"><span class="tk">03</span><h3>Site audit</h3><p class="muted">Check any page for local SEO basics, tap-to-call, schema, speed, disclosures and claims, with a list of what to fix.</p><span class="tc">1 credit per audit →</span></a>
+    <a class="tool lead" href="/app#sites"><span class="tk">01</span><h3>SEO site builder</h3><p class="muted">Service-and-city pages, or full sites with every service in every city plus service, area and blog pages, around your tracking number. 8 themes, your own domain, sitemap and search engine submission built in.</p><span class="tc">From 3 credits per page →</span></a>
+    <a class="tool" href="/free-audit"><span class="tk">02</span><h3>SEO audit</h3><p class="muted">Check any page for local SEO basics, tap-to-call, schema, speed and disclosures. Quick checks cost nothing; the full audit adds an AI fix plan.</p><span class="tc">Quick check at no cost · full audit 1 credit →</span></a>
+    <a class="tool" href="/app#posts"><span class="tk">03</span><h3>Marketplace posts</h3><p class="muted">Listing drafts and AI images in 15 styles, plus message and reply packs for every service. For posting in your own area; confirm your network accepts Marketplace calls.</p><span class="tc">1 credit per draft · reply packs at no cost →</span></a>
+    <a class="tool" href="/learn"><span class="tk">04</span><h3>Learn pay-per-call</h3><p class="muted">How it pays, choosing a market, building and connecting a site, getting found, and applying to a network.</p><span class="tc">6 lessons, no credits →</span></a>
+    <a class="tool" href="/networks"><span class="tk">05</span><h3>Networks</h3><p class="muted">Networks that buy home-service calls, what they pay for and which traffic they allow, checked against their own pages.</p><span class="tc">See where to apply →</span></a>
   </div>
 </div></section>
 
@@ -315,7 +319,7 @@ nav .ctas{align-items:center}
     <div><h3>Listing writer</h3><p class="muted">Different titles and descriptions for each city and style, so you're not starting from a blank page.</p></div>
     <div><h3>AI images</h3><p class="muted">An AI-generated image laid out in a light or dark 1080×1080 design with the city and your number. Label it as illustrative; it isn't a real job.</p></div>
     <div><h3>Network-rule checks</h3><p class="muted">Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.</p></div>
-    <div><h3>Messenger replies</h3><p class="muted">Copy-ready answers for "how much?" that move the conversation to a phone call.</p></div>
+    <div><h3>Reply packs for every service</h3><p class="muted">Copy-ready answers for availability, urgent problems, "how much?" and "are you the company?", written for each of the 86 services, that move the conversation to a phone call.</p></div>
     <div><h3>AI market picks</h3><p class="muted">Suggests a service and city to try next, weighing reported payouts, the season and what you posted recently. Suggestions, not forecasts.</p></div>
     <div><h3>Canva templates</h3><p class="muted">23 service templates in light and dark styles that open as a copy in your own Canva, plus AI headlines to paste in.</p></div>
   </div>
@@ -334,6 +338,7 @@ nav .ctas{align-items:center}
     <div class="path">
       <h3>Using another network</h3>
       <p class="muted">Any 10-digit tracking number works. Check your network's own rules too: the checks in CallPosts are set up for the rules listed below.</p>
+      <div class="ctas"><a class="btn sec" href="/networks">See networks that buy home-service calls</a></div>
     </div>
   </div>
 </div></section>

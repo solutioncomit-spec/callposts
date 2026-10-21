@@ -8,6 +8,10 @@ export default async (req: Request) => {
   const urls: { loc: string; lastmod?: string; priority: string }[] = [
     { loc: `${origin}/`, priority: "1.0" },
     { loc: `${origin}/app`, priority: "0.6" },
+    { loc: `${origin}/free-audit`, priority: "0.9" },
+    { loc: `${origin}/networks`, priority: "0.8" },
+    { loc: `${origin}/learn`, priority: "0.8" },
+    ...["how", "niche", "build", "domain", "grow", "network"].map((id) => ({ loc: `${origin}/learn/${id}`, priority: "0.7" })),
     { loc: `${origin}/terms`, priority: "0.2" },
     { loc: `${origin}/privacy`, priority: "0.2" },
     { loc: `${origin}/refunds`, priority: "0.2" },

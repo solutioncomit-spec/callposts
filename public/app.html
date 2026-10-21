@@ -247,6 +247,12 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 :root[data-theme="dark"] .btn.ghost{background:var(--field);color:var(--ink);box-shadow:none}
 :root[data-theme="dark"] .card:hover{border-color:rgba(59,130,246,.45)}
 :root[data-theme="dark"] .markets tr.sel td,:root[data-theme="dark"] .markets tr:hover td{background:rgba(59,130,246,.12)}
+.newbie{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--accent)!important}
+.net-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+.net-card{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.net-card dl{display:grid;grid-template-columns:96px 1fr;gap:3px 8px;margin:0}.net-card dt{color:var(--muted)}.net-card dd{margin:0}
+.mp-head{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+.rp-item{display:flex;flex-direction:column;gap:6px}.rp-item .desc{white-space:pre-line}
 </style>
 </head>
 <body>
@@ -255,13 +261,18 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 <div class="wrap">
   <header>
     <h1>CallPosts</h1>
-    <p>Content tools for home-service pay-per-call affiliates: listing drafts, AI images and reply templates, service-and-city landing pages, and site audits. Review every output and your channel’s rules before publishing.</p>
-    <nav class="tools" aria-label="Tools"><a href="#learn" data-tool="learn"><b>Learn</b><span>5 lessons, start here</span></a><a href="#posts" data-tool="posts"><b>Listing drafts</b><span>Drafts, images and replies</span></a><a href="#sites" data-tool="sites"><b>Landing pages</b><span>Service-and-city pages</span></a><a href="#audit" data-tool="audit"><b>Site audit</b><span>Check any web page</span></a></nav>
+    <p>Content tools for home-service pay-per-call affiliates: service-and-city sites, SEO audits, Marketplace drafts with reply packs, a short course and networks to send calls to. Review every output and your channel’s rules before publishing.</p>
+    <nav class="tools" aria-label="Tools"><a href="#sites" data-tool="sites"><b>1 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>2 · SEO audit</b><span>Check any page</span></a><a href="#posts" data-tool="posts"><b>3 · Marketplace posts</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>4 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>5 · Networks</b><span>Where to send calls</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
+  <div class="panel newbie" id="newbie" hidden>
+    <div><b>New to pay-per-call?</b> <span class="status" style="margin:0">Start with 6 short lessons (about 45 minutes, no credits). They take you from choosing a service and city to a live site and a network to apply to.</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="newbieGo">Start the lessons</button><button type="button" class="btn ghost" id="newbieSkip">I know the basics</button></div>
+  </div>
+
   <details class="panel tpl" id="learnBox">
-    <summary><h2>Start here: from zero to your first published site</h2><span class="sum" id="learnSum">5 short lessons · no credits needed</span></summary>
+    <summary><h2>Start here: from zero to your first published site</h2><span class="sum" id="learnSum">6 short lessons · no credits needed</span></summary>
     <div class="tpl-body">
       <div class="onb" style="padding:10px 12px"><div class="bar"><i id="learnBar" style="width:0"></i></div><span class="status" id="learnProg" style="margin:0"></span></div>
       <div class="learn">
@@ -271,7 +282,15 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
     </div>
   </details>
 
-  <details class="panel tpl" id="tplBox" open>
+  <details class="panel tpl" id="netBox">
+    <summary><h2>Networks: where to send your calls</h2><span class="sum" id="netSum">Checked against their own pages</span></summary>
+    <div class="tpl-body">
+      <p class="status" style="margin:0">Networks that buy home-service calls, what they pay for and which traffic they allow. Rules and payouts change, so confirm with the network before you build. CallPosts isn't affiliated with any of them. <a href="/networks" target="_blank" rel="noopener" style="color:var(--accent)">Open the full page ↗</a></p>
+      <div class="net-grid" id="netList"><p class="status" style="margin:0">Loading…</p></div>
+    </div>
+  </details>
+
+  <details class="panel tpl" id="tplBox">
     <summary><h2>Creative templates</h2><span class="sum" id="tplSum">Auto-match to your service</span></summary>
     <div class="tpl-body">
       <p class="status" style="margin:0">23 services, each in a light and a dark style. Pick one to use on every listing, or leave it on auto-match. Templates open in your own Canva as a copy with both styles: page 1 is light, page 2 is dark.</p>
@@ -323,18 +342,6 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="bar"><i id="onbBar" style="width:0"></i></div>
         <ol id="onbList"></ol>
       </div>
-      <div class="field">
-        <span class="label">Reported payouts by market (reference only)</span>
-        <input id="filter" placeholder="Filter by service, city or state">
-        <div class="markets"><table id="mkt"></table></div>
-      </div>
-      <details class="field" id="pickBox">
-        <summary class="label" style="cursor:pointer">✦ AI market picks: where to post next</summary>
-        <textarea id="pickNotes" placeholder="Optional: states you cover, what has worked, services to skip"></textarea>
-        <button class="btn ghost ai" id="pickGo" type="button">Suggest markets · 1 credit</button>
-        <div class="status" id="pickStatus" role="status"></div>
-        <div class="picks" id="picks"></div>
-      </details>
       <details class="field" id="lpBox">
         <summary class="label" style="cursor:pointer">✦ Landing pages: service-and-city pages and city sites</summary>
         <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months.</p>
@@ -363,10 +370,24 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <p class="status" style="margin:0">Checks a page for local SEO basics, tap-to-call, schema, speed, disclosures and claims, then lists what to fix. A higher score doesn't guarantee rankings or calls. Works on your sites, your clients' and your competitors'.</p>
         <input id="auUrl" type="url" inputmode="url" placeholder="https://yourdomain.com/page" aria-label="Website address">
         <div class="row"><input id="auKw" placeholder="Target service (optional)" aria-label="Target service"><input id="auCity" placeholder="City, State (optional)" aria-label="Target city"></div>
-        <button class="btn ai" id="auGo" type="button">Run audit · 1 credit</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ai" id="auGo" type="button">Full audit + AI fix plan · 1 credit</button><button class="btn ghost" id="auQuick" type="button">Quick check · no credits</button></div>
+        <p class="status" style="margin:0">Quick check runs every rule-based check (10 a day when logged in). Share <a href="/free-audit" target="_blank" rel="noopener" style="color:var(--accent)">callposts.com/free-audit</a> with anyone: it works without an account.</p>
         <div class="status" id="auStatus" role="status"></div>
         <div id="auReport"></div>
         <div class="picks" id="auHist"></div>
+      </details>
+      <div class="mp-head" id="mpHead"><span class="label" style="margin:0">3 · Marketplace posts</span><span class="status" style="margin:0">Local add-on: only works if you're in the city you post in. Some networks prohibit Marketplace calls (Service Direct does), so confirm with yours first.</span></div>
+      <div class="field">
+        <span class="label">Reported payouts by market (reference only)</span>
+        <input id="filter" placeholder="Filter by service, city or state">
+        <div class="markets"><table id="mkt"></table></div>
+      </div>
+      <details class="field" id="pickBox">
+        <summary class="label" style="cursor:pointer">✦ AI market picks: where to post next</summary>
+        <textarea id="pickNotes" placeholder="Optional: states you cover, what has worked, services to skip"></textarea>
+        <button class="btn ghost ai" id="pickGo" type="button">Suggest markets · 1 credit</button>
+        <div class="status" id="pickStatus" role="status"></div>
+        <div class="picks" id="picks"></div>
       </details>
       <details class="field" id="histBox">
         <summary class="label" style="cursor:pointer">Your listing history</summary>
@@ -394,6 +415,13 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <button class="btn ghost" id="stop" hidden>Stop</button>
       </div>
       <div class="status" id="status" role="status"></div>
+      <details class="field" id="rpBox">
+        <summary class="label" style="cursor:pointer">💬 Message &amp; reply packs for every service · no credits</summary>
+        <p class="status" style="margin:0">Ready replies for the questions buyers ask on Marketplace, written for each service: availability, urgent problems, “how much?”, “are you the company?” and follow-ups. Filled with your service, city, tracking number and brand from the brief. No prices, no “free”, and always honest that you're a referral service.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><select id="rpSvc" aria-label="Service" style="flex:1 1 220px"></select><button type="button" class="copy" id="rpAll">Copy all</button></div>
+        <span class="status" id="rpGroup" style="margin:0"></span>
+        <div class="picks" id="rpList"></div>
+      </details>
       <details class="field">
         <summary class="label" style="cursor:pointer">Network-rule checks for a draft you wrote</summary>
         <p class="status" style="margin:0">Checks drafts against the network rules configured in CallPosts. Passing these checks does not mean a platform permits your offer or guarantees approval.</p>
@@ -446,6 +474,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   </form>
 </dialog>
 <script src="/js/course.js"></script>
+<script src="/js/replies.js"></script>
 <script>
 const MARKETS=[
 ["Water Heaters","Peoria, AZ",41],["Water Heaters","Aurora, CO",34],["Water Heaters","Phoenix, AZ",34],["Water Heaters","Seffner, FL",33],["Water Heaters","Redmond, WA",31],["Water Heaters","Laguna Hills, CA",28],["Water Heaters","Fort Lauderdale, FL",28],["Water Heaters","Sacramento, CA",25],["Water Heaters","San Antonio, TX",24],["Water Heaters","San Jose, CA",23],
@@ -1097,13 +1126,14 @@ $("lpBox").addEventListener("toggle",()=>{if($("lpBox").open){loadPages();reques
 function showTool(t){
   document.querySelectorAll(".tools a").forEach(a=>a.setAttribute("aria-current",String(a.dataset.tool===t)));
   if(t==="learn"){$("learnBox").open=true;$("learnBox").scrollIntoView({behavior:"smooth",block:"start"});return}
+  if(t==="networks"){$("netBox").open=true;loadNetworks();$("netBox").scrollIntoView({behavior:"smooth",block:"start"});return}
   if(t==="sites-city"){t="sites";const b=document.querySelector('.lp-mode button[data-m="site"]');if(b)b.click()}
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
-  else if(t==="posts"){$("service").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("service").focus({preventScroll:true}),400)}
+  else if(t==="posts"){$("mpHead").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("service").focus({preventScroll:true}),600)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
-if(/^#(learn|posts|sites|audit)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+if(/^#(learn|posts|sites|audit|networks)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
 
 // Course: lessons from /js/course.js; progress kept in this browser and, when logged in, on the account.
 const COURSE=window.COURSE||[];
@@ -1118,7 +1148,7 @@ function renderLearn(){
   const n=COURSE.filter(l=>learnDone.has(l.id)).length;
   $("learnBar").style.width=`${COURSE.length?n/COURSE.length*100:0}%`;
   $("learnProg").textContent=n===COURSE.length&&n?"All lessons done. Now build, measure and repeat what works.":`${n} of ${COURSE.length} lessons done`;
-  $("learnSum").textContent=n?`${n} of ${COURSE.length} done`:"5 short lessons · no credits needed";
+  $("learnSum").textContent=n?`${n} of ${COURSE.length} done`:`${COURSE.length} short lessons · no credits needed`;
   if(!learnCur)learnCur=(COURSE.find(l=>!learnDone.has(l.id))||COURSE[0]||{}).id;
   $("learnList").innerHTML=COURSE.map((l,i)=>`<li class="${learnDone.has(l.id)?"done":""}"><button type="button" data-id="${l.id}" aria-current="${l.id===learnCur}"><span class="ck">${learnDone.has(l.id)?"✓":i+1}</span><span>${esc(l.title)}<span class="mins">${l.minutes} min</span></span></button></li>`).join("");
   const l=COURSE.find(x=>x.id===learnCur);if(!l){$("learnBody").innerHTML="";return}
@@ -1133,6 +1163,41 @@ $("learnBody").addEventListener("click",e=>{
   const i=COURSE.findIndex(x=>x.id===d.dataset.done);learnCur=(COURSE[i+1]||COURSE[0]).id;renderLearn();$("learnBox").scrollIntoView({behavior:"smooth",block:"start"});
 });
 renderLearn();
+
+// First-visit prompt: beginners go to the course, everyone else straight to the tools.
+(function(){let seen=false;try{seen=localStorage.getItem("cp-newbie")==="1"}catch(e){}
+  if(!seen&&!learnDone.size&&!location.hash)$("newbie").hidden=false;
+  const close=()=>{$("newbie").hidden=true;try{localStorage.setItem("cp-newbie","1")}catch(e){}};
+  $("newbieGo").onclick=()=>{close();history.replaceState(null,"","#learn");showTool("learn")};
+  $("newbieSkip").onclick=()=>{close();history.replaceState(null,"","#sites");showTool("sites")};})();
+
+// Networks list (public data from /api/networks).
+let netLoaded=false;
+async function loadNetworks(){if(netLoaded)return;
+  try{const r=await fetch("/api/networks");const j=await r.json();netLoaded=true;
+    const d=x=>new Date(x+"T12:00:00Z").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+    $("netList").innerHTML=j.networks.map(n=>`<div class="net-card"><div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;align-items:center"><b style="font-size:14px">${esc(n.name)}</b><span class="seo-badge ${n.status==="verified"?"good":"ok"}">${n.status==="verified"?"Checked "+d(n.checked):"Listed · confirm"}</span></div>
+      <dl><dt>Verticals</dt><dd>${esc(n.verticals)}</dd><dt>How it pays</dt><dd>${esc(n.model)}</dd><dt>Who can join</dt><dd>${esc(n.who)}</dd><dt>Traffic</dt><dd>${esc(n.traffic)}</dd></dl>${n.notes?`<span class="status" style="margin:0">${esc(n.notes)}</span>`:""}
+      <a class="copy" style="text-decoration:none;align-self:flex-start" href="${esc(n.url)}" target="_blank" rel="noopener nofollow">Apply on their site ↗</a></div>`).join("")
+      +`<div class="net-card"><b style="font-size:14px">Search more offers</b><span class="status" style="margin:0">OfferVault is a public directory of affiliate offers. Search “pay per call” plus your service, then check each network's rules yourself.</span><a class="copy" style="text-decoration:none;align-self:flex-start" href="${esc(j.offervault)}" target="_blank" rel="noopener nofollow">Search OfferVault ↗</a></div>`;
+    $("netSum").textContent=`${j.networks.length} networks · reviewed ${d(j.checked)}`;
+  }catch(e){$("netList").innerHTML=`<p class="status" style="margin:0">Couldn't load the list. <a href="/networks" style="color:var(--accent)">Open the networks page</a>.</p>`}}
+$("netBox").addEventListener("toggle",()=>{if($("netBox").open)loadNetworks()});
+
+// Message and reply packs (public/js/replies.js), filled from the brief.
+const RP=window.REPLY_PACKS;
+function rpVals(){return{service:$("rpSvc").value,city:$("city").value.trim(),phone:$("phone").value.trim(),brand:$("brand").value.trim()}}
+function renderReplies(){if(!RP)return;const v=rpVals(),p=RP.pack(v.service);
+  $("rpGroup").textContent=`${p.group} pack · ${p.items.length} messages${v.phone?"":" · add your tracking number in the brief to fill it in"}`;
+  $("rpList").innerHTML=p.items.map(i=>{const t=RP.fill(i.text,v);return `<div class="kit-row rp-item"><span class="label" style="margin:0">${esc(i.label)}</span><div class="desc">${esc(t)}</div><button type="button" class="copy" data-copy="${esc(t)}" style="align-self:flex-start">Copy</button></div>`}).join("")}
+if(RP){$("rpSvc").innerHTML=RP.services.map(x=>`<option>${esc(x)}</option>`).join("");
+  const syncSvc=()=>{const sv=$("service").value.trim();const m=RP.services.find(x=>x.toLowerCase()===sv.toLowerCase());if(m)$("rpSvc").value=m};
+  syncSvc();renderReplies();$("rpSvc").onchange=renderReplies;
+  ["service","city","phone","brand"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="service")syncSvc();if($("rpBox").open)renderReplies()}));
+  $("rpBox").addEventListener("toggle",()=>{if($("rpBox").open){syncSvc();renderReplies()}});
+  $("rpList").addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied ✓"}catch(err){b.textContent="Select & copy manually"}setTimeout(()=>b.textContent="Copy",1600)});
+  $("rpAll").onclick=async()=>{const v=rpVals(),p=RP.pack(v.service);const txt=p.items.map(i=>`${i.label}\n${RP.fill(i.text,v)}`).join("\n\n");
+    try{await navigator.clipboard.writeText(txt);$("rpAll").textContent="Copied all"}catch(e){$("rpAll").textContent="Couldn't copy"}setTimeout(()=>$("rpAll").textContent="Copy all",1600)}}
 
 // Site audit
 const auColor=n=>n>=85?"#22c55e":n>=65?"#f59e0b":"#ef4444";
@@ -1163,6 +1228,13 @@ $("auGo").onclick=async()=>{
   }catch(err){$("auStatus").textContent=err.message}finally{$("auGo").disabled=false}
 };
 $("auUrl").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("auGo").click()}});
+$("auQuick").onclick=async()=>{
+  const url=$("auUrl").value.trim();if(!url){$("auStatus").textContent="Enter a website address.";$("auUrl").focus();return}
+  $("auQuick").disabled=true;$("auStatus").innerHTML=`<span class="spin"></span> Running the checks… about 5–15 seconds`;
+  try{const r=await fetch("/api/free-audit",{method:"POST",headers:authHeaders(),body:JSON.stringify({url,keyword:$("auKw").value.trim(),city:$("auCity").value.trim()})});const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.ok)throw new Error(j.error||"The check didn't finish. Try again.");
+    renderAudit(j);$("auStatus").textContent=`Quick check done (${j.left} left today). Want an AI fix plan written for this page? Run the full audit for 1 credit.`;
+  }catch(err){$("auStatus").textContent=err.message}finally{$("auQuick").disabled=false}};
 $("auHist").addEventListener("click",async e=>{if(!e.target.closest(".auopen"))return;const id=e.target.closest(".kit-row").dataset.id;
   const r=await fetch(`/api/audit?id=${encodeURIComponent(id)}`,{headers:authHeaders(),cache:"no-store"});const j=await r.json().catch(()=>({}));if(r.ok&&j.audit){renderAudit(j.audit);$("auReport").scrollIntoView({behavior:"smooth",block:"start"})}});
 $("refCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("refLink").value);$("refCopy").textContent="Copied"}catch(e){$("refLink").select()}setTimeout(()=>$("refCopy").textContent="Copy",1500)};

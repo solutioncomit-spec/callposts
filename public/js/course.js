@@ -1,4 +1,4 @@
-// CallPosts course: five short lessons from zero to a first ranking site.
+// CallPosts course: six short lessons from zero to a published site and a network to send calls to.
 // Each lesson ends with an action that opens the right tool. Plain HTML strings, written by CallPosts.
 window.COURSE = [
   {
@@ -106,5 +106,29 @@ window.COURSE = [
 <h4>Repeat what works</h4>
 <p>Expand the services and towns that bring calls; drop what doesn't after a fair test. That's the whole business.</p>`,
     action: { label: "Run a site audit", tool: "audit" },
+  },
+  {
+    id: "network",
+    title: "Find a network and apply",
+    minutes: 7,
+    summary: "Who buys home-service calls, what they look for in a new publisher, and how to apply without wasting months.",
+    body: `
+<p>A network turns your calls into money. You send calls to a tracking number it gives you, and it pays for each call that qualifies. Some networks are open to beginners; others only take publishers who already send volume.</p>
+<h4>Pick the network before you build</h4>
+<ul>
+<li>Check that it buys calls for <b>your service in your cities</b>. Coverage differs by area.</li>
+<li>Read its <b>traffic rules</b>. Some networks ban free marketplace listings like Facebook Marketplace; SEO sites are widely accepted. Get the rules for your offer in writing.</li>
+<li>Ask whether it accepts publishers from <b>your country</b>, and how it pays (wire, ACH, PayPal). Non-US individuals usually fill in a W-8BEN tax form.</li>
+</ul>
+<h4>What makes an application succeed</h4>
+<ol>
+<li>A <b>live site</b> for the service and cities you want. Networks approve faster when they can see real pages.</li>
+<li>A clear answer to “where will the calls come from?” Say “an SEO site for water heater repair in five Denver suburbs”, not “various sources”.</li>
+<li>Honest expectations. New publishers start small; a few weeks of real calls opens doors to bigger offers.</li>
+</ol>
+<h4>Know what you're paid for</h4>
+<p>Each offer defines a qualified call: usually a minimum call length (often 60 to 120 seconds), in the covered area, during buyer hours, and not a repeat caller. Calls that miss these rules aren't paid, so put the call hours on your site if the offer has them.</p>
+<p class="tip">The Networks section lists networks that buy home-service calls, checked against their own pages, with links to apply.</p>`,
+    action: { label: "See networks to apply to", tool: "networks" },
   },
 ];
