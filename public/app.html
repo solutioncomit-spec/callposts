@@ -262,7 +262,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   <header>
     <h1>CallPosts</h1>
     <p>Content tools for home-service pay-per-call affiliates: service-and-city sites, SEO audits, Marketplace drafts with reply packs, a short course and networks to send calls to. Review every output and your channel’s rules before publishing.</p>
-    <nav class="tools" aria-label="Tools"><a href="#sites" data-tool="sites"><b>1 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>2 · SEO audit</b><span>Check any page</span></a><a href="#posts" data-tool="posts"><b>3 · Marketplace posts</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>4 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>5 · Networks</b><span>Where to send calls</span></a></nav>
+    <nav class="tools" aria-label="Tools"><a href="#sites" data-tool="sites"><b>1 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>2 · SEO audit</b><span>Check any page</span></a><a href="#ranks" data-tool="ranks"><b>3 · Rankings</b><span>Track Google positions</span></a><a href="#posts" data-tool="posts"><b>4 · Marketplace posts</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>5 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>6 · Networks</b><span>Where to send calls</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
@@ -325,7 +325,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · blog post 2 · site audit 1 · market picks 1</p>
+          <p class="status" id="acctHint" style="margin:0">Landing page 3, or 6 with an image · blog post 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
@@ -376,7 +376,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="auReport"></div>
         <div class="picks" id="auHist"></div>
       </details>
-      <div class="mp-head" id="mpHead"><span class="label" style="margin:0">3 · Marketplace posts</span><span class="status" style="margin:0">Local add-on: only works if you're in the city you post in. Some networks prohibit Marketplace calls (Service Direct does), so confirm with yours first.</span></div>
+      <div class="mp-head" id="mpHead"><span class="label" style="margin:0">4 · Marketplace posts</span><span class="status" style="margin:0">Local add-on: only works if you're in the city you post in. Some networks prohibit Marketplace calls (Service Direct does), so confirm with yours first.</span></div>
       <div class="field">
         <span class="label">Reported payouts by market (reference only)</span>
         <input id="filter" placeholder="Filter by service, city or state">
@@ -388,6 +388,16 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <button class="btn ghost ai" id="pickGo" type="button">Suggest markets · 1 credit</button>
         <div class="status" id="pickStatus" role="status"></div>
         <div class="picks" id="picks"></div>
+      </details>
+      <details class="field" id="rankBox">
+        <summary class="label" style="cursor:pointer">📈 Rank tracker: where you rank on Google</summary>
+        <p class="status" style="margin:0">See where a site ranks on Google for a search phrase, as a searcher in that city sees it (top 30), and who ranks above it. Rechecks weekly so you can watch it climb. New sites usually take months to rank; positions move day to day.</p>
+        <input id="rkTarget" placeholder="Site to track: example.com or callposts.com/s/your-site" aria-label="Site to track">
+        <div class="row"><input id="rkKw" placeholder="Search phrase, e.g. water heater repair lakewood co" aria-label="Search phrase"><input id="rkLoc" placeholder="Searcher's city, e.g. Lakewood, CO" aria-label="City"></div>
+        <label class="status" style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="rkWeekly" checked style="width:auto"> Recheck every week (1 credit per check)</label>
+        <button class="btn ai" id="rkGo" type="button">Track and check now · 1 credit</button>
+        <div class="status" id="rkStatus" role="status"></div>
+        <div class="picks" id="rkList"></div>
       </details>
       <details class="field" id="histBox">
         <summary class="label" style="cursor:pointer">Your listing history</summary>
@@ -507,7 +517,7 @@ window.cpUser=null;
 function authHeaders(){const c=$("code").value.trim();return{"content-type":"application/json",...(c?{"x-access-code":c}:{})}}
 function canUseAI(statusEl){if($("code").value.trim()||window.cpUser)return true;statusEl.textContent="Log in or create an account first (new accounts get 15 credits).";document.getElementById("authEmail").focus();document.getElementById("acct").scrollIntoView({behavior:"smooth",block:"center"});return false}
 function noteCredits(res){const c=res.headers.get("x-credits");if(c!=null&&window.cpSetCredits)window.cpSetCredits(+c)}
-function aiError(res,j,fallback){if(res.status===402&&window.cpUser)return (j.error||"Not enough credits.")+(window.cpBuyUrl?"":" Contact CallPosts to top up.");if(res.status===401&&j.needLogin)return "Your login expired. Log in again to continue.";if(res.status===429)return "Too many requests. Wait a minute and try again.";return j.error||fallback}
+function aiError(res,j,fallback){if(res.status===402&&window.cpUser)return (j.error||"Not enough credits.")+" Tap Buy credits to top up.";if(res.status===401&&j.needLogin)return "Your login expired. Log in again to continue.";if(res.status===429)return "Too many requests. Wait a minute and try again.";return j.error||fallback}
 
 function renderMarkets(){
   const q=$("filter").value.toLowerCase().trim();
@@ -957,7 +967,7 @@ function renderSites(list){
     <div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}?preview=1" target="_blank" rel="noopener">Open site</a><button type="button" class="copy scopy">Copy link</button><a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/site.zip" download>Download ZIP</a>
     <select class="stheme" aria-label="Site theme" style="width:auto;padding:4px 8px;font-size:12px">${THEMES.map(t=>`<option value="${t.k}"${t.k===x.theme?" selected":""}>${esc(t.n)}</option>`).join("")}</select>
     <button type="button" class="copy sping" title="Submit every page to Bing, Yandex and other IndexNow search engines">${x.pingedAt?`Submitted ${ago(x.pingedAt)} · Resubmit`:"Submit to search engines"}</button>
-    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy spost">Write a blog post · 2 credits</button>${(x.posts||[]).length?`<a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/blog" target="_blank" rel="noopener">Open blog</a>`:""}<button type="button" class="copy sdel">Delete site</button></div>${domainBox(x)}</div>`).join("")+(list.length?`<p class="status" style="margin:0;font-size:12px">Pages are sent to Bing, Yandex and other IndexNow engines automatically when they're built. For Google, add your domain (or callposts.com pages) in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:var(--accent)">Google Search Console</a> and submit <code>/sitemap.xml</code>.</p>`:"");
+    ${x.missing.length?`<button type="button" class="copy sfin">Finish ${x.missing.length} page${x.missing.length>1?"s":""} · ${x.missing.length*(x.photo?6:3)} credits</button>`:""}<button type="button" class="copy spost">Write a blog post · 2 credits</button>${(x.posts||[]).length?`<a class="copy" style="text-decoration:none" href="/s/${esc(x.slug)}/blog" target="_blank" rel="noopener">Open blog</a>`:""}<button type="button" class="copy strack">Track rankings</button><button type="button" class="copy sdel">Delete site</button></div>${domainBox(x)}</div>`).join("")+(list.length?`<p class="status" style="margin:0;font-size:12px">Pages are sent to Bing, Yandex and other IndexNow engines automatically when they're built. For Google, add your domain (or callposts.com pages) in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:var(--accent)">Google Search Console</a> and submit <code>/sitemap.xml</code>.</p>`:"");
 }
 function renderPages(list){
   $("lpList").innerHTML=list.length?list.map(p=>`<div class="kit-row" data-slug="${esc(p.slug)}"><div class="kh"><span>${esc(p.service)} · ${esc(p.city)} ${p.site?`<span class="site-tag">in site</span>`:""}</span><span style="display:flex;gap:8px;align-items:center"><span class="seo-badge ${p.seo>=85?"good":p.seo>=65?"ok":"bad"}" title="SEO score">SEO ${p.seo??"–"}</span><span class="km">${p.views||0} views</span></span></div><div class="km">${esc(p.headline)} · ${esc(themeName(p.template))}</div><div class="kn" style="flex-wrap:wrap"><a class="copy" style="text-decoration:none" href="/p/${esc(p.slug)}?preview=1" target="_blank" rel="noopener">View</a><button type="button" class="copy lpedit">Edit</button><button type="button" class="copy lpcopy">Copy link</button>${p.site?"":`<button type="button" class="copy lpdl">Download HTML</button>`}<button type="button" class="copy lpdel">Delete</button></div></div>`).join(""):`<p class="status" style="margin:0">Your landing pages will appear here.</p>`;
@@ -1054,6 +1064,9 @@ $("lpSites").addEventListener("click",async e=>{
   if(e.target.closest(".sping")){const b=e.target;b.disabled=true;b.textContent="Submitting…";
     const r=await fetch("/api/sites",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({slug,ping:true})});const j=await r.json().catch(()=>({}));
     b.disabled=false;b.textContent=r.ok?`Submitted ${j.urls} URLs`:"Submit to search engines";$("lpStatus").textContent=r.ok?`Sent ${j.urls} pages to Bing, Yandex and other IndexNow search engines.`:(j.error||"Couldn't submit. Try again later.")}
+  if(e.target.closest(".strack")){const x=lpSiteData[slug]||{};$("rkTarget").value=x.domain||`callposts.com/s/${slug}`;
+    const svc=(x.services||[x.service]).filter(Boolean)[0]||"",city=(x.cities||[])[0]||"";$("rkLoc").value=city;$("rkKw").value=`${svc} ${city.split(",")[0]}`.trim().toLowerCase();
+    history.replaceState(null,"","#ranks");showTool("ranks");setTimeout(()=>$("rkKw").focus({preventScroll:true}),500)}
   if(e.target.closest(".dfgo")){const q=row.querySelector(".dfq").value.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
     let names;if(q){const base=q.replace(/\s+/g,"");names=base.includes(".")?[base,...["com","net","co"].map(t=>base.split(".")[0]+"."+t)]:["com","net","co","us"].map(t=>`${base}.${t}`)}
     else names=domainIdeas(lpSiteData[slug]||{});
@@ -1132,10 +1145,11 @@ function showTool(t){
   if(t==="sites-city"){t="sites";const b=document.querySelector('.lp-mode button[data-m="site"]');if(b)b.click()}
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="ranks"){$("rankBox").open=true;loadRanks();$("rankBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="posts"){$("mpHead").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("service").focus({preventScroll:true}),600)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
-if(/^#(learn|posts|sites|audit|networks)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+if(/^#(learn|posts|sites|audit|networks|ranks)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
 
 // Course: lessons from /js/course.js; progress kept in this browser and, when logged in, on the account.
 const COURSE=window.COURSE||[];
@@ -1200,6 +1214,43 @@ if(RP){$("rpSvc").innerHTML=RP.services.map(x=>`<option>${esc(x)}</option>`).joi
   $("rpList").addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied ✓"}catch(err){b.textContent="Select & copy manually"}setTimeout(()=>b.textContent="Copy",1600)});
   $("rpAll").onclick=async()=>{const v=rpVals(),p=RP.pack(v.service);const txt=p.items.map(i=>`${i.label}\n${RP.fill(i.text,v)}`).join("\n\n");
     try{await navigator.clipboard.writeText(txt);$("rpAll").textContent="Copied all"}catch(e){$("rpAll").textContent="Couldn't copy"}setTimeout(()=>$("rpAll").textContent="Copy all",1600)}}
+
+// Rank tracker
+function spark(series){const pts=series.filter(p=>p.pos!=null);if(pts.length<2)return"";const W=120,H=28,max=Math.max(30,...pts.map(p=>p.pos));
+  const xy=series.map((p,i)=>p.pos==null?null:[Math.round(i*(W-4)/Math.max(1,series.length-1))+2,Math.round(((p.pos-1)/(max-1))*(H-4))+2]).filter(Boolean);
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Position history"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${xy.map(a=>a.join(",")).join(" ")}"/></svg>`}
+function rankRow(t){const pos=t.pos==null?`<span class="seo-badge bad" title="Not in the top ${t.depth}">${t.lastAt?"Not in top "+t.depth:"Not checked"}</span>`:`<span class="seo-badge ${t.pos<=3?"good":t.pos<=10?"ok":"bad"}">#${t.pos}</span>`;
+  const ch=t.change==null||t.change===0?"":`<span class="km" style="color:${t.change>0?"#22c55e":"#ef4444"}">${t.change>0?"▲":"▼"} ${Math.abs(t.change)}</span>`;
+  return `<div class="kit-row" data-id="${esc(t.id)}"><div class="kh"><span><b>${esc(t.keyword)}</b> · ${esc(t.location)}</span><span style="display:flex;gap:8px;align-items:center">${ch}${pos}</span></div>
+  <div class="km" style="overflow-wrap:anywhere">${esc(t.target)}${t.url?` · ranking page: <a href="${esc(t.url)}" target="_blank" rel="noopener nofollow" style="color:var(--accent)">${esc(t.url.replace(/^https?:\/\//,"").slice(0,60))}</a>`:""}${t.lastAt?` · checked ${ago(t.lastAt)}`:""}</div>
+  ${t.paused?`<div class="status" style="margin:0;color:#f59e0b">${esc(t.paused)}</div>`:""}
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${spark(t.series)}<div class="kn" style="flex-wrap:wrap"><button type="button" class="copy rkcheck">Check now · 1 credit</button><label class="km" style="display:flex;gap:4px;align-items:center"><input type="checkbox" class="rkweekly" ${t.weekly?"checked":""} style="width:auto"> Weekly</label><button type="button" class="copy rkdel">Delete</button></div></div>
+  ${t.top.length?`<details><summary class="km" style="cursor:pointer">Top ${t.top.length} for this search</summary><ol class="au-fix" style="margin-top:6px">${t.top.map(h=>`<li><span style="overflow-wrap:anywhere"><b>${esc(h.domain)}</b> · ${esc(h.title)}</span> <button type="button" class="copy rkaudit" data-url="${esc(h.link)}" style="margin-left:4px">Check this page</button></li>`).join("")}</ol></details>`:""}</div>`}
+async function loadRanks(){
+  if(!window.cpUser&&!$("code").value.trim()){$("rkList").innerHTML=`<p class="status" style="margin:0">Log in to track rankings.</p>`;return}
+  try{const r=await fetch("/api/ranks",{headers:authHeaders(),cache:"no-store"});const j=await r.json();if(!r.ok)return;
+    if(!j.enabled)$("rkStatus").textContent="Rank tracking is being switched on. You can set up trackers once it's live.";
+    $("rkList").innerHTML=j.trackers.length?`<span class="label">Your keywords (${j.trackers.length} of ${j.max})</span>`+j.trackers.map(rankRow).join(""):""}catch(e){}}
+$("rankBox").addEventListener("toggle",()=>{if($("rankBox").open)loadRanks()});
+$("rkGo").onclick=async()=>{if(!canUseAI($("rkStatus")))return;
+  const target=$("rkTarget").value.trim(),keyword=$("rkKw").value.trim(),location=$("rkLoc").value.trim();
+  if(!target||!keyword||!location){$("rkStatus").textContent="Fill in the site, the search phrase and the city.";return}
+  $("rkGo").disabled=true;$("rkStatus").innerHTML=`<span class="spin"></span> Checking Google… about 5–15 seconds`;
+  try{const r=await fetch("/api/ranks",{method:"POST",headers:authHeaders(),body:JSON.stringify({target,keyword,location,weekly:$("rkWeekly").checked})});const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(aiError(r,j,"Couldn't check rankings. Try again."));
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+    const t=j.tracker;$("rkStatus").textContent=t.pos?`${t.target} ranks #${t.pos} for “${t.keyword}” in ${t.location}.`:`${t.target} isn't in the top ${t.depth} for “${t.keyword}” yet. That's normal for new sites; we'll keep checking.`;
+    $("rkKw").value="";loadRanks()}catch(err){$("rkStatus").textContent=err.message}finally{$("rkGo").disabled=false}};
+$("rkList").addEventListener("click",async e=>{const row=e.target.closest(".kit-row");if(!row)return;const id=row.dataset.id;
+  if(e.target.closest(".rkaudit")){$("auUrl").value=e.target.dataset.url;showTool("audit");setTimeout(()=>$("auQuick").click(),500);return}
+  if(e.target.closest(".rkdel")){if(e.target.dataset.sure!=="1"){e.target.dataset.sure="1";e.target.textContent="Tap again to delete";return}
+    await fetch(`/api/ranks?id=${encodeURIComponent(id)}`,{method:"DELETE",headers:authHeaders()});loadRanks();return}
+  if(e.target.closest(".rkcheck")){if(!canUseAI($("rkStatus")))return;const b=e.target;b.disabled=true;b.textContent="Checking…";
+    const r=await fetch("/api/ranks",{method:"POST",headers:authHeaders(),body:JSON.stringify({action:"check",id})});const j=await r.json().catch(()=>({}));
+    if(!r.ok){$("rkStatus").textContent=aiError(r,j,"Couldn't check. Try again.");b.disabled=false;b.textContent="Check now · 1 credit";return}
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();loadRanks()}});
+$("rkList").addEventListener("change",async e=>{const c=e.target.closest(".rkweekly");if(!c)return;const id=c.closest(".kit-row").dataset.id;
+  await fetch("/api/ranks",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({id,weekly:c.checked})});loadRanks()});
 
 // Site audit
 const auColor=n=>n>=85?"#22c55e":n>=65?"#f59e0b":"#ef4444";
@@ -1319,7 +1370,7 @@ async function refresh(){
     if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
       $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
     if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
-    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Landing page 3, or 6 with an image · blog post 2 · site audit 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1. Need more? Tap Buy credits.";}
+    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Landing page 3, or 6 with an image · blog post 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1. Need more? Tap Buy credits.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }
