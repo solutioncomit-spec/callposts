@@ -202,6 +202,16 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .lp-mode button{font:600 13px var(--body);border:0;border-radius:6px;padding:8px;background:transparent;color:var(--muted);cursor:pointer}
 .lp-mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .lp-prog{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.lp-live{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}.lp-live .lp-prog{flex:1 1 200px}
+.phone{flex:0 0 auto;width:220px;height:440px;border:8px solid #1c2233;border-radius:28px;overflow:hidden;background:#fff;position:relative;box-shadow:0 20px 50px -20px rgba(0,0,0,.6)}
+.phone-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);width:70px;height:14px;background:#1c2233;border-radius:0 0 10px 10px;z-index:2}
+.phone iframe{width:390px;height:780px;border:0;transform:scale(.5385);transform-origin:0 0}
+.launch{border:1px solid var(--accent);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.launch h3{margin:0;font-size:15px}.launch .step{display:flex;gap:10px;align-items:flex-start;font-size:13px}.launch .n{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;border:1px solid var(--line)}
+.launch .step.ok .n{background:#22c55e;color:#04121a;border-color:#22c55e}
+.op-map{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:var(--field)}
+.op-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.op-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.op-bar i{display:block;height:100%}
 .lp-prog .ok{color:#22c55e}.lp-prog .bad{color:#ef4444}
 .site-tag{font:600 10px var(--mono);border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--muted)}
 .lp-tpl{display:flex;flex-direction:column;gap:6px;align-items:flex-start;font:600 12px var(--body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer}
@@ -262,7 +272,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   <header>
     <h1>CallPosts</h1>
     <p>Content tools for home-service pay-per-call affiliates: service-and-city sites, SEO audits, Marketplace drafts with reply packs, a short course and networks to send calls to. Review every output and your channel’s rules before publishing.</p>
-    <nav class="tools" aria-label="Tools"><a href="#sites" data-tool="sites"><b>1 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>2 · SEO audit</b><span>Check any page</span></a><a href="#ranks" data-tool="ranks"><b>3 · Rankings</b><span>Track Google positions</span></a><a href="#posts" data-tool="posts"><b>4 · Marketplace posts</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>5 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>6 · Networks</b><span>Where to send calls</span></a></nav>
+    <nav class="tools" aria-label="Tools"><a href="#find" data-tool="find"><b>1 · Find a market</b><span>Scan cities for openings</span></a><a href="#sites" data-tool="sites"><b>2 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>3 · SEO audit</b><span>Check any page</span></a><a href="#ranks" data-tool="ranks"><b>4 · Rankings</b><span>Track Google positions</span></a><a href="#posts" data-tool="posts"><b>5 · Marketplace</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>6 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>7 · Networks</b><span>Where to send calls</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
@@ -325,7 +335,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">Landing page 3, or 6 with an image · blog post 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1</p>
+          <p class="status" id="acctHint" style="margin:0">Landing page 3, or 6 with an image · blog post 2 · market scan 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
@@ -342,6 +352,14 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div class="bar"><i id="onbBar" style="width:0"></i></div>
         <ol id="onbList"></ol>
       </div>
+      <details class="field" id="oppBox">
+        <summary class="label" style="cursor:pointer">🧭 Opportunity Finder: where can a new site win?</summary>
+        <p class="status" style="margin:0">Pick a service and a state. We read Google's first page for that service in up to 10 mid-size cities and score how crowded each looks: directories and loosely matched pages mean room to break in; many exact local pages mean a tougher fight. A rough read of page 1 today, not a promise of rankings.</p>
+        <div class="row"><input id="opSvc" list="svcList" placeholder="Service, e.g. Water Heater Repair" aria-label="Service" autocomplete="off"><select id="opState" aria-label="State"><option value="">State…</option></select></div>
+        <div class="row"><select id="opOrder" aria-label="Which cities"><option value="large">Biggest mid-size cities first</option><option value="small">Smaller towns first</option></select><button class="btn ai" id="opGo" type="button">Scan 10 cities · 2 credits</button></div>
+        <div class="status" id="opStatus" role="status"></div>
+        <div id="opOut"></div>
+      </details>
       <details class="field" id="lpBox">
         <summary class="label" style="cursor:pointer">✦ Landing pages: service-and-city pages and city sites</summary>
         <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months. Need a domain? <a href="/domains" target="_blank" rel="noopener" style="color:var(--accent)">Find one</a>, or use the finder on each site below.</p>
@@ -361,7 +379,8 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <label class="status" style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="lpPhoto" style="width:auto"> <span id="lpPhotoLbl">Add an AI hero photo (+3 credits)</span></label>
         <button class="btn ai" id="lpGo" type="button">Build landing page · 3 credits</button>
         <div class="status" id="lpStatus" role="status"></div>
-        <div class="lp-prog" id="lpProg"></div>
+        <div class="lp-live"><div class="lp-prog" id="lpProg"></div><div class="phone" id="lpPhone" hidden><div class="phone-bar"></div><iframe id="lpFrame" title="Live preview of the page just built" loading="lazy"></iframe></div></div>
+        <div id="lpLaunch"></div>
         <div class="picks" id="lpSites"></div>
         <div class="picks" id="lpList"></div>
       </details>
@@ -376,7 +395,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="auReport"></div>
         <div class="picks" id="auHist"></div>
       </details>
-      <div class="mp-head" id="mpHead"><span class="label" style="margin:0">4 · Marketplace posts</span><span class="status" style="margin:0">Local add-on: only works if you're in the city you post in. Some networks prohibit Marketplace calls (Service Direct does), so confirm with yours first.</span></div>
+      <div class="mp-head" id="mpHead"><span class="label" style="margin:0">5 · Marketplace posts</span><span class="status" style="margin:0">Local add-on: only works if you're in the city you post in. Some networks prohibit Marketplace calls (Service Direct does), so confirm with yours first.</span></div>
       <div class="field">
         <span class="label">Reported payouts by market (reference only)</span>
         <input id="filter" placeholder="Filter by service, city or state">
@@ -996,7 +1015,7 @@ async function buildSiteCities(slug,combos,photo,postsN=0){
       const c=queue.shift(),k=key(c);lines[k]={txt:"…",cls:""};draw();
       $("lpStatus").innerHTML=`<span class="spin"></span> Writing pages: ${done} of ${total} done. Each takes about 20–30 seconds; keep this tab open.`;
       try{const {r,j}=await postPage({site:slug,city:c.city,service:c.service||undefined});
-        if(r.ok&&j.ok){okN++;lines[k]={txt:"✓",cls:"ok"}}
+        if(r.ok&&j.ok){okN++;lines[k]={txt:"✓",cls:"ok"};if(j.url){$("lpPhone").hidden=false;$("lpFrame").src=j.url+"?preview=1"}}
         else if(j.already){okN++;lines[k]={txt:"✓",cls:"ok"}}
         else{lines[k]={txt:"✕",cls:"bad"};if(r.status===402||r.status===401){stop=aiError(r,j,"Stopped.");}}
       }catch(e){lines[k]={txt:"✕",cls:"bad"}}
@@ -1009,6 +1028,7 @@ async function buildSiteCities(slug,combos,photo,postsN=0){
     const res=await writePost(slug);if(res.ok){postOk++;lines[k]={txt:"✓",cls:"ok"}}else{lines[k]={txt:"✕",cls:"bad"};if(res.stop)stop=res.error}draw()}
   if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
   const link=`<a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open your site ↗</a>`;
+  if(okN){$("lpFrame").src=`/s/${slug}?preview=1`;renderLaunch(slug,okN)}
   const postTxt=postsN?` and ${postOk} of ${postsN} blog posts`:"";
   $("lpStatus").innerHTML=stop?`${esc(stop)} ${okN} of ${total} pages were built${postTxt}; use “Finish” on the site below after topping up. ${okN?link:""}`
     :okN===total?`Done: ${total} pages${postTxt}, all linked. Read every page before you use it. ${link}`
@@ -1145,11 +1165,12 @@ function showTool(t){
   if(t==="sites-city"){t="sites";const b=document.querySelector('.lp-mode button[data-m="site"]');if(b)b.click()}
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="find"){$("oppBox").open=true;oppInit();$("oppBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="ranks"){$("rankBox").open=true;loadRanks();$("rankBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="posts"){$("mpHead").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("service").focus({preventScroll:true}),600)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
-if(/^#(learn|posts|sites|audit|networks|ranks)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+if(/^#(learn|posts|sites|audit|networks|ranks|find)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
 
 // Course: lessons from /js/course.js; progress kept in this browser and, when logged in, on the account.
 const COURSE=window.COURSE||[];
@@ -1185,7 +1206,7 @@ renderLearn();
   if(!seen&&!learnDone.size&&!location.hash)$("newbie").hidden=false;
   const close=()=>{$("newbie").hidden=true;try{localStorage.setItem("cp-newbie","1")}catch(e){}};
   $("newbieGo").onclick=()=>{close();history.replaceState(null,"","#learn");showTool("learn")};
-  $("newbieSkip").onclick=()=>{close();history.replaceState(null,"","#sites");showTool("sites")};})();
+  $("newbieSkip").onclick=()=>{close();history.replaceState(null,"","#find");showTool("find")};})();
 
 // Networks list (public data from /api/networks).
 let netLoaded=false;
@@ -1214,6 +1235,69 @@ if(RP){$("rpSvc").innerHTML=RP.services.map(x=>`<option>${esc(x)}</option>`).joi
   $("rpList").addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied ✓"}catch(err){b.textContent="Select & copy manually"}setTimeout(()=>b.textContent="Copy",1600)});
   $("rpAll").onclick=async()=>{const v=rpVals(),p=RP.pack(v.service);const txt=p.items.map(i=>`${i.label}\n${RP.fill(i.text,v)}`).join("\n\n");
     try{await navigator.clipboard.writeText(txt);$("rpAll").textContent="Copied all"}catch(e){$("rpAll").textContent="Couldn't copy"}setTimeout(()=>$("rpAll").textContent="Copy all",1600)}}
+
+// Opportunity Finder
+const ST_NAMES={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+let oppReady=false,oppLast=null;
+async function oppInit(){if(oppReady)return;oppReady=true;
+  try{const j=await fetch("/api/opportunities?state=CO").then(r=>r.json());$("opState").innerHTML=`<option value="">State…</option>`+j.states.map(s=>`<option value="${s}">${esc(ST_NAMES[s]||s)}</option>`).join("")}catch(e){oppReady=false}
+  if(!$("opSvc").value&&$("service").value.trim())$("opSvc").value=$("service").value.trim();
+  const st=($("city").value.match(/,\s*([A-Za-z]{2})\s*$/)||[])[1];if(st)$("opState").value=st.toUpperCase()}
+$("oppBox").addEventListener("toggle",()=>{if($("oppBox").open)oppInit()});
+const opColor=n=>n>=65?"#22c55e":n>=45?"#f59e0b":"#ef4444";
+function oppMap(rs){const pts=rs.filter(r=>r.lat!=null);if(pts.length<2)return"";
+  const la=pts.map(p=>p.lat),lo=pts.map(p=>p.lng),pad=.15,minLa=Math.min(...la),maxLa=Math.max(...la),minLo=Math.min(...lo),maxLo=Math.max(...lo);
+  const W=560,H=300,dx=(maxLo-minLo)||1,dy=(maxLa-minLa)||1,x=v=>40+((v-minLo)/dx)*(W-80),y=v=>30+((maxLa-v)/dy)*(H-60);
+  return `<svg class="op-map" viewBox="0 0 ${W} ${H}" role="img" aria-label="Map of scanned cities coloured by opportunity">${pts.map(p=>`<g><circle cx="${x(p.lng).toFixed(1)}" cy="${y(p.lat).toFixed(1)}" r="${(6+Math.sqrt(p.pop)/90).toFixed(1)}" fill="${opColor(p.score)}" fill-opacity=".75" stroke="#000" stroke-opacity=".25"/><text x="${(x(p.lng)+(x(p.lng)>W*.62?-12:12)).toFixed(1)}" y="${(y(p.lat)+4).toFixed(1)}" text-anchor="${x(p.lng)>W*.62?"end":"start"}" font-size="13" fill="currentColor">${esc(p.name)} · ${p.score}</text></g>`).join("")}</svg>`}
+function oppRender(j){const rs=j.results.filter(r=>!r.error);oppLast=j;
+  $("opOut").innerHTML=`${oppMap(rs)}<p class="status" style="margin:6px 0">Green = easier, amber = medium, red = harder. Bigger circle = more people. Tick the cities to build a site for.</p>
+  <div class="picks">${rs.map((r,i)=>`<label class="kit-row" style="cursor:pointer"><div class="op-row"><input type="checkbox" class="opPick" value="${esc(r.city)}" ${i<5&&r.score>=45?"checked":""} style="width:auto"><div><b>${esc(r.city)}</b> <span class="km">${r.pop.toLocaleString()} people</span><div class="op-bar" style="margin-top:4px"><i style="width:${r.score}%;background:${opColor(r.score)}"></i></div></div><span class="seo-badge ${r.score>=65?"good":r.score>=45?"ok":"bad"}">${r.label} · ${r.score}</span></div>
+    <div class="km">Page 1: ${r.dirs} directory listing${r.dirs===1?"":"s"}, ${r.local} exact local page${r.local===1?"":"s"}, ${r.weak} loosely matched${r.mapPack?` · map pack: ${r.mapPack} businesses, ${r.mapReviews.toLocaleString()} reviews`:""}</div>
+    <div class="km" style="overflow-wrap:anywhere">Top results: ${r.top.map(t=>esc(t.domain)).join(" · ")}</div></label>`).join("")}${j.results.filter(r=>r.error).map(r=>`<div class="km">${esc(r.city)}: couldn't read results</div>`).join("")}</div>
+  <button class="btn" id="opBuild" type="button" style="margin-top:8px">Build a site for the ticked cities →</button>`;
+  $("opBuild").onclick=()=>{const cities=[...document.querySelectorAll(".opPick:checked")].map(c=>c.value);if(!cities.length){$("opStatus").textContent="Tick at least one city.";return}
+    const mb=document.querySelector('.lp-mode button[data-m="site"]');if(mb)mb.click();
+    $("lpServices").value=j.service+"\n";$("lpCities").value=cities.join("\n")+"\n";$("lpRegion").value=cities.length===1?"":(ST_NAMES[j.state]||j.state);
+    if(!$("service").value.trim())$("service").value=j.service;
+    $("lpServices").dispatchEvent(new Event("input"));$("lpCities").dispatchEvent(new Event("input"));
+    showTool("sites");$("lpStatus").textContent=`${cities.length} cit${cities.length===1?"y":"ies"} from the Opportunity Finder are filled in. Add your tracking number in the brief, pick a theme and build.`}}
+$("opGo").onclick=async()=>{if(!canUseAI($("opStatus")))return;
+  const service=$("opSvc").value.trim(),state=$("opState").value;if(!service||!state){$("opStatus").textContent="Choose a service and a state.";return}
+  $("opGo").disabled=true;$("opOut").innerHTML="";$("opStatus").innerHTML=`<span class="spin"></span> Reading Google page 1 in 10 ${esc(ST_NAMES[state]||state)} cities… about 10–20 seconds`;
+  try{const r=await fetch("/api/opportunities",{method:"POST",headers:authHeaders(),body:JSON.stringify({service,state,order:$("opOrder").value})});const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(aiError(r,j,"The scan didn't finish. Try again."));
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+    const best=j.results.filter(x=>!x.error)[0];$("opStatus").textContent=best?`Best opening: ${best.city} (${best.label.toLowerCase()}, ${best.score}/100).`:"";oppRender(j)}
+  catch(err){$("opStatus").textContent=err.message}finally{$("opGo").disabled=false}};
+
+// Launch checklist after a site is built: check it, find a domain, track rankings, submit to search engines.
+async function renderLaunch(slug,pages){
+  let site=null;try{const r=await fetch(`/api/sites?slug=${encodeURIComponent(slug)}`,{headers:authHeaders(),cache:"no-store"});if(r.ok)site=(await r.json()).site}catch(e){}
+  const svc=site?((site.services||[site.service]).filter(Boolean)[0]||""):"",city=site?(site.cities||[])[0]||"":"";
+  const kw=`${svc} ${city.split(",")[0]} ${(city.split(",")[1]||"").trim()}`.trim().toLowerCase(),siteUrl=`${location.origin}/s/${slug}`;
+  $("lpLaunch").innerHTML=`<div class="launch"><h3>🚀 Launch checklist</h3>
+    <div class="step ok"><span class="n">✓</span><div><b>${pages} page${pages===1?"":"s"} built and linked.</b> <a href="/s/${slug}?preview=1" target="_blank" rel="noopener" style="color:var(--accent)">Open site ↗</a> · read every page before you share it.</div></div>
+    <div class="step" id="lcAudit"><span class="n">2</span><div><b>SEO check</b> <span class="km"><span class="spin"></span> checking your home page…</span></div></div>
+    <div class="step" id="lcDom"><span class="n">3</span><div><b>Get a domain</b> <span class="km">checking name ideas…</span></div></div>
+    <div class="step" id="lcRank"><span class="n">4</span><div><b>Track rankings</b> <span class="km">for “${esc(kw)}”</span><br><button type="button" class="copy" id="lcRankGo">Start tracking · 1 credit</button></div></div>
+    <div class="step" id="lcPing"><span class="n">5</span><div><b>Tell search engines</b> <span class="km">Pages were submitted to Bing and other IndexNow engines as they were built. For Google, add the site in Search Console after you connect your domain.</span></div></div></div>`;
+  $("lpLaunch").scrollIntoView({behavior:"smooth",block:"nearest"});
+  // 2. quick SEO check
+  fetch("/api/free-audit",{method:"POST",headers:authHeaders(),body:JSON.stringify({url:siteUrl,keyword:svc,city})}).then(r=>r.json()).then(j=>{
+    const el=$("lcAudit");if(!el)return;if(!j.ok){el.querySelector(".km").textContent=j.error||"Couldn't run the check.";return}
+    const bad=j.report.checks.filter(c=>!c.ok);el.classList.add("ok");el.querySelector(".n").textContent="✓";
+    el.querySelector(".km").innerHTML=`Score <b style="color:${auColor(j.report.score)}">${j.report.score}/100</b>${bad.length?` · to fix: ${bad.slice(0,3).map(c=>esc(c.name)).join(", ")}`:" · everything passed"} · <button type="button" class="linkbtn" id="lcAuditOpen">see all checks</button>`;
+    $("lcAuditOpen").onclick=()=>{renderAudit(j);showTool("audit")}}).catch(()=>{});
+  // 3. domain ideas
+  if(site){const names=domainIdeas(site).slice(0,6);fetch(`/api/domain-check?names=${encodeURIComponent(names.join(","))}`).then(r=>r.json()).then(j=>{
+    const el=$("lcDom");if(!el)return;const av=(j.results||[]).filter(d=>d.status==="available").slice(0,3);
+    el.querySelector(".km").innerHTML=av.length?`Available now: `+av.map(d=>`<b>${esc(d.domain)}</b> <a href="${esc(d.links[0].url)}" target="_blank" rel="noopener sponsored" style="color:var(--accent)">buy ↗</a>`).join(" · ")+` · then connect it under your site below.`:`Try the <a href="/domains" target="_blank" rel="noopener" style="color:var(--accent)">domain finder</a>.`}).catch(()=>{})}
+  // 4. rank tracking
+  $("lcRankGo").onclick=async()=>{const b=$("lcRankGo");b.disabled=true;b.textContent="Checking Google…";
+    const r=await fetch("/api/ranks",{method:"POST",headers:authHeaders(),body:JSON.stringify({target:`${location.host}/s/${slug}`,keyword:kw,location:city,weekly:true})});const j=await r.json().catch(()=>({}));
+    if(!r.ok){b.disabled=false;b.textContent="Start tracking · 1 credit";$("lcRank").querySelector(".km").textContent=aiError(r,j,"Couldn't start tracking.");return}
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();const t=j.tracker;$("lcRank").classList.add("ok");$("lcRank").querySelector(".n").textContent="✓";
+    b.outerHTML=`<span class="km">${t.pos?`Ranking #${t.pos} already.`:`Not in the top 30 yet. That's normal for a new site; we'll recheck weekly.`} <button type="button" class="linkbtn" onclick="showTool('ranks')">Open rankings</button></span>`}}
 
 // Rank tracker
 function spark(series){const pts=series.filter(p=>p.pos!=null);if(pts.length<2)return"";const W=120,H=28,max=Math.max(30,...pts.map(p=>p.pos));
@@ -1370,7 +1454,7 @@ async function refresh(){
     if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
       $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
     if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
-    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Landing page 3, or 6 with an image · blog post 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1. Need more? Tap Buy credits.";}
+    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Landing page 3, or 6 with an image · blog post 2 · market scan 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1. Need more? Tap Buy credits.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }

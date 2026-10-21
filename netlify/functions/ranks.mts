@@ -1,6 +1,7 @@
 import type { Config } from "@netlify/functions";
 import { getUser } from "@netlify/identity";
 import { payFor, creditHeaders, clean, whoAmI } from "../lib/access.mts";
+import { getStore } from "@netlify/blobs";
 import { rankStore, checkRank, cleanTarget, serpEnabled, ownerPrefix, RANK_COST, MAX_TRACKERS, KEEP_HISTORY, type Tracker } from "../lib/serp.mts";
 
 // Rank tracker: where a site ranks on Google for a keyword, searched from a US city.
@@ -72,10 +73,18 @@ export default async (req: Request) => {
     t = { id, owner, email: user?.email || "", target, keyword, location, weekly: body.weekly !== false, created: new Date().toISOString(), history: [] };
   }
 
+  // A hosted CallPosts site ("host/s/<slug>") also owns its /p/<page> URLs: count those as the site.
+  const hosted = t.target.match(/^([a-z0-9.-]+)\/s\/([a-z0-9-]+)$/);
+  if (hosted) {
+    try {
+      const site: any = await getStore({ name: "sites", consistency: "strong" }).get(hosted[2], { type: "json" });
+      if (site?.pages?.length) t.match = [t.target, ...site.pages.map((p: any) => `${hosted[1]}/p/${p.slug}`)].join("|");
+    } catch (e) { console.error("site lookup for rank tracker failed", e); }
+  }
   const payer = await payFor(req, RANK_COST, `rank check: ${t.keyword}`);
   if (!payer.ok) return payer.res;
   try {
-    const c = await checkRank(t.target, t.keyword, t.location);
+    const c = await checkRank(t.match || t.target, t.keyword, t.location);
     t.history = [c, ...t.history].slice(0, KEEP_HISTORY);
     t.lastAt = c.at; delete t.paused;
     await store.setJSON(key, t);

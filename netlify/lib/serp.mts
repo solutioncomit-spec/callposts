@@ -13,6 +13,7 @@ export type Check = { at: string; pos: number | null; url: string | null; top: H
 export type Tracker = {
   id: string; owner: string; email: string; target: string; keyword: string; location: string;
   weekly: boolean; paused?: string; created: string; lastAt?: string; history: Check[];
+  match?: string; // extra URL prefixes that count as this site (a hosted CallPosts site's /p/ pages), "|"-separated
 };
 
 export const serpEnabled = () => !!Netlify.env.get("SERPER_API_KEY");
@@ -42,6 +43,7 @@ export function cleanTarget(v: string): string | null {
 }
 const hostOf = (link: string) => { try { return new URL(link).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } };
 function matches(target: string, link: string): boolean {
+  if (target.includes("|")) return target.split("|").some((t) => t && matches(t, link));
   let u: URL; try { u = new URL(link); } catch { return false; }
   const host = u.hostname.replace(/^www\./, "").toLowerCase();
   const [tHost, ...rest] = target.split("/");
@@ -92,3 +94,19 @@ export async function refundOwner(t: Tracker) {
 
 export const ownerPrefix = (owner: string) => `o/${owner.replace(/[^a-zA-Z0-9:_-]/g, "_")}/`;
 export const KEEP_HISTORY = 52;
+
+// Page 1 of Google for a query from a city, with the map pack. Used by the Opportunity Finder.
+export async function page1(q: string, city: string): Promise<{ organic: Hit[]; places: { title: string; rating: number; reviews: number }[] }> {
+  const call = (withLoc: boolean) => fetch("https://google.serper.dev/search", {
+    method: "POST",
+    headers: { "X-API-KEY": Netlify.env.get("SERPER_API_KEY") || "", "content-type": "application/json" },
+    body: JSON.stringify({ q, gl: "us", hl: "en", num: 10, ...(withLoc ? { location: googleLocation(city) } : {}) }),
+  });
+  let r = await call(true);
+  if (r.status === 400) r = await call(false);
+  if (!r.ok) throw new Error(`Search data ${r.status}`);
+  const j: any = await r.json();
+  const organic = (Array.isArray(j.organic) ? j.organic : []).map((o: any, i: number) => ({ pos: Number(o.position) || i + 1, title: String(o.title || "").slice(0, 140), link: String(o.link || ""), domain: hostOf(String(o.link || "")) })).filter((h: Hit) => h.link);
+  const places = (Array.isArray(j.places) ? j.places : []).slice(0, 3).map((p: any) => ({ title: String(p.title || "").slice(0, 80), rating: Number(p.rating) || 0, reviews: Number(p.ratingCount || p.reviews || 0) || 0 }));
+  return { organic, places };
+}

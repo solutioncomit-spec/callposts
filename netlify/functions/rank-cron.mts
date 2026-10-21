@@ -24,7 +24,7 @@ export default async () => {
       continue;
     }
     try {
-      const c = await checkRank(t.target, t.keyword, t.location);
+      const c = await checkRank(t.match || t.target, t.keyword, t.location);
       t.history = [c, ...t.history].slice(0, KEEP_HISTORY);
       t.lastAt = c.at;
       await store.setJSON(key, t);
