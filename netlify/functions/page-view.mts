@@ -26,7 +26,7 @@ const notFound = () => new Response(`<!doctype html><meta name="viewport" conten
 
 const pageBrand = (p: LandingPage) => p.brand || `${p.city.split(",")[0]} ${(p.copy.keyword || p.service).replace(/\b\w/g, (m) => m.toUpperCase())} Help`;
 const siteBrand = (s: Site) => s.brand || (isMulti(s) ? `${s.region} Home Service Help` : `${s.region} ${s.service} Help`);
-const privacyFor = (s: Site, homeHref: string) => renderPrivacy({ theme: s.theme, brand: siteBrand(s), phone: s.phone, homeHref, homeName: siteBrand(s) });
+const privacyFor = (s: Site, homeHref: string) => renderPrivacy({ theme: s.theme, brand: siteBrand(s), phone: s.phone, homeHref, homeName: siteBrand(s), mode: s.mode });
 
 async function sitePages(site: Site): Promise<LandingPage[]> {
   const list = await Promise.all(site.pages.map((x) => pagesStore().get(x.slug, { type: "json" }) as Promise<LandingPage | null>));
@@ -153,7 +153,7 @@ export default async (req: Request, context: Context) => {
   const page = (await store.get(slug, { type: "json" })) as LandingPage | null;
   if (!page) return notFound();
   if (path.endsWith("/privacy")) {
-    return html(renderPrivacy({ theme: page.template, brand: pageBrand(page), phone: page.phone, homeHref: `/p/${slug}`, homeName: pageBrand(page) }), { "x-robots-tag": "noindex" });
+    return html(renderPrivacy({ theme: page.template, brand: pageBrand(page), phone: page.phone, homeHref: `/p/${slug}`, homeName: pageBrand(page), mode: page.mode }), { "x-robots-tag": "noindex" });
   }
 
   // Best-effort view counter (skip the owner's own previews).

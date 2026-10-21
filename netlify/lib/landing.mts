@@ -36,6 +36,7 @@ export type LandingPage = {
   copy: PageCopy;
   photo?: string; // blob key in "page-images"
   site?: string; // slug of the city site this page belongs to
+  mode?: "referral" | "business"; // business = the site of a real local business, written in its own voice
   variant?: number; // layout variant, so pages in one city site don't share a structure
   created: string;
   views?: number;
@@ -59,6 +60,23 @@ export type Site = {
   views?: number;
   domain?: string; // connected custom domain, e.g. www.aurorawaterheaters.com
   pingedAt?: string; // last search engine submission
+  mode?: "referral" | "business"; // business = a real local business's own site (no referral wording)
+  facts?: string; // business mode: true facts the owner gave (licences, years, guarantees, offers)
+};
+
+// Wording that depends on whether the site is a referral (pay-per-call) site or a real business's own site.
+type Voice = { mode?: "referral" | "business" } | null | undefined;
+export const isBiz = (v: Voice) => v?.mode === "business";
+const V = {
+  about: (v: Voice, brand: string, region: string, note = "") => isBiz(v)
+    ? `${brand} serves homeowners in ${region}.${note ? " " + note : ""}`
+    : `${brand} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms.${note ? " " + note : ""} Calls may be recorded for quality.`,
+  tap: (v: Voice, brand: string) => isBiz(v) ? `Tap to call ${brand} directly.` : "Tap to call. We connect you with independent local pros.",
+  oneCall: (v: Voice, brand: string, what: string) => isBiz(v) ? `Call ${brand} for ${what}.` : `One call connects you with an independent local pro for ${what}.`,
+  bandH: (v: Voice, brand: string) => isBiz(v) ? `Talk to ${brand} today` : "Talk to a local pro today",
+  bandP: (v: Voice, brand: string, where: string) => isBiz(v) ? `Call now to talk to our team about your job in ${where}.` : `Call now and we'll connect you with an independent pro near you in ${where}.`,
+  reach: (v: Voice, brand: string) => isBiz(v) ? `to talk to ${brand}` : "to be connected with an independent local pro",
+  provider: (v: Voice, brand: string, phone: string) => ({ "@type": isBiz(v) ? "HomeAndConstructionBusiness" : "Organization", name: brand, telephone: phone }),
 };
 
 // File name / path for a city page on a self-hosted or custom-domain site: "Aurora, CO" -> "aurora-co".
@@ -219,7 +237,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
       name: `${p.service} in ${p.city}`, serviceType: p.service,
       description: c.metaDescription,
       areaServed: [{ "@type": "City", name: p.city }, ...c.areas.slice(0, 10).map((a) => ({ "@type": "Place", name: `${a}, ${p.city.split(",")[1]?.trim() || ""}`.replace(/, $/, "") }))],
-      provider: { "@type": "Organization", name: brand, telephone: phone },
+      provider: V.provider(p, brand, phone),
       ...(canonical ? { url: canonical } : {}),
     },
     { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: c.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
@@ -237,7 +255,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
       <h1>${esc(c.headline)}</h1>
       <p class="sub">${esc(c.subheadline)}</p>
       <a class="call" href="${tel}">📞 <span class="ctatxt">${esc(c.cta || "Call now")}: </span>${esc(phone)}</a>
-      <div class="ph">Tap to call. We connect you with trusted local pros.</div>
+      <div class="ph">${esc(isBiz(p) ? V.tap(p, brand) : "Tap to call. We connect you with trusted local pros.")}</div>
     </div>`;
 
   // Body sections. Pages in a city site use different orders (by variant) so they don't share one structure.
@@ -250,7 +268,7 @@ export function renderLanding(p: LandingPage, opts: { photoUrl?: string; base?: 
     how: c.steps.length ? `<section><div class="wrap"><h2>How it works</h2><div class="steps">${c.steps.map((x) => `<div class="card"><b>${esc(x.title)}</b>${esc(x.text)}</div>`).join("")}</div></div></section>` : "",
     rvr: c.repairReplace ? `<section><div class="wrap prose"><h2>Repair or replace? How ${esc(town)} homeowners decide</h2>${paras(c.repairReplace)}</div></section>` : "",
     local: c.localNote ? `<section><div class="wrap prose"><h2>${esc(KW)} in ${esc(town)}: local conditions</h2>${paras(c.localNote)}</div></section>` : "",
-    cost: c.costFactors && c.costFactors.length ? `<section><div class="wrap"><h2>What affects the cost of ${esc(kw)} in ${esc(town)}</h2><ul class="factors">${c.costFactors.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><p style="color:var(--muted);margin-top:14px">Every job is different. Call <a href="${tel}">${esc(phone)}</a> for an exact quote from a local pro.</p></div></section>` : "",
+    cost: c.costFactors && c.costFactors.length ? `<section><div class="wrap"><h2>What affects the cost of ${esc(kw)} in ${esc(town)}</h2><ul class="factors">${c.costFactors.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><p style="color:var(--muted);margin-top:14px">Every job is different. Call <a href="${tel}">${esc(phone)}</a> for an exact quote${isBiz(p) ? "" : " from a local pro"}.</p></div></section>` : "",
     seasonal: c.seasonal && c.seasonal.length ? `<section><div class="wrap"><h2>Seasonal ${esc(kw)} tips for ${esc(town)}</h2><div class="grid">${c.seasonal.map((x) => card(x.season, x.tip)).join("")}</div></div></section>` : "",
     choose: c.choosing && c.choosing.length ? `<section><div class="wrap"><h2>How to choose a ${esc(kw)} pro in ${esc(town)}</h2><ul class="factors">${c.choosing.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></section>` : "",
     faq: c.faqs.length ? `<section><div class="wrap"><h2>${esc(KW)} questions from ${esc(town)} homeowners</h2>${c.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p style="margin:10px 0 0;color:var(--muted)">${esc(f.a)}</p></details>`).join("")}</div></section>` : "",
@@ -284,14 +302,14 @@ ${(nav?.related || []).filter((r) => r.links.length).map((r) => `<section><div c
 ${others.length ? `<section><div class="wrap"><h2>${esc(KW)} in other cities</h2><div class="areas">${others.map((x) => `<a href="${esc(x.href)}">${esc(KW)} in ${esc(x.name.split(",")[0])}</a>`).join("")}<a href="${esc(nav!.hubHref)}">All service areas</a></div></div></section>` : ""}
 
 <section class="band"><div class="wrap">
-  <h2>${esc(c.cta || "Talk to a local pro today")}</h2>
-  <p>Call now and we'll connect you with a local ${esc(kw)} pro in ${esc(town)} who can help.</p>
+  <h2>${esc(c.cta || V.bandH(p, brand))}</h2>
+  <p>${esc(isBiz(p) ? V.bandP(p, brand, town) : `Call now and we'll connect you with a local ${kw} pro in ${town} who can help.`)}</p>
   <a class="call" href="${tel}">📞 ${esc(phone)}</a>
 </div></section>
 
 <footer><div class="wrap">
   ${nav ? `<div class="links"><a href="${esc(nav.hubHref)}">${esc(nav.hubName)}</a>${nav.cities.map((x) => `<a href="${esc(x.href)}">${esc(x.name.split(",")[0])}</a>`).join("")}</div>` : ""}
-  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
+  <p>${esc(V.about(p, brand, p.city))}</p>
   <p>© ${new Date().getFullYear()} ${esc(brand)}${opts.privacyHref ? ` · <a href="${esc(opts.privacyHref)}">Privacy policy</a>` : ""}</p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
@@ -311,12 +329,12 @@ export function renderHub(site: Site, pages: LandingPage[], opts: { base?: strin
   const towns = pages.map((p) => p.city.split(",")[0]);
   const townList = towns.length > 3 ? `${towns.slice(0, 3).join(", ")} and ${towns.length - 3} more` : towns.join(", ").replace(/, ([^,]*)$/, " and $1");
   const title = `${KW} in ${site.region} | ${brand}`.slice(0, 70);
-  const desc = `Need ${kw} in ${site.region}? Call ${phone} to reach a local pro in ${townList}. One number, quick connection to independent local experts.`.slice(0, 160);
+  const desc = (isBiz(site) ? `Need ${kw} in ${site.region}? Call ${brand} at ${phone}. Serving ${townList}.` : `Need ${kw} in ${site.region}? Call ${phone} to reach a local pro in ${townList}. One number, quick connection to independent local experts.`).slice(0, 160);
   const canonical = opts.canonical || (opts.base ? `${opts.base}${opts.selfHref}` : "");
   const ld: unknown[] = [{
     "@context": "https://schema.org", "@type": "Service", name: `${KW} in ${site.region}`, serviceType: site.service, description: desc,
     areaServed: pages.map((p) => ({ "@type": "City", name: p.city })),
-    provider: { "@type": "Organization", name: brand, telephone: phone },
+    provider: V.provider(site, brand, phone),
     ...(canonical ? { url: canonical } : {}),
   }];
   const bullets = first?.copy.bullets || [];
@@ -335,9 +353,9 @@ export function renderHub(site: Site, pages: LandingPage[], opts: { base?: strin
     <div>
       <span class="pill">${esc(site.service)} · ${pages.length} cities</span>
       <h1>${esc(KW)} in ${esc(site.region)}</h1>
-      <p class="sub">One call connects you with a local ${esc(kw)} pro in ${esc(townList)}. Pick your city below or call now.</p>
+      <p class="sub">${esc(isBiz(site) ? `${brand} handles ${kw} across ${townList}. Pick your city below or call now.` : `One call connects you with a local ${kw} pro in ${townList}. Pick your city below or call now.`)}</p>
       <a class="call" href="${tel}">📞 <span class="ctatxt">Call now: </span>${esc(phone)}</a>
-      <div class="ph">Tap to call. We connect you with trusted local pros.</div>
+      <div class="ph">${esc(isBiz(site) ? V.tap(site, brand) : "Tap to call. We connect you with trusted local pros.")}</div>
     </div>
     ${visual}
   </div>
@@ -356,13 +374,13 @@ ${opts.blog?.length ? `<section><div class="wrap"><h2>From the blog</h2><div cla
 
 <section class="band"><div class="wrap">
   <h2>Talk to a local ${esc(kw)} pro today</h2>
-  <p>Call now and we'll connect you with an independent pro near you in ${esc(site.region)}.</p>
+  <p>${esc(V.bandP(site, brand, site.region))}</p>
   <a class="call" href="${tel}">📞 ${esc(phone)}</a>
 </div></section>
 
 <footer><div class="wrap">
   <div class="links">${pages.map((p) => `<a href="${esc(opts.cityHref(p))}">${esc(KW)} ${esc(p.city.split(",")[0])}</a>`).join("")}</div>
-  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
+  <p>${esc(V.about(site, brand, site.region))}</p>
   <p>© ${new Date().getFullYear()} ${esc(brand)}${opts.privacyHref ? ` · <a href="${esc(opts.privacyHref)}">Privacy policy</a>` : ""}</p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
@@ -372,7 +390,8 @@ ${opts.blog?.length ? `<section><div class="wrap"><h2>From the blog</h2><div cla
 
 // Privacy policy page for a hosted page or city site, in the same theme. It describes what these pages actually do:
 // no forms, no tracking cookies, phone calls connected to independent providers.
-export function renderPrivacy(o: { theme: ThemeKey; brand: string; phone: string; homeHref: string; homeName: string }): string {
+export function renderPrivacy(o: { theme: ThemeKey; brand: string; phone: string; homeHref: string; homeName: string; mode?: "referral" | "business" }): string {
+  const biz = o.mode === "business";
   const t = TEMPLATES[o.theme] || TEMPLATES.clean;
   const tel = telHref(o.phone || "");
   const year = new Date().getFullYear();
@@ -385,13 +404,15 @@ export function renderPrivacy(o: { theme: ThemeKey; brand: string; phone: string
   <main class="policy">
     <h1>Privacy policy</h1>
     <p class="muted">Last updated ${year}</p>
-    <p>${esc(o.brand)} is a referral service that connects homeowners with independent local service providers. This page explains what information is involved when you visit this website or call the number on it.</p>
+    <p>${biz ? `This page explains what information ${esc(o.brand)} handles when you visit this website or call us.` : `${esc(o.brand)} is a referral service that connects homeowners with independent local service providers. This page explains what information is involved when you visit this website or call the number on it.`}</p>
     <h2>What this website collects</h2>
     <p>This website has no forms and does not ask you to enter personal information. It does not use advertising or tracking cookies. Like most websites, our hosting provider keeps standard technical logs (such as IP address, browser type and the page requested) for security and to keep the site running, and we count page views without identifying you.</p>
     <h2>When you call</h2>
-    <p>Calls to the number on this site are routed through a call tracking service so they can be connected to an independent local provider who can help with your request. The call system may record the phone number you call from, the time and length of the call, and the area you're calling about. Calls may be recorded for quality and training. The provider you are connected with receives the details you share on the call so they can help you, and handles them under their own privacy practices.</p>
+    ${biz ? `<p>When you call us, our phone system may record the number you call from and the time and length of the call, and calls may be recorded for quality and training. We use the details you share on the call to quote, schedule and do the work you ask for.</p>
     <h2>How information is used</h2>
-    <ul><li>To connect you with a local provider for the service you asked about.</li><li>To keep the service working, prevent abuse and measure call quality.</li><li>To meet legal obligations.</li></ul>
+    <ul><li>To answer your questions, quote and schedule your job, and follow up on it.</li><li>To keep this website working and prevent abuse.</li><li>To meet legal obligations.</li></ul>` : `<p>Calls to the number on this site are routed through a call tracking service so they can be connected to an independent local provider who can help with your request. The call system may record the phone number you call from, the time and length of the call, and the area you're calling about. Calls may be recorded for quality and training. The provider you are connected with receives the details you share on the call so they can help you, and handles them under their own privacy practices.</p>
+    <h2>How information is used</h2>
+    <ul><li>To connect you with a local provider for the service you asked about.</li><li>To keep the service working, prevent abuse and measure call quality.</li><li>To meet legal obligations.</li></ul>`}
     <p>We do not sell your personal information, and we do not send you marketing messages from this website.</p>
     <h2>Your choices</h2>
     <p>You can end a call at any time. To ask about information related to a call you made, or to request that it be deleted where the law allows, call ${o.phone ? `<a href="${tel}">${esc(o.phone)}</a>` : "the number on this site"} and ask about your privacy request.</p>
@@ -525,7 +546,7 @@ export function renderListPage(site: Site, o: {
     "@context": "https://schema.org", "@type": "Service", name: o.h1, description: o.desc,
     ...(o.serviceTypes?.length ? { serviceType: o.serviceTypes } : {}),
     areaServed: (o.areasServed || site.cities).map((c) => ({ "@type": "City", name: c })),
-    provider: { "@type": "Organization", name: brand, telephone: phone },
+    provider: V.provider(site, brand, phone),
     ...(o.canonical ? { url: o.canonical } : {}),
   }];
   const visual = t.hero === "split"
@@ -544,7 +565,7 @@ export function renderListPage(site: Site, o: {
       <h1>${esc(o.h1)}</h1>
       <p class="sub">${esc(o.sub)}</p>
       <a class="call" href="${tel}">📞 <span class="ctatxt">Call now: </span>${esc(phone)}</a>
-      <div class="ph">Tap to call. We connect you with independent local pros.</div>
+      <div class="ph">${esc(V.tap(site, brand))}</div>
     </div>
     ${visual}
   </div>
@@ -557,14 +578,14 @@ ${o.bullets?.length ? `<section><div class="wrap"><h2>Why homeowners in ${esc(si
 ${o.steps?.length ? `<section><div class="wrap"><h2>How it works</h2><div class="steps">${o.steps.map((x) => `<div class="card"><b>${esc(x.title)}</b>${esc(x.text)}</div>`).join("")}</div></div></section>` : ""}
 
 <section class="band"><div class="wrap">
-  <h2>Talk to a local pro today</h2>
-  <p>Call now and we'll connect you with an independent pro near you in ${esc(site.region)}.</p>
+  <h2>${esc(V.bandH(site, brand))}</h2>
+  <p>${esc(V.bandP(site, brand, site.region))}</p>
   <a class="call" href="${tel}">📞 ${esc(phone)}</a>
 </div></section>
 
 <footer><div class="wrap">
   <div class="links">${o.footer.map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}</div>
-  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. Calls may be recorded for quality.</p>
+  <p>${esc(V.about(site, brand, site.region))}</p>
   <p>© ${new Date().getFullYear()} ${esc(brand)} · <a href="${esc(o.L.privacy)}">Privacy policy</a></p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>
@@ -588,9 +609,9 @@ export function renderSiteHome(site: Site, pages: LandingPage[], o: { L: SiteLin
   const svcList = svcs.length > 3 ? `${svcs.slice(0, 3).join(", ")} and more` : svcs.join(", ").replace(/, ([^,]*)$/, " and $1");
   return renderListPage(site, {
     L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
-    title: `${brand} | ${svcs[0]} and more in ${site.region}`, desc: `${svcList} across ${site.region}. Call ${site.phone} to be connected with an independent local pro.`,
+    title: `${brand} | ${svcs[0]} and more in ${site.region}`, desc: `${svcList} across ${site.region}. Call ${site.phone} ${V.reach(site, brand)}.`,
     h1: `${svcs.length > 2 ? "Home services" : svcs.join(" & ")} in ${site.region}`, pill: `${svcs.length} services · ${site.cities.length} areas`,
-    sub: `One call connects you with an independent local pro for ${svcList.toLowerCase()} in ${site.region}. Pick a service or an area below, or call now.`,
+    sub: `${V.oneCall(site, brand, `${svcList.toLowerCase()} in ${site.region}`)} Pick a service or an area below, or call now.`,
     lists: [
       { title: "Services", cards: svcs.map((v) => { const p = pages.find((x) => x.service === v); return { title: v, text: p ? cut(p.copy.subheadline) : `${v} across ${site.region}.`, href: o.L.service(v), cta: `See ${v.toLowerCase()}` }; }) },
       { title: "Areas we serve", cards: site.cities.map((c) => ({ title: c.split(",")[0], text: `${svcs.length} services available in ${c}.`, href: o.L.area(c), cta: `See ${c.split(",")[0]}` })) },
@@ -607,9 +628,9 @@ export function renderServicePage(site: Site, pages: LandingPage[], svc: string,
   const kw = first?.copy.keyword || svc.toLowerCase();
   return renderListPage(site, {
     L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
-    title: `${titleCase(kw)} in ${site.region} | ${site.brand || site.region}`, desc: `Need ${kw} in ${site.region}? Call ${site.phone} to be connected with an independent local pro in ${mine.map((p) => p.city.split(",")[0]).slice(0, 4).join(", ")}.`,
+    title: `${titleCase(kw)} in ${site.region} | ${site.brand || site.region}`, desc: `Need ${kw} in ${site.region}? Call ${site.phone} ${V.reach(site, site.brand || site.region)} in ${mine.map((p) => p.city.split(",")[0]).slice(0, 4).join(", ")}.`,
     h1: `${titleCase(kw)} in ${site.region}`, pill: `${svc} · ${mine.length} areas`,
-    sub: first ? first.copy.subheadline : `One call connects you with an independent local ${kw} pro.`,
+    sub: first ? first.copy.subheadline : V.oneCall(site, site.brand || site.region, kw),
     lists: [
       { title: `${svc} by city`, cards: mine.map((p) => ({ title: `${svc} in ${p.city.split(",")[0]}`, text: cut(p.copy.subheadline), href: o.L.combo(p), cta: `See ${p.city.split(",")[0]}` })) },
       { title: "Other services", cards: siteServices(site).filter((v) => v !== svc).map((v) => ({ title: v, text: `${v} across ${site.region}.`, href: o.L.service(v), cta: `See ${v.toLowerCase()}` })) },
@@ -625,9 +646,9 @@ export function renderAreaPage(site: Site, pages: LandingPage[], city: string, o
   const town = city.split(",")[0];
   return renderListPage(site, {
     L: o.L, canonical: o.canonical, noindex: o.noindex, photoUrl: o.photoUrl,
-    title: `Home services in ${town} | ${site.brand || site.region}`, desc: `${here.map((p) => p.service).join(", ")} in ${city}. Call ${site.phone} to be connected with an independent local pro.`,
+    title: `Home services in ${town} | ${site.brand || site.region}`, desc: `${here.map((p) => p.service).join(", ")} in ${city}. Call ${site.phone} ${V.reach(site, site.brand || site.region)}.`,
     h1: `Home services in ${city}`, pill: `${town} · ${here.length} services`,
-    sub: `One call connects you with an independent local pro in ${town} for ${here.map((p) => p.service.toLowerCase()).join(", ").replace(/, ([^,]*)$/, " or $1")}.`,
+    sub: V.oneCall(site, site.brand || site.region, `${here.map((p) => p.service.toLowerCase()).join(", ").replace(/, ([^,]*)$/, " or $1")} in ${town}`),
     lists: [
       { title: `Services in ${town}`, cards: here.map((p) => ({ title: `${p.service} in ${town}`, text: cut(p.copy.subheadline), href: o.L.combo(p), cta: "See details" })) },
       { title: "Other areas", cards: site.cities.filter((c) => c !== city).map((c) => ({ title: c.split(",")[0], text: `Services available in ${c}.`, href: o.L.area(c), cta: `See ${c.split(",")[0]}` })) },
@@ -671,19 +692,19 @@ export function renderPost(site: Site, pages: LandingPage[], post: Post, o: { L:
     <h1>${esc(post.title)}</h1>
     <div class="meta">${esc(date)}${svc ? ` · ${esc(svc)}` : ""}</div>
     ${paras(post.intro)}
-    ${post.sections.map((x, i) => `<h2>${esc(x.heading)}</h2>${paras(x.body)}${i === 1 ? `<div class="callbox"><span><b>Need help now?</b> One call connects you with an independent local pro.</span><a class="call sm" href="${tel}">📞 ${esc(phone)}</a></div>` : ""}`).join("")}
+    ${post.sections.map((x, i) => `<h2>${esc(x.heading)}</h2>${paras(x.body)}${i === 1 ? `<div class="callbox"><span><b>Need help now?</b> ${esc(isBiz(site) ? `Call ${brand} directly.` : "One call connects you with an independent local pro.")}</span><a class="call sm" href="${tel}">📞 ${esc(phone)}</a></div>` : ""}`).join("")}
     ${post.faqs?.length ? `<h2>Common questions</h2>${post.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p style="margin:10px 0 0;color:var(--muted)">${esc(f.a)}</p></details>`).join("")}` : ""}
     ${rel.length ? `<h2>${svc ? `${esc(svc)} by area` : "Services by area"}</h2><div class="areas">${rel.map((p) => `<a href="${esc(o.L.combo(p))}">${esc(p.service)} in ${esc(p.city.split(",")[0])}</a>`).join("")}</div>` : ""}
   </main>
 </div>
 <section class="band"><div class="wrap">
-  <h2>Talk to a local pro today</h2>
-  <p>Call now and we'll connect you with an independent pro near you in ${esc(site.region)}.</p>
+  <h2>${esc(V.bandH(site, brand))}</h2>
+  <p>${esc(V.bandP(site, brand, site.region))}</p>
   <a class="call" href="${tel}">📞 ${esc(phone)}</a>
 </div></section>
 <footer><div class="wrap">
   <div class="links">${siteFooter(site, pages, o.L).map((x) => `<a href="${esc(x.href)}">${esc(x.name)}</a>`).join("")}</div>
-  <p>${esc(brand)} is a referral service. We connect homeowners with independent local service providers, who set their own prices and terms. This article is general information, not professional advice for your home. Calls may be recorded for quality.</p>
+  <p>${esc(V.about(site, brand, site.region, "This article is general information, not professional advice for your home."))}</p>
   <p>© ${new Date().getFullYear()} ${esc(brand)} · <a href="${esc(o.L.privacy)}">Privacy policy</a></p>
 </div></footer>
 <div class="sticky"><a class="call" href="${tel}">📞 Call ${esc(phone)}</a></div>

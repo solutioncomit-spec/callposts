@@ -32,7 +32,8 @@ function parseJson(text: string): any {
 
 async function writePost(site: Site, service: string, topic: string, existing: string[]) {
   const towns = site.cities.map((c) => c.split(",")[0]).join(", ");
-  const prompt = `Write a helpful blog article for a home-services referral website serving ${site.region} (${towns}).
+  const biz = site.mode === "business";
+  const prompt = `Write a helpful blog article for ${biz ? `the website of ${site.brand}, a real local business` : "a home-services referral website"} serving ${site.region} (${towns}).
 Service it relates to: ${service}
 ${topic ? `Topic requested by the publisher: ${topic}` : `Choose a specific, practical topic homeowners in ${site.region} actually search for about ${service.toLowerCase()}: a problem, a seasonal concern, a decision, or what to expect. Not a sales pitch.`}
 Articles already on the site (do not repeat their topics): ${existing.length ? existing.join(" | ") : "(none)"}
@@ -40,10 +41,10 @@ Articles already on the site (do not repeat their topics): ${existing.length ? e
 Rules:
 - Genuinely useful, specific and accurate general guidance. 900-1,200 words in total. Plain English, short paragraphs.
 - Mention ${site.region} or its towns naturally where it helps; only state local facts you are confident are true (climate, typical housing). No invented statistics, laws, permit rules, studies or quotes.
-- The site is a referral service that connects homeowners with independent local pros. Never claim to be a contractor; never claim providers are licensed, insured, vetted or guaranteed; never invent reviews or customer stories presented as real.
+${biz ? `- Write as ${site.brand} ("we", "our team"). Company facts you may use, and only these: ${site.facts || "(none given)"}. Never claim a licence, insurance, guarantee, award, review or year founded that isn't in those facts; never invent customer stories presented as real.` : "- The site is a referral service that connects homeowners with independent local pros. Never claim to be a contractor; never claim providers are licensed, insured, vetted or guaranteed; never invent reviews or customer stories presented as real."}
 - Never use the word "free" in any form. Never mention a price, rate, discount or dollar amount.
 - Include safety guidance where relevant (for gas, electrical or water hazards, tell readers to contact the utility or emergency services first).
-- End the last section by suggesting a call to talk to a local pro, without pressure.
+- End the last section by suggesting a call ${biz ? `to ${site.brand}` : "to talk to a local pro"}, without pressure.
 Reply with only one JSON object, no code fences: {"title": 50-70 characters, "metaDescription": 140-155 characters, "keyword": the main search phrase, "intro": two short paragraphs separated by \\n\\n, "sections": array of 5-6 objects {"heading", "body"} where body is 1-3 paragraphs separated by \\n\\n, "faqs": array of 3 objects {"q", "a"} with 2-3 sentence answers}`;
   const anthropic = new Anthropic();
   let last: unknown;

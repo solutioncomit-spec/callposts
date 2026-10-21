@@ -67,7 +67,7 @@ export default async (req: Request) => {
       const ps = await Promise.all(s.pages.map((x) => pages().get(x.slug, { type: "json" }) as Promise<LandingPage | null>));
       const live = ps.filter((p): p is LandingPage => !!p);
       list.push({
-        slug: s.slug, service: s.service, services: siteServices(s), region: s.region, theme: s.theme, phone: s.phone, photo: s.photo, created: s.created,
+        slug: s.slug, service: s.service, services: siteServices(s), region: s.region, mode: s.mode || "referral", brand: s.brand, theme: s.theme, phone: s.phone, photo: s.photo, created: s.created,
         domain: s.domain || null, pingedAt: s.pingedAt || null, posts: (s.posts || []).map((x) => ({ slug: x.slug, title: x.title })),
         cities: s.cities, total: combos(s).length, built: live.length, missing: missingOf(s),
         views: (s.views || 0) + live.reduce((a, p) => a + (p.views || 0), 0),
@@ -166,6 +166,7 @@ export default async (req: Request) => {
     }
     if (body.brand !== undefined && clean(body.brand, 60)) { s.brand = clean(body.brand, 60); upd.brand = s.brand; }
     if (body.region !== undefined && clean(body.region, 60)) s.region = clean(body.region, 60);
+    if (body.facts !== undefined && s.mode === "business") s.facts = clean(body.facts, 1500);
     await sites().setJSON(slug, s);
     if (Object.keys(upd).length) {
       for (const x of s.pages) {
@@ -186,16 +187,19 @@ export default async (req: Request) => {
   const service = services[0] || "";
   const multi = services.length > 1;
   const phone = clean(body.phone, 30);
+  const biz = body.mode === "business";
+  const facts = clean(body.facts, 1500);
   const theme = isTheme(body.theme) ? body.theme : "clean";
   const seen = new Set<string>();
   const cities = (Array.isArray(body.cities) ? body.cities : String(body.cities || "").split(/\n|;/))
     .map((c: unknown) => clean(c, 80).replace(/\s*,\s*/g, ", ").replace(/\s+/g, " "))
     .filter((c: string) => c && !seen.has(c.toLowerCase()) && seen.add(c.toLowerCase()));
   if (!service) return Response.json({ error: "Add a service in the brief first." }, { status: 400 });
-  if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: "Add your tracking number in the brief first. Every page is built around it." }, { status: 400 });
+  if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: biz ? "Add the business phone number in the brief first." : "Add your tracking number in the brief first. Every page is built around it." }, { status: 400 });
+  if (biz && !clean(body.brand, 60)) return Response.json({ error: "Add the business name (Brand / page name in the brief)." }, { status: 400 });
   if (services.length > MAX_SERVICES) return Response.json({ error: `A site can have up to ${MAX_SERVICES} services.` }, { status: 400 });
-  if (!multi && cities.length < 2) return Response.json({ error: "Add at least 2 cities, one per line, like \"Aurora, CO\"." }, { status: 400 });
-  if (multi && cities.length < 1) return Response.json({ error: "Add at least 1 city, like \"Aurora, CO\"." }, { status: 400 });
+  if (!multi && !biz && cities.length < 2) return Response.json({ error: "Add at least 2 cities, one per line, like \"Aurora, CO\"." }, { status: 400 });
+  if ((multi || biz) && cities.length < 1) return Response.json({ error: "Add at least 1 city, like \"Aurora, CO\"." }, { status: 400 });
   if (multi && services.length * cities.length > MAX_COMBO_PAGES) return Response.json({ error: `${services.length} services × ${cities.length} cities is ${services.length * cities.length} pages. A site can have up to ${MAX_COMBO_PAGES}; remove some services or cities.` }, { status: 400 });
   if (cities.length > MAX_CITIES) return Response.json({ error: `A site can have up to ${MAX_CITIES} cities. Split the rest into another site.` }, { status: 400 });
   if (cities.some((c: string) => !/,\s*[A-Za-z]{2}$/.test(c))) return Response.json({ error: "Write each city with its state code, like \"Aurora, CO\"." }, { status: 400 });
@@ -206,7 +210,7 @@ export default async (req: Request) => {
   const base = slugify(multi ? `home services ${region}` : `${service} ${region}`);
   let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
   while (await sites().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-  const site: Site = { slug, owner, theme, service, region, phone, brand, cities, pages: [], photo: body.photo === true, created: new Date().toISOString(), views: 0, ...(multi ? { services } : {}), posts: [] };
+  const site: Site = { slug, owner, theme, service, region, phone, brand, cities, pages: [], photo: body.photo === true, created: new Date().toISOString(), views: 0, ...(multi ? { services } : {}), ...(biz ? { mode: "business" as const, facts } : {}), posts: [] };
   await sites().setJSON(slug, site);
   await index().setJSON(siteKey, [slug, ...mine]);
   console.log(`site created ${slug} owner=${owner} services=${services.length} cities=${cities.length} theme=${theme}`);

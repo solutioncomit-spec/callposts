@@ -105,7 +105,9 @@ export function auditHtml(o: { html: string; url: string; finalUrl: string; stat
   // Compliance
   add("Disclosures & claims", "free", "No “free” claims", !hasFree, hasFree ? "uses “free”" : "clean", "Remove “free” (free quote, free estimate); most call buyers and ad platforms flag it.", 6);
   add("Disclosures & claims", "prices", "No prices or dollar amounts", prices.length === 0, prices.length ? prices.slice(0, 3).join(", ") : "none", "Remove prices and discounts; the price depends on the job and the call gets the quote.", 5);
-  add("Disclosures & claims", "disclosure", "Referral disclosure", disclosure, disclosure ? "found" : "not found", "State plainly that the site connects homeowners with independent local providers.", 5);
+  // A referral site must say it's a referral service; a real business site passes by identifying itself as a business in its schema.
+  const bizIdentity = [...ldTypes].some((t) => /LocalBusiness|Plumber|HVACBusiness|RoofingContractor|Electrician|HomeAndConstructionBusiness|GeneralContractor|MovingCompany|Locksmith|PestControl/i.test(t));
+  add("Disclosures & claims", "disclosure", "Clear who you are (referral disclosure or business identity)", disclosure || bizIdentity, disclosure ? "referral disclosure found" : bizIdentity ? "identified as a local business" : "not found", "Referral sites: state plainly that the site connects homeowners with independent local providers. Businesses: add LocalBusiness schema with your business name.", 5);
   add("Disclosures & claims", "privacy", "Privacy policy link", privacy, privacy ? "found" : "not found", "Link a privacy policy in the footer; buyers and ad platforms expect one.", 3);
 
   const pct = (xs: Check[]) => { const t = xs.reduce((a, x) => a + x.w, 0); return t ? Math.round((xs.reduce((a, x) => a + (x.ok ? x.w : 0), 0) / t) * 100) : 100; };

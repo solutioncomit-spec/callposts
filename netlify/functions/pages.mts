@@ -71,12 +71,13 @@ const OPENINGS = [
   "Open the intro with what to do in the first hour when this problem appears.",
 ];
 
-async function writeCopy(service: string, city: string, angle: string, extra: string, o: { variant?: number; siblings?: string[] } = {}): Promise<PageCopy> {
+async function writeCopy(service: string, city: string, angle: string, extra: string, o: { variant?: number; siblings?: string[]; biz?: { name: string; facts: string } } = {}): Promise<PageCopy> {
+  const biz = o.biz;
   const town = city.split(",")[0];
   const variety = o.siblings && o.siblings.length
     ? `\nThis page is one of several city pages for the same service (${o.siblings.join("; ")}). Make it read clearly differently from the others: local details specific to ${town}, its own examples, and different sentence structures. ${OPENINGS[(o.variant ?? 0) % OPENINGS.length]}`
     : `\n${OPENINGS[(o.variant ?? 0) % OPENINGS.length]}`;
-  const context = `This is for an SEO landing page that should rank in Google for "${service} ${town}" and close variations ("near me" searches in ${town}, "${service.toLowerCase()} ${city}"). It is a pay-per-call page for a US home-services referral business.
+  const context = `This is for an SEO landing page that should rank in Google for "${service} ${town}" and close variations ("near me" searches in ${town}, "${service.toLowerCase()} ${city}"). ${biz ? `It is a page on the website of ${biz.name}, a real local business that does this work itself. Write as the business ("we", "our team"), never as a referral or matching service.` : "It is a pay-per-call page for a US home-services referral business."}
 Service: ${service}
 City: ${city}
 Angle: ${angle || "Local & trusted"}
@@ -85,9 +86,11 @@ Publisher notes / extra keywords: ${extra || "(none)"}${variety}
 Writing rules:
 - Specific and genuinely useful to a homeowner in ${town}. No filler, no keyword stuffing, no repeated sentences. It must read as a real local page, not a city-swapped template.
 - Only state things broadly true for the area. Do not invent statistics, laws, permits or company facts.
-- It is a referral service connecting homeowners with independent local pros. Never claim to be a licensed, insured, bonded or certified contractor; never promise guarantees, warranties or response times; never invent reviews, ratings, awards, years in business or customer counts.
+${biz ? `- Facts the owner gave about ${biz.name} (the only company facts you may use, word them naturally): ${biz.facts || "(none given)"}
+- Never claim a licence, insurance, bond, certification, guarantee, warranty, response time, award, rating, review, year founded or customer count unless it is in those facts. Never invent reviews or testimonials.
+- Only mention an offer, discount or price if it is in those facts, worded exactly as given.` : `- It is a referral service connecting homeowners with independent local pros. Never claim to be a licensed, insured, bonded or certified contractor; never promise guarantees, warranties or response times; never invent reviews, ratings, awards, years in business or customer counts.
 - Never use the word "free" in any form; never imply any part of the service costs nothing.
-- Never mention a price, rate, discount or dollar amount.
+- Never mention a price, rate, discount or dollar amount.`}
 Reply with only one JSON object, no code fences and no comments.`;
 
   const promptA = `${context}
@@ -100,7 +103,7 @@ Write the top of the page. JSON keys:
 "subheadline": max 170 characters,
 "intro": three paragraphs separated by \n\n, 220-300 words total, first sentence uses the keyword and ${town},
 "bullets": array of 4 short benefit lines,
-"steps": array of 3 objects {"title", "text"} explaining call, get matched, get it fixed,
+"steps": array of 3 objects {"title", "text"} explaining ${biz ? "call us, we check the problem and explain your options, we do the work" : "call, get matched, get it fixed"},
 "cta": 2-5 words.`;
 
   const promptB = `${context}
@@ -108,7 +111,7 @@ Write the top of the page. JSON keys:
 Write the detail sections of the page. JSON keys:
 "signs": array of 5 objects {"title", "text"} — signs a ${town} homeowner needs this service, text is 2 sentences,
 "localNote": one paragraph of 100-140 words on why this service matters in ${town} specifically (climate, typical housing age or style, seasonal issues),
-"costFactors": array of 5 one-sentence factors that affect the cost, no numbers; a call gets an exact quote,
+"costFactors": array of 5 one-sentence factors that affect the cost${biz ? "" : ", no numbers"}; a call gets an exact quote,
 "faqs": array of 8 objects {"q", "a"} — questions people actually search (cost factors, how long, repair vs replace, same day, signs, choosing a pro, what to do while waiting, prevention), answers 2-3 sentences,
 "areas": array of 8-10 real neighborhoods or nearby suburbs of ${town} you are confident exist.`;
 
@@ -117,7 +120,7 @@ Write the detail sections of the page. JSON keys:
 Write the in-depth guidance sections of the page. JSON keys:
 "services": array of 4-5 objects {"title", "text"} — the main types of ${service.toLowerCase()} help homeowners in ${town} call about (e.g. repair, replacement, installation, maintenance, emergency), text is 2-3 sentences each,
 "repairReplace": two paragraphs separated by \n\n, 140-200 words total, on how homeowners decide between repairing and replacing (age, condition, safety, efficiency); a local pro can assess it on the call,
-"choosing": array of 5 one-to-two sentence tips for choosing a provider (ask about experience with the specific job, written estimates, permits where required, clear scheduling); never claim the providers are licensed or vetted,
+"choosing": ${biz ? `array of 5 one-to-two sentence points on how ${biz.name} works and what to expect (clear explanation of options, written estimates, tidy work, scheduling), using only the owner's facts for any company claims` : `array of 5 one-to-two sentence tips for choosing a provider (ask about experience with the specific job, written estimates, permits where required, clear scheduling); never claim the providers are licensed or vetted`},
 "seasonal": array of 4 objects {"season", "tip"} — "Spring", "Summer", "Fall", "Winter" tips that fit ${town}'s climate, 1-2 sentences each,
 "areaGuide": one paragraph of 90-130 words describing the area served around ${town} in general terms (neighborhoods, nearby towns, typical housing), only things you are confident are true.`;
 
@@ -127,7 +130,9 @@ Write the in-depth guidance sections of the page. JSON keys:
   for (const k of ["bullets", "signs", "costFactors", "steps", "faqs", "areas", "services", "choosing", "seasonal"]) {
     if (typeof j[k] === "string") { try { j[k] = JSON.parse(j[k]); } catch { j[k] = String(j[k]).split(/\n+/).map((x: string) => x.replace(/^[-*\d.\s]+/, "").trim()).filter(Boolean); } }
   }
-  const noFree = (v: unknown, n: number) => clean(String(v ?? "").replace(/\n/g, "\u2029"), n).replace(/\u2029/g, "\n").replace(/\bfree\b\s*/gi, "");
+  // Referral pages never say "free"; a business may if its own facts include it (e.g. "free estimates").
+  const allowFree = !!biz && /\bfree\b/i.test(biz.facts || "");
+  const noFree = (v: unknown, n: number) => { const t = clean(String(v ?? "").replace(/\n/g, "\u2029"), n).replace(/\u2029/g, "\n"); return allowFree ? t : t.replace(/\bfree\b\s*/gi, ""); };
   const arr = (v: unknown, n: number) => (Array.isArray(v) ? v : []).slice(0, n);
   return {
     keyword: clean(j.keyword, 60).toLowerCase(),
@@ -148,7 +153,7 @@ Write the in-depth guidance sections of the page. JSON keys:
     seasonal: arr(j.seasonal, 4).map((x: any) => ({ season: noFree(x?.season, 20), tip: noFree(x?.tip, 300) })).filter((x) => x.season && x.tip),
     areaGuide: noFree(j.areaGuide, 1200),
     areas: arr(j.areas, 12).map((a) => clean(a, 40)),
-    cta: noFree(j.cta, 40) || "Talk to a local pro",
+    cta: noFree(j.cta, 40) || (biz ? `Call ${biz.name}` : "Talk to a local pro"),
   };
 }
 
@@ -246,8 +251,8 @@ export default async (req: Request) => {
     if (c.areaGuide !== undefined) next.areaGuide = txt(c.areaGuide, 2000);
     if (!next.headline) return Response.json({ error: "The main heading can't be empty." }, { status: 400 });
     const flat = JSON.stringify(next);
-    if (/\bfree\b/i.test(flat)) return Response.json({ error: "The copy uses the word \"free\". Remove it before saving; it breaks the listing rules." }, { status: 400 });
-    if (/\$\s?\d/.test(flat)) return Response.json({ error: "The copy shows a dollar amount. Remove prices before saving." }, { status: 400 });
+    if (p.mode !== "business" && /\bfree\b/i.test(flat)) return Response.json({ error: "The copy uses the word \"free\". Remove it before saving; it breaks the listing rules." }, { status: 400 });
+    if (p.mode !== "business" && /\$\s?\d/.test(flat)) return Response.json({ error: "The copy shows a dollar amount. Remove prices before saving." }, { status: 400 });
     p.copy = next;
     await pages().setJSON(slug, p);
     console.log(`page edited ${slug} owner=${owner}`);
@@ -266,6 +271,9 @@ export default async (req: Request) => {
   const extra = clean(body.extra, 300);
   let template: LandingPage["template"] = isTheme(body.template) ? body.template : "clean";
   let withPhoto = body.photo === true;
+  // "business" = a real local business's own page, written in its voice from the facts its owner gives.
+  let mode: "referral" | "business" = body.mode === "business" ? "business" : "referral";
+  let facts = clean(body.facts, 1500);
   // Building a page for a city site: the site decides service, number, brand, theme and photo.
   const siteSlug = clean(body.site, 80);
   let site: Site | null = null;
@@ -277,9 +285,11 @@ export default async (req: Request) => {
     if (!site.cities.includes(city)) return Response.json({ error: "That city isn't part of this site." }, { status: 400 });
     if (site.pages.some((x) => x.city === city && (x.service || site!.service) === wanted)) return Response.json({ error: `${wanted} in ${city} is already built.`, already: true }, { status: 409 });
     service = wanted; phone = site.phone; brand = site.brand; template = site.theme; withPhoto = site.photo;
+    mode = site.mode === "business" ? "business" : "referral"; facts = site.facts || "";
   }
   if (!service || !city) return Response.json({ error: "Add a service and a city in the brief first." }, { status: 400 });
-  if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: "Add your tracking number in the brief first. The page is built around it." }, { status: 400 });
+  if (phone.replace(/\D/g, "").length < 10) return Response.json({ error: mode === "business" ? "Add the business phone number in the brief first. The page is built around it." : "Add your tracking number in the brief first. The page is built around it." }, { status: 400 });
+  if (mode === "business" && !brand) return Response.json({ error: "Add the business name (Brand / page name in the brief)." }, { status: 400 });
   if (slugs.length >= MAX_PAGES) return Response.json({ error: `You have ${MAX_PAGES} pages already. Delete some before making more.` }, { status: 400 });
 
   const cost = PAGE_COST + (withPhoto ? PHOTO_COST : 0);
@@ -295,13 +305,13 @@ export default async (req: Request) => {
       const finish = (obj: unknown) => { clearInterval(tick); controller.enqueue(enc.encode(JSON.stringify(obj))); controller.close(); };
       try {
         const [copy, photo] = await Promise.all([
-          writeCopy(service, city, angle, extra, site ? { variant: comboIndex(site, service, city), siblings: [...site.cities.filter((x) => x !== city).map((x) => `${service} in ${x}`), ...siteServices(site).filter((v) => v !== service).map((v) => `${v} in ${city}`)] } : { variant: Math.floor(Math.random() * 5) }),
+          writeCopy(service, city, angle, extra, { ...(site ? { variant: comboIndex(site, service, city), siblings: [...site.cities.filter((x) => x !== city).map((x) => `${service} in ${x}`), ...siteServices(site).filter((v) => v !== service).map((v) => `${v} in ${city}`)] } : { variant: Math.floor(Math.random() * 5) }), ...(mode === "business" ? { biz: { name: brand, facts } } : {}) }),
           withPhoto ? makePhoto(service, city, TEMPLATES[template].dark) : Promise.resolve(null),
         ]);
         const base = slugify(`${service} ${city.split(",")[0]}`);
         let slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
         while (await pages().get(slug)) slug = `${base}-${crypto.randomUUID().slice(0, 5)}`;
-        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(site ? { site: site.slug, variant: comboIndex(site, service, city) } : {}) };
+        const page: LandingPage = { slug, owner, template, service, city, phone, brand, copy, created: new Date().toISOString(), views: 0, ...(mode === "business" ? { mode } : {}), ...(site ? { site: site.slug, variant: comboIndex(site, service, city) } : {}) };
         let credits = payer.credits;
         if (photo) {
           page.photo = `img/${slug}`;
