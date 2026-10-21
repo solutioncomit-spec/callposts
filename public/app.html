@@ -261,6 +261,10 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
 .net-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
 .net-card{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
 .net-card dl{display:grid;grid-template-columns:96px 1fr;gap:3px 8px;margin:0}.net-card dt{color:var(--muted)}.net-card dd{margin:0}
+.gbp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px}@media (max-width:860px){.gbp-grid{grid-template-columns:minmax(0,1fr)}}
+.gbp-form,.gbp-tools{display:flex;flex-direction:column;gap:8px;min-width:0}.gbp-tabs{flex-wrap:wrap}
+.gb-item{display:flex;flex-direction:column;gap:6px}.gb-item .desc{white-space:pre-line}.gb-cc{font-size:11px;color:var(--muted)}
+.gb-chk{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-size:13px}.gb-chk input,.gb-chk select{width:110px}
 .mp-head{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
 .rp-item{display:flex;flex-direction:column;gap:6px}.rp-item .desc{white-space:pre-line}
 </style>
@@ -272,7 +276,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
   <header>
     <h1>CallPosts</h1>
     <p>Content tools for home-service pay-per-call affiliates: service-and-city sites, SEO audits, Marketplace drafts with reply packs, a short course and networks to send calls to. Review every output and your channel’s rules before publishing.</p>
-    <nav class="tools" aria-label="Tools"><a href="#find" data-tool="find"><b>1 · Find a market</b><span>Scan cities for openings</span></a><a href="#sites" data-tool="sites"><b>2 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>3 · SEO audit</b><span>Check any page</span></a><a href="#ranks" data-tool="ranks"><b>4 · Rankings</b><span>Track Google positions</span></a><a href="#posts" data-tool="posts"><b>5 · Marketplace</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>6 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>7 · Networks</b><span>Where to send calls</span></a></nav>
+    <nav class="tools" aria-label="Tools"><a href="#find" data-tool="find"><b>1 · Find a market</b><span>Scan cities for openings</span></a><a href="#sites" data-tool="sites"><b>2 · SEO sites</b><span>Service-and-city sites</span></a><a href="#audit" data-tool="audit"><b>3 · SEO audit</b><span>Check any page</span></a><a href="#ranks" data-tool="ranks"><b>4 · Rankings</b><span>Track Google positions</span></a><a href="#posts" data-tool="posts"><b>5 · Marketplace</b><span>Drafts, images, reply packs</span></a><a href="#learn" data-tool="learn"><b>6 · Learn</b><span>6 lessons, no credits</span></a><a href="#networks" data-tool="networks"><b>7 · Networks</b><span>Where to send calls</span></a><a href="#gbp" data-tool="gbp"><b>★ Business Profile</b><span>For real local businesses</span></a></nav>
     <p style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="/" style="color:var(--accent)">← CallPosts home</a><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button></p>
   </header>
 
@@ -297,6 +301,35 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
     <div class="tpl-body">
       <p class="status" style="margin:0">Networks that buy home-service calls, what they pay for and which traffic they allow. Rules and payouts change, so confirm with the network before you build. CallPosts isn't affiliated with any of them. <a href="/networks" target="_blank" rel="noopener" style="color:var(--accent)">Open the full page ↗</a></p>
       <div class="net-grid" id="netList"><p class="status" style="margin:0">Loading…</p></div>
+    </div>
+  </details>
+
+  <details class="panel tpl" id="gbpBox">
+    <summary><h2>Google Business Profile toolkit</h2><span class="sum">For real local businesses and their agencies</span></summary>
+    <div class="tpl-body">
+      <p class="status" style="margin:0">Everything a local business needs for its Google profile in one place: the description, categories and services, two months of posts, replies to reviews, a Q&amp;A pack, and a profile check against the top businesses on Google Maps. For businesses with a real address or service area; Google suspends profiles that aren't. The writer only uses facts you give it, so it never invents reviews, licences or offers.</p>
+      <div class="gbp-grid">
+        <div class="gbp-form">
+          <div style="display:flex;gap:6px"><select id="gbSel" aria-label="Saved business" style="flex:1"><option value="">New business</option></select><button type="button" class="copy" id="gbDel" hidden>Delete</button></div>
+          <input id="gbName" placeholder="Business name (exactly as on signage)" aria-label="Business name">
+          <div class="row"><input id="gbCat" placeholder="Main category, e.g. Plumber" aria-label="Main category"><input id="gbCity" placeholder="City, State" aria-label="City"></div>
+          <input id="gbArea" placeholder="Service area, e.g. Lakewood, Arvada, Golden and west Denver" aria-label="Service area">
+          <div class="row"><input id="gbPhone" placeholder="Phone (optional)" aria-label="Phone"><input id="gbWeb" placeholder="Website (optional)" aria-label="Website"></div>
+          <textarea id="gbSvcs" rows="3" placeholder="Services, one per line" aria-label="Services"></textarea>
+          <textarea id="gbFacts" rows="3" placeholder="Facts to mention (only true ones): family-owned since 2009, licensed in Colorado, 24/7 emergency service, current offer…" aria-label="Facts"></textarea>
+          <select id="gbTone" aria-label="Tone"><option>friendly and professional</option><option>warm and family-run</option><option>straightforward and expert</option><option>upbeat and energetic</option></select>
+          <button type="button" class="btn ghost" id="gbSave">Save business</button><span class="status" id="gbSaved" style="margin:0"></span>
+        </div>
+        <div class="gbp-tools">
+          <div class="seg gbp-tabs" role="tablist" aria-label="Tools"><button type="button" data-t="profile" aria-pressed="true">Profile</button><button type="button" data-t="posts" aria-pressed="false">Posts</button><button type="button" data-t="reviews" aria-pressed="false">Review replies</button><button type="button" data-t="qa" aria-pressed="false">Q&amp;A</button><button type="button" data-t="check" aria-pressed="false">Profile check</button></div>
+          <p class="status" id="gbHelp" style="margin:0"></p>
+          <textarea id="gbInput" rows="5" hidden></textarea>
+          <div id="gbCheckForm" hidden></div>
+          <button type="button" class="btn ai" id="gbGo">Write profile content · 1 credit</button>
+          <div class="status" id="gbStatus" role="status"></div>
+          <div id="gbOut" class="picks"></div>
+        </div>
+      </div>
     </div>
   </details>
 
@@ -335,7 +368,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
         <div id="acctIn" hidden>
           <div class="who"><span class="label">Credits</span><span class="status" id="acctEmail" style="margin:0;overflow-wrap:anywhere"></span></div>
           <div class="who"><span class="bal" id="acctBal">0</span><div class="row2"><button class="copy" id="buyBtn" type="button" hidden>Buy credits</button><a class="copy" id="adminLink" href="/admin" hidden>Admin</a><button class="copy" id="logoutBtn" type="button">Log out</button></div></div>
-          <p class="status" id="acctHint" style="margin:0">Landing page 3, or 6 with an image · blog post 2 · market scan 2 · site audit 1 · rank check 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1</p>
+          <p class="status" id="acctHint" style="margin:0">Landing page 3, or 6 with an image · blog post 2 · market scan 2 · site audit 1 · rank check 1 · Business Profile tool 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1</p>
           <div id="buyBox" hidden style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           <details id="refBox" hidden style="margin-top:4px"><summary class="label" style="cursor:pointer">Invite friends, earn credits</summary>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
@@ -1165,12 +1198,13 @@ function showTool(t){
   if(t==="sites-city"){t="sites";const b=document.querySelector('.lp-mode button[data-m="site"]');if(b)b.click()}
   if(t==="sites"){$("lpBox").open=true;$("lpBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="audit"){$("auditBox").open=true;$("auditBox").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(t==="gbp"){$("gbpBox").open=true;gbInit();$("gbpBox").scrollIntoView({behavior:"smooth",block:"start"});return}
   else if(t==="find"){$("oppBox").open=true;oppInit();$("oppBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="ranks"){$("rankBox").open=true;loadRanks();$("rankBox").scrollIntoView({behavior:"smooth",block:"start"})}
   else if(t==="posts"){$("mpHead").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("service").focus({preventScroll:true}),600)}
 }
 document.querySelectorAll(".tools a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();history.replaceState(null,"","#"+a.dataset.tool);showTool(a.dataset.tool)}));
-if(/^#(learn|posts|sites|audit|networks|ranks|find)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
+if(/^#(learn|posts|sites|audit|networks|ranks|find|gbp)$/.test(location.hash))setTimeout(()=>showTool(location.hash.slice(1)),300);
 
 // Course: lessons from /js/course.js; progress kept in this browser and, when logged in, on the account.
 const COURSE=window.COURSE||[];
@@ -1235,6 +1269,74 @@ if(RP){$("rpSvc").innerHTML=RP.services.map(x=>`<option>${esc(x)}</option>`).joi
   $("rpList").addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied ✓"}catch(err){b.textContent="Select & copy manually"}setTimeout(()=>b.textContent="Copy",1600)});
   $("rpAll").onclick=async()=>{const v=rpVals(),p=RP.pack(v.service);const txt=p.items.map(i=>`${i.label}\n${RP.fill(i.text,v)}`).join("\n\n");
     try{await navigator.clipboard.writeText(txt);$("rpAll").textContent="Copied all"}catch(e){$("rpAll").textContent="Couldn't copy"}setTimeout(()=>$("rpAll").textContent="Copy all",1600)}}
+
+// Google Business Profile toolkit
+let gbList=[],gbTool="profile",gbReady=false;
+const GB_TOOLS={profile:{help:"Writes your business description (750-character limit), suggested categories, service descriptions, attributes to switch on and photo ideas.",btn:"Write profile content · 1 credit"},
+  posts:{help:"Eight update posts for the next two months: seasonal tips, service spotlights and behind-the-scenes. Add topics or a real current offer below if you like.",btn:"Write 8 posts · 1 credit",input:"Optional: topics or a current offer (only real ones)"},
+  reviews:{help:"Paste customer reviews (separate them with a blank line). You get a reply for each, calm and specific for the tough ones.",btn:"Write replies · 1 credit",input:"Paste reviews here, separated by a blank line"},
+  qa:{help:"Ten questions customers ask before hiring you, with clear answers. Use them on your website FAQ and to answer questions people ask on your profile.",btn:"Write Q&A · 1 credit"},
+  check:{help:"Answer a few questions about your profile for a score and a fix list (no credits). Then compare with the top 3 businesses on Google Maps for your category and city.",btn:"Compare with top 3 on Google Maps · 1 credit"}};
+const gbVal=()=>({id:$("gbSel").value||undefined,name:$("gbName").value.trim(),category:$("gbCat").value.trim(),city:$("gbCity").value.trim(),area:$("gbArea").value.trim(),phone:$("gbPhone").value.trim(),website:$("gbWeb").value.trim(),services:$("gbSvcs").value,facts:$("gbFacts").value.trim(),tone:$("gbTone").value});
+function gbFill(b){$("gbName").value=b?.name||"";$("gbCat").value=b?.category||"";$("gbCity").value=b?.city||"";$("gbArea").value=b?.area||"";$("gbPhone").value=b?.phone||"";$("gbWeb").value=b?.website||"";$("gbSvcs").value=(b?.services||[]).join("\n");$("gbFacts").value=b?.facts||"";$("gbTone").value=b?.tone||"friendly and professional";$("gbDel").hidden=!b}
+async function gbLoad(sel){if(!window.cpUser&&!$("code").value.trim())return;try{const r=await fetch("/api/gbp",{headers:authHeaders(),cache:"no-store"});const j=await r.json();if(!r.ok)return;gbList=j.businesses||[];
+  $("gbSel").innerHTML=`<option value="">New business</option>`+gbList.map(b=>`<option value="${esc(b.id)}">${esc(b.name)} · ${esc(b.city)}</option>`).join("");
+  const id=sel??(gbList[0]&&gbList[0].id)??"";$("gbSel").value=id;gbFill(gbList.find(b=>b.id===id))}catch(e){}}
+function gbSetTool(t){gbTool=t;document.querySelectorAll(".gbp-tabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.t===t)));const c=GB_TOOLS[t];
+  $("gbHelp").textContent=c.help;$("gbGo").textContent=c.btn;$("gbInput").hidden=!c.input;$("gbInput").placeholder=c.input||"";$("gbInput").value="";$("gbCheckForm").hidden=t!=="check";$("gbOut").innerHTML="";$("gbStatus").textContent="";if(t==="check")gbCheckForm()}
+function gbInit(){if(gbReady)return;gbReady=true;gbSetTool("profile");gbLoad()}
+$("gbpBox").addEventListener("toggle",()=>{if($("gbpBox").open)gbInit()});
+document.querySelectorAll(".gbp-tabs button").forEach(b=>b.onclick=()=>gbSetTool(b.dataset.t));
+$("gbSel").onchange=()=>{gbFill(gbList.find(b=>b.id===$("gbSel").value));$("gbSaved").textContent=""};
+async function gbSave(){const r=await fetch("/api/gbp",{method:"PUT",headers:authHeaders(),body:JSON.stringify({business:gbVal()})});const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||"Couldn't save.");await gbLoad(j.business.id);return j.business}
+$("gbSave").onclick=async()=>{if(!canUseAI($("gbSaved")))return;try{await gbSave();$("gbSaved").textContent="Saved."}catch(e){$("gbSaved").textContent=e.message}};
+$("gbDel").onclick=async()=>{const b=$("gbDel");if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Tap again";return}b.dataset.sure="";b.textContent="Delete";
+  await fetch(`/api/gbp?id=${encodeURIComponent($("gbSel").value)}`,{method:"DELETE",headers:authHeaders()});gbLoad("")};
+const cc=(s,max)=>`<span class="gb-cc">${s.length} / ${max} characters</span>`;
+const cp=t=>`<button type="button" class="copy" data-copy="${esc(t)}" style="align-self:flex-start">Copy</button>`;
+function gbRender(tool,r){let h="";
+  if(tool==="profile"){h=`<div class="kit-row gb-item"><span class="label" style="margin:0">Business description</span><div class="desc">${esc(r.description)}</div>${cc(r.description,750)}${cp(r.description)}</div>
+    <div class="kit-row gb-item"><span class="label" style="margin:0">Categories (pick from Google's list in your dashboard)</span><div><b>Primary:</b> ${esc(r.primaryCategory||"")}<br><b>Secondary:</b> ${(r.secondaryCategories||[]).map(esc).join(", ")}</div></div>
+    <div class="kit-row gb-item"><span class="label" style="margin:0">Services</span>${(r.services||[]).map(x=>`<div><b>${esc(x.name)}</b><div class="desc">${esc(x.description)}</div>${cc(x.description,300)} ${cp(x.description)}</div>`).join("")}</div>
+    <div class="kit-row gb-item"><span class="label" style="margin:0">Attributes to switch on (only if true)</span><div>${(r.attributes||[]).map(esc).join(" · ")}</div></div>
+    <div class="kit-row gb-item"><span class="label" style="margin:0">Photos to add</span><ol class="au-fix" style="margin:0">${(r.photoIdeas||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`}
+  else if(tool==="posts")h=r.map((x,i)=>`<div class="kit-row gb-item"><span class="label" style="margin:0">Post ${i+1} · ${esc(x.title)}</span><div class="desc">${esc(x.text)}</div><span class="km">Button: ${esc(x.button)} · Photo: ${esc(x.photo)}</span>${cc(x.text,1500)}${cp(x.text)}</div>`).join("");
+  else if(tool==="reviews")h=r.map(x=>`<div class="kit-row gb-item"><span class="label" style="margin:0">${x.sentiment==="negative"?"⚠ ":x.sentiment==="mixed"?"◐ ":"★ "}Reply to “${esc(x.review)}…”</span><div class="desc">${esc(x.reply)}</div>${cp(x.reply)}</div>`).join("");
+  else if(tool==="qa")h=r.map(x=>`<div class="kit-row gb-item"><b>${esc(x.q)}</b><div class="desc">${esc(x.a)}</div>${cp(x.q+"\n"+x.a)}</div>`).join("");
+  $("gbOut").innerHTML=h}
+$("gbOut").addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent="Copied ✓"}catch(err){b.textContent="Select & copy manually"}setTimeout(()=>b.textContent="Copy",1600)});
+// Profile check: rule-based score from the owner's answers (no credits).
+const GB_Q=[["photos","Photos on the profile","num",10],["hours","Opening hours set","yn"],["services","Services listed","yn"],["desc","Description filled in","yn"],["cats","Secondary categories added","yn"],
+  ["post","Days since the last post","num",7],["reviews","Number of reviews","num",30],["rating","Average rating","num",4.5],["replied","% of reviews with a reply","num",80],["website","Website linked","yn"]];
+function gbCheckForm(){$("gbCheckForm").innerHTML=`<div class="gb-chk">${GB_Q.map(([k,l,t])=>`<label for="gq_${k}">${l}</label>${t==="yn"?`<select id="gq_${k}"><option value="1">Yes</option><option value="0">No</option></select>`:`<input id="gq_${k}" type="number" min="0" step="any" inputmode="decimal">`}`).join("")}</div><button type="button" class="btn ghost" id="gbScore" style="margin-top:8px">Score my profile · no credits</button><div id="gbScoreOut"></div>`;
+  $("gbScore").onclick=()=>{const v=k=>$("gq_"+k).value,n=k=>parseFloat(v(k));const fix=[];let pts=0,tot=0;const add=(ok,w,msg)=>{tot+=w;if(ok)pts+=w;else fix.push(msg)};
+    add(n("photos")>=10,12,"Add more photos: aim for 10+ real ones (team, vehicles, jobs, before/after) and keep adding monthly.");
+    add(v("hours")==="1",8,"Set your opening hours, including special hours for holidays.");
+    add(v("services")==="1",10,"List every service you offer, each with a short description (use the Profile tool).");
+    add(v("desc")==="1",8,"Write a 600–750 character description (use the Profile tool).");
+    add(v("cats")==="1",10,"Add secondary categories that match your real services.");
+    add(!isNaN(n("post"))&&n("post")<=7,12,"Post at least weekly; profiles that post regularly look active (use the Posts tool).");
+    add(n("reviews")>=30,14,"Ask every happy customer for a review; a simple text with your review link after each job works best. Never buy or fake reviews.");
+    add(n("rating")>=4.5,10,"Reply to critical reviews calmly and fix the root causes behind them.");
+    add(n("replied")>=80,10,"Reply to every review, good and bad, within a few days (use the Review replies tool).");
+    add(v("website")==="1",6,"Link a website with a page for each main service and town.");
+    const sc=Math.round(pts*100/tot);$("gbScoreOut").innerHTML=`<div class="au-score" style="margin-top:8px"><span class="n" style="color:${auColor(sc)}">${sc}</span><div><b>Profile score</b><div class="km">${fix.length} thing${fix.length===1?"":"s"} to improve. A checklist score, not Google's ranking.</div></div></div>${fix.length?`<ol class="au-fix">${fix.map(f=>`<li>${esc(f)}</li>`).join("")}</ol>`:""}`}}
+$("gbGo").onclick=async()=>{if(!canUseAI($("gbStatus")))return;
+  const v=gbVal();if(!v.name||!v.category||!v.city){$("gbStatus").textContent="Add the business name, main category and city first.";$("gbName").focus();return}
+  let biz;try{biz=await gbSave()}catch(e){$("gbStatus").textContent=e.message;return}
+  $("gbGo").disabled=true;$("gbOut").innerHTML="";
+  try{
+    if(gbTool==="check"){$("gbStatus").innerHTML=`<span class="spin"></span> Reading Google Maps for “${esc(biz.category)} ${esc(biz.city)}”…`;
+      const r=await fetch("/api/gbp",{method:"POST",headers:authHeaders(),body:JSON.stringify({tool:"compare",businessId:biz.id})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(aiError(r,j,"Couldn't compare right now."));
+      const mine=parseFloat(($("gq_reviews")||{}).value);$("gbStatus").textContent="";
+      $("gbOut").innerHTML=j.places.length?`<span class="label">Top of Google Maps for “${esc(j.query)}”</span>`+j.places.map((p,i)=>`<div class="kit-row"><div class="kh"><span><b>${i+1}. ${esc(p.title)}</b></span><span class="km">${p.rating?p.rating.toFixed(1)+" ★":""} · ${p.reviews.toLocaleString()} reviews</span></div></div>`).join("")+(isNaN(mine)?"":`<p class="status" style="margin:0">You have ${mine} reviews; the top 3 average ${Math.round(j.places.reduce((a,p)=>a+p.reviews,0)/j.places.length).toLocaleString()}. Reviews, relevance and distance drive the map pack, so steady new reviews matter most.</p>`):`<p class="status" style="margin:0">Google didn't show a map pack for that search.</p>`;
+    }else{$("gbStatus").innerHTML=`<span class="spin"></span> Writing… about 20–40 seconds`;
+      const r=await fetch("/api/gbp",{method:"POST",headers:authHeaders(),body:JSON.stringify({tool:gbTool,businessId:biz.id,input:$("gbInput").value})});let j={};try{j=JSON.parse((await r.text()).trim()||"{}")}catch(e){}
+      if(!r.ok||!j.ok)throw new Error(r.ok?(j.error||"That didn't come through."):aiError(r,j,"That didn't come through."));
+      $("gbStatus").textContent="Done. Read it, change anything that isn't right, then paste it into your profile.";gbRender(gbTool,j.result)}
+    if(window.cpUser&&window.cpRefreshMe)window.cpRefreshMe();
+  }catch(err){$("gbStatus").textContent=err.message}finally{$("gbGo").disabled=false}};
 
 // Opportunity Finder
 const ST_NAMES={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
