@@ -1,8 +1,7 @@
 import type { Config } from "@netlify/functions";
-import { whoAmI } from "../lib/access.mts";
 
 // Domain finder: checks whether names are registered and returns links to buy them at a registrar.
-//   GET /api/domain-check?names=a.com,b.net   (up to 12 names)
+//   GET /api/domain-check?names=a.com,b.net   (up to 12 names; open to everyone, rate-limited per IP)
 // Availability comes from the registry's RDAP service (404 = not registered), with a DNS fallback.
 // It's a good guide, not a guarantee: premium or reserved names only show up at the registrar's checkout.
 const TLDS = ["com", "net", "org", "co", "us", "info", "pro", "site", "online"];
@@ -57,7 +56,6 @@ function links(domain: string) {
 const hasAffiliate = () => REGISTRARS.some((r) => !!Netlify.env.get(r.env));
 
 export default async (req: Request) => {
-  if (!(await whoAmI(req))) return Response.json({ error: "Log in or add an access code to search domains.", needLogin: true }, { status: 401 });
   const raw = (new URL(req.url).searchParams.get("names") || "").split(",").map((s) => s.trim()).filter(Boolean);
   const names = [...new Set(raw.map(cleanName).filter(Boolean) as string[])].slice(0, 12);
   if (!names.length) return Response.json({ error: `Enter a name like lakewoodwaterheaterhelp.com. Supported endings: ${TLDS.map((t) => "." + t).join(", ")}.` }, { status: 400 });

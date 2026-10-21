@@ -52,13 +52,74 @@ ol.idx{display:flex;flex-direction:column;gap:10px;padding-left:22px;margin:0}
 footer{border-top:1px solid var(--line);padding:24px 0 40px;font-size:13px;color:var(--muted)}footer a{color:inherit}
 @media (max-width:560px){.g span:first-child{width:120px}dl{grid-template-columns:1fr}dt{margin-top:6px}}
 </style></head><body><div class="wrap">
-<nav><a class="logo" href="/">Call<span>Posts</span></a><div class="links"><a href="/app#sites">Site builder</a><a href="/free-audit">Free SEO check</a><a href="/learn">Learn</a><a href="/networks">Networks</a><a class="btn" href="/app">Try 15 free credits</a></div></nav>
+<nav><a class="logo" href="/">Call<span>Posts</span></a><div class="links"><a href="/app#sites">Site builder</a><a href="/free-audit">Free SEO check</a><a href="/domains">Domains</a><a href="/learn">Learn</a><a href="/networks">Networks</a><a class="btn" href="/app">Try 15 free credits</a></div></nav>
 <main>${o.body}</main>
-<footer>CallPosts is an independent tool, not affiliated with or endorsed by any network listed here, or by Meta. Networks manage their own approvals, tracking numbers and payouts. Nothing here promises income. · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></footer>
+<footer>CallPosts is an independent tool, not affiliated with or endorsed by any network listed here, or by Meta. Networks manage their own approvals, tracking numbers and payouts. Nothing here promises income. · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/refunds">Refunds</a> · <a href="/contact">Contact</a> · <a href="mailto:support@callposts.com">support@callposts.com</a></footer>
 </div>${o.script ? `<script>${o.script}</script>` : ""}</body></html>`;
 }
 
 const html = (s: string) => new Response(s, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" } });
+
+// ---------- Domains ----------
+function domainsPage() {
+  const script = `
+const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const flat=s=>String(s||"").toLowerCase().replace(/&/g," ").replace(/[^a-z ]/g,"").trim().split(/\\s+/).filter(Boolean);
+const STOP=/^(repair|repairs|service|services|installation|install|replacement|removal|and|cleaning|company|contractor|contractors|near|me)$/;
+function ideas(svc,city){const w=flat(svc).filter(t=>!STOP.test(t)),k=(w.length?w:flat(svc)).slice(0,2).join("")||"home",c=flat(String(city).split(",")[0]).join("");
+  const out=["help","connect","match","finder","guide","line","hub"].map(x=>c+k+x+".com");out.push(k+c+".com",c+k+"help.net",c+k+".co");
+  return [...new Set(out)].filter(d=>d.split(".")[0].length>=4&&d.split(".")[0].length<=40).slice(0,10)}
+async function run(){const own=$("own").value.trim().toLowerCase().replace(/^https?:\\/\\//,"").replace(/^www\\./,"").replace(/\\/.*$/,"").replace(/\\s+/g,"");
+  let names;if(own){names=own.includes(".")?[own,...["com","net","co"].map(t=>own.split(".")[0]+"."+t)]:["com","net","co","us"].map(t=>own+"."+t)}
+  else{const svc=$("svc").value.trim(),city=$("city").value.trim();if(!svc||!city){$("msg").textContent="Enter a service and a city, or type your own idea.";return}names=ideas(svc,city)}
+  names=[...new Set(names)];$("go").disabled=true;$("msg").textContent="Checking "+names.length+" names…";$("out").innerHTML="";
+  try{const r=await fetch("/api/domain-check?names="+encodeURIComponent(names.join(",")));const j=await r.json().catch(()=>({}));
+    if(!r.ok){$("msg").textContent=j.error||"Couldn't check names right now. Try again in a minute.";return}
+    const rank={available:0,unknown:1,taken:2},res=(j.results||[]).sort((a,b)=>rank[a.status]-rank[b.status]);
+    $("msg").textContent=res.filter(x=>x.status==="available").length+" of "+res.length+" look available.";
+    $("out").innerHTML=res.map(d=>'<div class="card" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px"><b style="word-break:break-all;flex:1 1 220px">'+esc(d.domain)+'</b><span class="tag '+(d.status==="available"?"v":"l")+'"'+(d.status==="taken"?' style="color:var(--bad)"':'')+'>'+(d.status==="available"?"Looks available":d.status==="taken"?"Taken":"Couldn't check")+'</span>'
+      +(d.status!=="taken"?d.links.map(l=>'<a class="btn sec" style="padding:7px 11px;font-size:14px" href="'+esc(l.url)+'" target="_blank" rel="noopener sponsored">Buy at '+esc(l.name)+' ↗</a>').join(""):"")+'</div>').join("")
+      +'<p class="small" style="margin:0">“Looks available” comes from the domain registry; the registrar\\'s checkout has the final say, and some names are premium. Compare the renewal price, not just the first year.'+(j.affiliate?" Registrar links may earn CallPosts a commission at no extra cost to you.":"")+'</p>';
+  }catch(e){$("msg").textContent="Couldn't check names right now. Try again in a minute."}finally{$("go").disabled=false}}
+$("go").onclick=run;["svc","city","own"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run()}}));`;
+  return shell({
+    path: "/domains",
+    title: "Find a domain for your local service website · CallPosts",
+    desc: "Get domain name ideas from your service and city, see which look available, and buy at Namecheap or Porkbun. Then connect it to your CallPosts site with one DNS record.",
+    script,
+    body: `<header><h1>Find a domain for your local site</h1><p class="lede">Type a service and a city and we'll suggest names, check which look available, and link you to a registrar to buy one. Then connect it to your CallPosts site with a single DNS record. No account needed to search.</p></header>
+<section class="card"><div class="row"><input id="svc" placeholder="Service, e.g. Water heater repair" aria-label="Service"><input id="city" placeholder="City, e.g. Lakewood, CO" aria-label="City"></div>
+<input id="own" placeholder="Or your own idea, e.g. lakewoodwaterheaterhelp" aria-label="Your own domain idea">
+<button class="btn" id="go" type="button" style="align-self:flex-start">Find domains</button><span class="small" id="msg" role="status"></span></section>
+<div id="out" style="display:flex;flex-direction:column;gap:8px" aria-live="polite"></div>
+<section class="card"><h2>Choosing a good name</h2><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px">
+<li><b>Place + service + a helper word</b> reads naturally, like lakewoodwaterheaterhelp.com.</li>
+<li><b>.com first</b>, then .net or .co if the .com is taken.</li>
+<li><b>Never use a real company's name or trademark</b>, and don't imply you're a licensed contractor.</li>
+<li><b>Expect about $10 to $15 a year</b> for a standard .com at most registrars; check the renewal price before you buy.</li></ul></section>
+<section class="card"><h2>After you buy it</h2><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
+<li>At your registrar, add one DNS record: type <b>CNAME</b>, name <code>www</code>, value <code>callposts.netlify.app</code>. On Cloudflare, set it to <b>DNS only</b>.</li>
+<li>Forward the bare domain (yourdomain.com) to <code>https://www.yourdomain.com</code> using the registrar's URL forwarding.</li>
+<li>In CallPosts, open <b>SEO sites</b>, choose your site, enter <code>www.yourdomain.com</code> under “Find or connect your own domain” and click Connect. HTTPS is set up automatically.</li></ol></section>
+<div class="cta"><h2>No site yet?</h2><p style="margin:0">Build service-and-city pages around your tracking number, then put them on your new domain.</p><a class="btn" href="/app#sites">Try 15 free credits</a><span class="small">No card required.</span></div>`,
+  });
+}
+
+// ---------- Contact ----------
+function contactPage() {
+  return shell({
+    path: "/contact",
+    title: "Contact CallPosts",
+    desc: "How to reach CallPosts: account, credits, billing and refunds at support@callposts.com; partnerships and business questions at admin@callposts.com.",
+    schema: { "@context": "https://schema.org", "@type": "Organization", name: "CallPosts", url: "https://callposts.com", email: "support@callposts.com", contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", email: "support@callposts.com" }, { "@type": "ContactPoint", contactType: "sales", email: "admin@callposts.com" }] },
+    body: `<header><h1>Contact CallPosts</h1><p class="lede">We aim to reply within one business day.</p></header>
+<div class="grid">
+<section class="card"><h2>Support</h2><p style="margin:0">Account and login help, credits, billing, refunds and bug reports.</p><a class="btn" href="mailto:support@callposts.com" style="align-self:flex-start">support@callposts.com</a><p class="small" style="margin:0">Write from the email on your account, and include your order number or payment reference for billing questions.</p></section>
+<section class="card"><h2>Business</h2><p style="margin:0">Partnerships, networks, agencies, press and legal questions.</p><a class="btn sec" href="mailto:admin@callposts.com" style="align-self:flex-start">admin@callposts.com</a></section>
+</div>
+<section class="card"><h2>Policies</h2><p style="margin:0"><a href="/terms">Terms of service</a> · <a href="/privacy">Privacy policy</a> · <a href="/refunds">Refund policy</a></p></section>`,
+  });
+}
 
 // ---------- Networks ----------
 function networkCard(n: Network) {
@@ -176,6 +237,8 @@ export default async (req: Request) => {
   const p = url.pathname.replace(/\/+$/, "") || "/";
   if (p === "/api/networks") return Response.json({ networks: NETWORKS, checked: NETWORKS_CHECKED, offervault: OFFERVAULT_URL }, { headers: { "cache-control": "public, max-age=300" } });
   if (p === "/networks") return html(networksPage());
+  if (p === "/contact") return html(contactPage());
+  if (p === "/domains") return html(domainsPage());
   if (p === "/free-audit") return html(auditPage());
   if (p === "/learn" || p.startsWith("/learn/")) {
     const lessons = await course(url.origin).catch(() => [] as Lesson[]);
@@ -188,6 +251,6 @@ export default async (req: Request) => {
 };
 
 export const config: Config = {
-  path: ["/networks", "/free-audit", "/learn", "/learn/*", "/api/networks"],
+  path: ["/networks", "/free-audit", "/learn", "/learn/*", "/api/networks", "/contact", "/domains"],
   method: ["GET"],
 };

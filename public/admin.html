@@ -57,6 +57,12 @@ a{color:var(--accent)}
     <p class="status" id="lbMsg" role="status"></p>
     <p class="status">No account yet? <button type="button" class="linkish" id="lbSwitch">Create your admin account</button> · <button type="button" class="linkish" id="lbForgot">Forgot password?</button></p>
   </section>
+  <section class="panel" id="topups" hidden>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span class="label">Top-up requests</span><span class="status" id="tuCount"></span></div>
+    <p class="status">Customers who paid by Payoneer, bank transfer or another method. Check the payment arrived, then approve to add the plan's credits once. Payment instructions shown to customers come from the MANUAL_PAY setting in Netlify.</p>
+    <div class="tablewrap"><table><thead><tr><th>Requested</th><th>Email</th><th>Plan</th><th>Method</th><th>Reference</th><th>Note</th><th>Status</th><th></th></tr></thead><tbody id="tuRows"></tbody></table></div>
+    <p class="status" id="tuMsg" role="status"></p>
+  </section>
   <section class="panel" id="create" hidden>
     <span class="label">Create a login</span>
     <p class="status">For signup requests. The account is ready right away and they get an email to set their password, then they're logged in. New accounts get 15 starter credits; add more here if you like.</p>
@@ -91,10 +97,10 @@ const day=s=>s?new Date(s).toLocaleDateString(undefined,{month:"short",day:"nume
 async function load(){
   const r=await fetch("/api/admin",{cache:"no-store"});const j=await r.json().catch(()=>({}));
   $("gate").hidden=true;
-  if(r.status===401){$("loginBox").hidden=false;$("logout").hidden=true;["grant","list","create"].forEach(i=>$(i).hidden=true);return}
+  if(r.status===401){$("loginBox").hidden=false;$("logout").hidden=true;["grant","list","create","topups"].forEach(i=>$(i).hidden=true);return}
   $("loginBox").hidden=true;$("logout").hidden=false;
   if(!r.ok){$("gate").hidden=false;$("gate").textContent=r.status===403?"You're logged in, but this email isn't an admin. Log out and use leadifyuae@gmail.com.":(j.error||"Couldn't load accounts.");return}
-  $("grant").hidden=false;$("list").hidden=false;$("create").hidden=false;
+  $("grant").hidden=false;$("list").hidden=false;$("create").hidden=false;$("topups").hidden=false;loadTopups();
   const rows=j.rows||[];const total=rows.reduce((a,x)=>a+(x.credits||0),0),used=rows.reduce((a,x)=>a+(x.spent||0),0);
   const wk=Date.now()-7*864e5,recent=rows.filter(x=>x.created&&Date.parse(x.created)>wk).length;
   const act=rows.filter(x=>x.firstListingAt),paid=rows.filter(x=>x.paid).length;
@@ -113,6 +119,15 @@ $("createForm").addEventListener("submit",async e=>{e.preventDefault();$("cMsg")
   const j=await r.json().catch(()=>({}));
   $("cMsg").textContent=r.ok?(j.emailed?`Done. ${j.email} has a login and an email to set their password (check spam if they can't see it).`:`Login created for ${j.email}, but the email didn't send. Ask them to use "Forgot password?" on the app with this email.`):(j.error||"That didn't work.");
   if(r.ok){e.target.reset();load()}});
+async function loadTopups(){
+  const r=await fetch("/api/topup?all=1",{cache:"no-store"});const j=await r.json().catch(()=>({}));const list=j.requests||[];
+  const pend=list.filter(x=>x.status==="pending").length;$("tuCount").textContent=`${pend} waiting`;
+  $("tuRows").innerHTML=list.map(x=>`<tr data-id="${esc(x.id)}"><td>${day(x.created)}</td><td>${esc(x.email)}</td><td>${esc(x.plan)} · ${x.credits} cr · ${esc(x.price)}</td><td>${esc(x.method)}</td><td>${esc(x.reference)}</td><td>${esc(x.note)}</td><td>${x.status==="pending"?"<b>Pending</b>":esc(x.status)+(x.decided?" · "+day(x.decided):"")}</td><td>${x.status==="pending"?`<button class="btn" data-act="approve" type="button">Approve</button> <button class="btn ghost" data-act="reject" type="button">Reject</button>`:""}</td></tr>`).join("")||`<tr><td colspan="8">No requests yet.</td></tr>`;
+}
+$("tuRows").addEventListener("click",async e=>{const b=e.target.closest("[data-act]");if(!b)return;const id=b.closest("tr").dataset.id;
+  if(b.dataset.act==="reject"&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Tap again to reject";return}
+  b.disabled=true;const r=await fetch("/api/topup",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:b.dataset.act,id})});const j=await r.json().catch(()=>({}));
+  $("tuMsg").textContent=r.ok?(j.status==="approved"?`Approved. Their balance is now ${j.credits} credits.`:"Rejected."):(j.error||"That didn't work.");loadTopups();if(r.ok)load()});
 $("reload").onclick=load;
 load();
 </script>

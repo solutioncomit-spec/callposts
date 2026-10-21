@@ -84,6 +84,19 @@ p{margin:0;max-width:62ch}
 .founder-pill a{color:var(--brand)}
 .examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;width:100%;margin-top:18px;text-align:left}
 @media (max-width:900px){.examples{grid-template-columns:minmax(0,1fr)}}
+.ex{margin:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;min-width:0}
+.ex-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.ex-bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}.ex-bar span{margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex-page{padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ex-page h3{font-family:var(--body);font-weight:700;font-size:clamp(18px,2vw,22px);line-height:1.2}.ex-page p{color:var(--muted);font-size:14px}
+.ex-k{font-size:12px;color:var(--brand);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.ex-call{align-self:flex-start;background:var(--brand);color:var(--brand-ink);font-weight:700;border-radius:8px;padding:9px 14px;font-size:14px}
+.ex-row{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.ex-score{font-family:var(--display);font-weight:800;font-size:40px;color:#1f9d55;line-height:1}:root[data-theme="dark"] .ex-score{color:#4ade80}
+.ex-sm{font-size:12px;color:var(--muted)}
+.ex-g{display:grid;grid-template-columns:110px 1fr 32px;gap:8px;align-items:center;font-size:13px}.ex-g b{text-align:right}
+.ex-b{height:7px;border-radius:4px;background:var(--line);overflow:hidden}.ex-b i{display:block;height:100%;background:#1f9d55}
+.ex figcaption{font-size:12px;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding:8px}
 .mp{margin:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:16px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 30px 80px -40px rgba(79,240,255,.45);min-width:0}
 @media (max-width:480px){.mp{grid-template-columns:minmax(0,1fr)}}
 .mp img{width:100%;height:auto;align-self:start;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--brand-soft);display:block}
@@ -118,6 +131,7 @@ p{margin:0;max-width:62ch}
 .costs{min-width:0;max-width:100%}.costs h3{margin:0 0 10px}.costs table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}.costs td{overflow-wrap:anywhere;white-space:normal;padding:8px 0}.costs td.n{width:34%;padding-left:16px;font-family:inherit;color:var(--ink)}
 .costs td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}.costs td.n{text-align:right;white-space:nowrap;padding-left:16px}
 @media (max-width:640px){.costs td.n{white-space:normal}}
+.costs td.n.w{white-space:normal}
 .tools3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:16px}
 .tool.lead{border-color:var(--brand)}
 .navmore{display:flex;gap:2px;flex-wrap:wrap}
@@ -250,7 +264,7 @@ nav .ctas{align-items:center}
 
 <nav class="band"><div class="in">
   <div class="logo">Call<span>Posts</span></div>
-  <div class="ctas"><span class="navmore"><a class="navlink" href="/free-audit">Free SEO check</a><a class="navlink" href="/learn">Learn</a><a class="navlink" href="/networks">Networks</a></span><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button><a class="navlink" href="/app">Log in</a><a class="btn outline" href="/app#signup">Create account</a></div>
+  <div class="ctas"><span class="navmore"><a class="navlink" href="/free-audit">Free SEO check</a><a class="navlink" href="/domains">Domains</a><a class="navlink" href="/learn">Learn</a><a class="navlink" href="/networks">Networks</a></span><button class="theme-toggle" id="themeToggle" type="button">☾ Dark</button><a class="navlink" href="/app">Log in</a><a class="btn outline" href="/app#signup">Create account</a></div>
 </div></nav>
 
 <section class="band hero2"><div class="in">
@@ -263,27 +277,29 @@ nav .ctas{align-items:center}
     <p class="founder-pill"><b>Founding members:</b> first 50 subscribers keep launch pricing from $9/mo. <a href="#pricing">See plans</a></p>
   </div>
   <div class="examples">
-    <figure class="mp" aria-label="Example listing made with CallPosts: water heaters in Peoria">
-      <div class="mp-copy">
-        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Listing draft</div>
-        <h3>Water Heater Help in Peoria – Same-Day Local Pros</h3>
-        <div class="mp-meta"><span>📍 Peoria, AZ</span><span>Example draft</span></div>
-        <div class="mp-check"><span class="ok">✓</span> Network-rule checks: <b>10 of 10</b></div>
-        <div class="chips"><span class="chip">Same-day style</span><span class="chip">Review before posting</span></div>
+    <figure class="ex" aria-label="Example service-and-city page built with CallPosts">
+      <div class="ex-bar"><i></i><i></i><i></i><span>lakewoodwaterheaterhelp.com</span></div>
+      <div class="ex-page">
+        <span class="ex-k">Water heater repair · Lakewood, CO</span>
+        <h3>Water Heater Repair in Lakewood, CO</h3>
+        <p>No hot water, leaks or strange noises? Talk to a local pro today.</p>
+        <span class="ex-call">📞 Call (555) 010-0142</span>
+        <div class="chips"><span class="chip">Signs to watch</span><span class="chip">Repair or replace</span><span class="chip">FAQs</span><span class="chip">Areas served</span></div>
+        <div class="ex-row"><span>Home</span><span>Water heaters</span><span>Drain cleaning</span><span>Arvada</span><span>Blog</span></div>
       </div>
-      <img src="/img/water-heater.jpg" alt="AI-generated photo of a technician servicing a tank water heater" width="512" height="512" loading="eager">
-      <figcaption>AI-generated image · not a real customer job</figcaption>
+      <figcaption>Example page from the site builder · placeholder number</figcaption>
     </figure>
-    <figure class="mp" aria-label="Example listing made with CallPosts: central AC in Scottsdale">
-      <div class="mp-copy">
-        <div class="mp-src"><span class="mp-ico" aria-hidden="true">▦</span> Listing draft</div>
-        <h3>AC Not Cooling? Scottsdale Central Air Repair, Call Today</h3>
-        <div class="mp-meta"><span>📍 Scottsdale, AZ</span><span>Example draft</span></div>
-        <div class="mp-check"><span class="ok">✓</span> Network-rule checks: <b>10 of 10</b></div>
-        <div class="chips"><span class="chip">Seasonal style</span><span class="chip">Review before posting</span></div>
+    <figure class="ex" aria-label="Example SEO audit result in CallPosts">
+      <div class="ex-bar"><i></i><i></i><i></i><span>SEO audit</span></div>
+      <div class="ex-page">
+        <div style="display:flex;gap:12px;align-items:center"><span class="ex-score">96</span><div><b>lakewoodwaterheaterhelp.com</b><div class="ex-sm">1 of 31 checks needs work</div></div></div>
+        <div class="ex-g"><span>On-page SEO</span><span class="ex-b"><i style="width:100%"></i></span><b>100</b></div>
+        <div class="ex-g"><span>Calls</span><span class="ex-b"><i style="width:100%"></i></span><b>100</b></div>
+        <div class="ex-g"><span>Local &amp; schema</span><span class="ex-b"><i style="width:100%"></i></span><b>100</b></div>
+        <div class="ex-g"><span>Technical</span><span class="ex-b"><i style="width:88%"></i></span><b>88</b></div>
+        <div class="ex-g"><span>Disclosures</span><span class="ex-b"><i style="width:100%"></i></span><b>100</b></div>
       </div>
-      <img src="/img/central-ac.jpg" alt="AI-generated photo of an outdoor central air conditioner beside a stucco house" width="512" height="512" loading="lazy">
-      <figcaption>AI-generated image · not a real customer job</figcaption>
+      <figcaption>Illustrative audit layout · <a href="/free-audit" style="color:var(--brand)">check your own page</a></figcaption>
     </figure>
   </div>
 </div></section>
@@ -293,7 +309,7 @@ nav .ctas{align-items:center}
   <h2>Build, check, promote, learn and find a network.</h2>
   <p class="lede">New to pay-per-call? <a href="/learn" style="color:var(--brand)">Read the 6 short lessons</a> first: they take you from choosing a service and city to a live site and a network to apply to.</p>
   <div class="tools3">
-    <a class="tool lead" href="/app#sites"><span class="tk">01</span><h3>SEO site builder</h3><p class="muted">Service-and-city pages, or full sites with every service in every city plus service, area and blog pages, around your tracking number. 8 themes, your own domain, sitemap and search engine submission built in.</p><span class="tc">From 3 credits per page →</span></a>
+    <a class="tool lead" href="/app#sites"><span class="tk">01</span><h3>SEO site builder</h3><p class="muted">Service-and-city pages, or full sites with every service in every city plus service, area and blog pages, around your tracking number. 8 themes, your own domain (<a href="/domains" style="color:var(--brand)">find one here</a>), sitemap and search engine submission built in.</p><span class="tc">From 3 credits per page →</span></a>
     <a class="tool" href="/free-audit"><span class="tk">02</span><h3>SEO audit</h3><p class="muted">Check any page for local SEO basics, tap-to-call, schema, speed and disclosures. Quick checks cost nothing; the full audit adds an AI fix plan.</p><span class="tc">Quick check at no cost · full audit 1 credit →</span></a>
     <a class="tool" href="/app#posts"><span class="tk">03</span><h3>Marketplace posts</h3><p class="muted">Listing drafts and AI images in 15 styles, plus message and reply packs for every service. For posting in your own area; confirm your network accepts Marketplace calls.</p><span class="tc">1 credit per draft · reply packs at no cost →</span></a>
     <a class="tool" href="/learn"><span class="tk">04</span><h3>Learn pay-per-call</h3><p class="muted">How it pays, choosing a market, building and connecting a site, getting found, and applying to a network.</p><span class="tc">6 lessons, no credits →</span></a>
@@ -421,7 +437,7 @@ nav .ctas{align-items:center}
       <h3>Starter</h3>
       <div class="amt">$9<small> / month</small></div>
       <p class="muted small" style="margin:0">For testing a few markets.</p>
-      <ul><li><b>100 credits</b> a month</li><li>Up to 100 text drafts, or 25 drafts with images</li><li>AI market picks</li><li>Network-rule checks and reply templates</li><li>All 23 Canva templates</li><li>Unused credits roll over</li></ul>
+      <ul><li><b>100 credits</b> a month</li><li>About 33 site pages, or a 10-page site plus blog posts and audits</li><li>Quick SEO checks and reply packs at no cost</li><li>Custom domain and search engine submission</li><li>Listing drafts and all 23 Canva templates</li><li>Unused credits roll over</li></ul>
       <a class="btn sec" href="/app#signup">Try 15 free credits</a>
     </div>
     <div class="plan hl">
@@ -429,14 +445,14 @@ nav .ctas{align-items:center}
       <h3>Pro</h3>
       <div class="amt">$19<small> / month</small></div>
       <p class="muted small" style="margin:0">For working across several services and cities.</p>
-      <ul><li><b>350 credits</b> a month</li><li>About 87 drafts with images, or 350 text drafts</li><li>About 5¢ per credit</li><li>Everything in Starter</li><li>Unused credits roll over</li></ul>
+      <ul><li><b>350 credits</b> a month</li><li>About 115 site pages a month: several full multi-service sites</li><li>About 5¢ per credit</li><li>Everything in Starter</li><li>Unused credits roll over</li></ul>
       <a class="btn pri" href="/app#signup">Try 15 free credits</a>
     </div>
     <div class="plan">
       <h3>Agency</h3>
       <div class="amt">$49<small> / month</small></div>
       <p class="muted small" style="margin:0">For teams running many profiles.</p>
-      <ul><li><b>1,200 credits</b> a month</li><li>About 4¢ per credit, the lowest rate</li><li>Priority help setting up</li><li>Everything in Pro</li><li>Unused credits roll over</li></ul>
+      <ul><li><b>1,200 credits</b> a month</li><li>About 400 site pages a month, for agencies running many sites</li><li>About 4¢ per credit, the lowest rate</li><li>Priority help setting up</li><li>Everything in Pro</li><li>Unused credits roll over</li></ul>
       <a class="btn sec" href="/app#signup">Try 15 free credits</a>
     </div>
   </div>
@@ -445,15 +461,15 @@ nav .ctas{align-items:center}
     <h3>What each action costs</h3>
     <table>
       <tbody>
+        <tr><td>Landing page (one service in one city)</td><td class="n">3 credits</td></tr>
+        <tr><td>Landing page + AI image</td><td class="n">6 credits</td></tr>
+        <tr><td>Full site: home, service and area pages included</td><td class="n w">3 credits per service-and-city page (6 with images)</td></tr>
+        <tr><td>Blog post for a site</td><td class="n">2 credits</td></tr>
+        <tr><td>Full SEO audit with AI fix plan</td><td class="n">1 credit</td></tr>
         <tr><td>Listing draft (title, description, tags, reply templates, network-rule checks)</td><td class="n">1 credit</td></tr>
         <tr><td>Listing draft + AI image</td><td class="n"><b>4 credits</b></td></tr>
-        <tr><td>Landing page</td><td class="n">3 credits</td></tr>
-        <tr><td>Landing page + AI image</td><td class="n">6 credits</td></tr>
-        <tr><td>Full site</td><td class="n">3 credits per service-and-city page (6 with images) · home, service and area pages included</td></tr>
-        <tr><td>Blog post for a site</td><td class="n">2 credits</td></tr>
-        <tr><td>Site audit</td><td class="n">1 credit</td></tr>
         <tr><td>AI market picks (optional)</td><td class="n">1 credit</td></tr>
-        <tr><td>Canva templates, network-rule checks on your own text, editing pages, theme changes, lessons</td><td class="n">No credits</td></tr>
+        <tr><td>Quick SEO checks, domain search, reply packs, Canva templates, network-rule checks on your own text, editing pages, theme changes, lessons</td><td class="n">No credits</td></tr>
       </tbody>
     </table>
     <p class="small">The app shows the full charge before each generation. If a generation fails, its credits are returned automatically. Cancel any time and keep the credits you already have.</p>
@@ -482,7 +498,7 @@ nav .ctas{align-items:center}
 <footer class="band"><div class="in">
   <div class="logo" style="font-size:18px">Call<span>Posts</span></div>
   <p class="small">CallPosts is an independent tool, not affiliated with or endorsed by Lead Smart or Meta. Networks manage their own approvals, tracking numbers and payouts. Facebook Marketplace is a trademark of Meta Platforms, Inc.</p>
-  <p class="small"><a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/refunds" style="color:inherit">Refunds</a> · <a href="#access" style="color:inherit">Contact</a></p>
+  <p class="small"><a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/refunds" style="color:inherit">Refunds</a> · <a href="/contact" style="color:inherit">Contact</a> · Support: <a href="mailto:support@callposts.com" style="color:inherit">support@callposts.com</a></p>
 </div></footer>
 
 <script>

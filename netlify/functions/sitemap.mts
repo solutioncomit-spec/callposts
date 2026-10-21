@@ -10,6 +10,8 @@ export default async (req: Request) => {
     { loc: `${origin}/app`, priority: "0.6" },
     { loc: `${origin}/free-audit`, priority: "0.9" },
     { loc: `${origin}/networks`, priority: "0.8" },
+    { loc: `${origin}/domains`, priority: "0.7" },
+    { loc: `${origin}/contact`, priority: "0.3" },
     { loc: `${origin}/learn`, priority: "0.8" },
     ...["how", "niche", "build", "domain", "grow", "network"].map((id) => ({ loc: `${origin}/learn/${id}`, priority: "0.7" })),
     { loc: `${origin}/terms`, priority: "0.2" },

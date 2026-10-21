@@ -3,14 +3,14 @@
 window.COURSE = [
   {
     id: "how",
-    title: "How local lead generation makes money",
+    title: "How pay-per-call works for home services",
     minutes: 6,
-    summary: "Where the money comes from, how long it takes, and the rules that keep you in business.",
+    summary: "How calls are paid for, how long sites take to work, and the rules that keep you in business.",
     body: `
 <p>Local lead generation means building websites that show up on Google when homeowners search for a service in their city, like “water heater repair Aurora”. When someone calls the number on your site, that call is worth money to a business that does the work.</p>
-<h4>Two ways to earn</h4>
+<h4>Two business models</h4>
 <ul>
-<li><b>Pay-per-call networks.</b> A network gives you a tracking number and pays you for each qualified call it receives. Payouts depend on the service and city; the payout table in CallPosts shows reported rates of roughly $15 to $41 per qualified call for common home services.</li>
+<li><b>Pay-per-call networks.</b> A network gives you a tracking number and pays you for each qualified call it receives. Payouts depend on the service, the city and buyer demand, and only qualified calls are paid. Your network shows its current rates.</li>
 <li><b>Rank and rent.</b> Once a site ranks and gets calls, you rent it to one local contractor for a monthly fee and point the number to them.</li>
 </ul>
 <h4>How long it takes</h4>
@@ -73,7 +73,7 @@ window.COURSE = [
     summary: "A domain you own builds authority you keep, and you need one to rent the site out.",
     body: `
 <ol>
-<li><b>Buy a domain</b> (usually $10 to $15 a year) at a registrar such as Cloudflare, Namecheap or Porkbun. In <b>Landing pages</b>, open your site and use “Find or connect your own domain” to get name ideas and check which are available. Simple names work: region + service, like lakewoodwaterheaterhelp.com. Never use a real company's name or trademark.</li>
+<li><b>Buy a domain</b> (usually $10 to $15 a year) at a registrar such as Cloudflare, Namecheap or Porkbun. Use the <a href="/domains">domain finder</a> (or “Find or connect your own domain” on your site in <b>SEO sites</b>) to get name ideas and check which are available. Simple names work: region + service, like lakewoodwaterheaterhelp.com. Never use a real company's name or trademark.</li>
 <li><b>Add one DNS record</b> at the registrar: type <b>CNAME</b>, name <code>www</code>, value <code>callposts.netlify.app</code>.</li>
 <li><b>Connect it</b> in Landing pages: open your site, choose “Connect your own domain”, enter www.yourdomain.com and click Connect. HTTPS is set up automatically within minutes.</li>
 <li><b>Tell Google.</b> Add the domain to Google Search Console (free), verify it with the TXT record it gives you, then submit <code>/sitemap.xml</code>.</li>

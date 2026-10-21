@@ -344,7 +344,7 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
       </div>
       <details class="field" id="lpBox">
         <summary class="label" style="cursor:pointer">✦ Landing pages: service-and-city pages and city sites</summary>
-        <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months.</p>
+        <p class="status" style="margin:0">Create service-and-city landing pages hosted on callposts.com, with tap-to-call buttons, local copy, search-ready titles and structured data. Read and edit every page before you use it. Search rankings aren't guaranteed and usually take months. Need a domain? <a href="/domains" target="_blank" rel="noopener" style="color:var(--accent)">Find one</a>, or use the finder on each site below.</p>
         <div class="lp-mode" role="group" aria-label="What to build"><button type="button" data-m="page" aria-pressed="true">One page</button><button type="button" data-m="site" aria-pressed="false">Full site (services × cities)</button></div>
         <div id="lpSiteFields" hidden style="display:flex;flex-direction:column;gap:8px">
           <label class="label" for="lpServices" style="margin:0">Services, one per line (up to 5)</label>
@@ -435,6 +435,8 @@ header h1{font-weight:800;letter-spacing:-.02em;background:linear-gradient(100de
     <section class="out" id="out" aria-live="polite"></section>
   </div>
 </div>
+
+<form name="topup-request" data-netlify="true" netlify-honeypot="company" hidden><input name="email"><input name="plan"><input name="method"><input name="reference"><input name="note"><input name="company"></form>
 
 <dialog id="lpEdit" aria-labelledby="lpEditTitle">
   <form method="dialog" id="lpEditForm">
@@ -1310,14 +1312,14 @@ async function refresh(){
   window.cpUser=me.loggedIn?me:null;window.cpBuyUrl=me.buyUrl||"";
   $("acctOut").hidden=!!me.loggedIn;$("acctIn").hidden=!me.loggedIn;
   if(me.loggedIn){$("acctEmail").textContent=me.email||"";$("acctBal").textContent=me.credits;
-    const plans=me.plans||[];$("buyBtn").hidden=!plans.length;$("adminLink").hidden=!me.admin;
-    $("buyBox").innerHTML=plans.map(p=>`<a class="copy" style="display:flex;justify-content:space-between;gap:8px" href="${p.url}" target="_blank" rel="noopener"><span><b>${p.name}</b> · ${p.credits}</span><span>${p.price}</span></a>`).join("");
-    if(location.hash==="#buy"&&plans.length){$("buyBox").hidden=false}
+    const plans=me.plans||[];$("buyBtn").hidden=false;$("adminLink").hidden=!me.admin;window.cpCheckout=plans.length>0;
+    $("buyBox").innerHTML=plans.length?plans.map(p=>`<a class="copy" style="display:flex;justify-content:space-between;gap:8px" href="${p.url}" target="_blank" rel="noopener"><span><b>${p.name}</b> · ${p.credits}</span><span>${p.price}</span></a>`).join(""):"";
+    if(location.hash==="#buy"){$("buyBox").hidden=false;if(!plans.length)loadTopup()}
     const rf=me.referral;$("refBox").hidden=!rf;
     if(rf){$("refLink").value=rf.link;$("refExplain").textContent=`Friends who sign up with your link get ${rf.bonus} extra credits. You get ${rf.share}% of the credits they buy, every time they pay.`;
       $("refStats").textContent=`${rf.signups} signed up · ${rf.paying} paying · ${rf.earned} credits earned`}
     if(me.welcomed)$("acctHint").textContent=`Welcome! You got ${rf?rf.bonus:10} extra credits from your friend's invite.`;
-    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Text draft 1 · AI image +3 (text + image = 4) · landing page 3, or 6 with an image · blog post 2 · site audit 1 · market picks 1. Need more? Message CallPosts to top up.";}
+    if(!me.buyUrl&&!me.welcomed)$("acctHint").textContent="Landing page 3, or 6 with an image · blog post 2 · site audit 1 · text draft 1 · AI image +3 (text + image = 4) · market picks 1. Need more? Tap Buy credits.";}
   updateCost();
   if(window.cpAfterAuth)window.cpAfterAuth();
 }
@@ -1358,7 +1360,35 @@ $("resetForm").addEventListener("submit",async e=>{e.preventDefault();
   try{if(inviteToken)await acceptInvite(inviteToken,$("newPass").value);else await recoverPassword(recoveryToken,$("newPass").value);$("resetForm").hidden=true;$("authForm").hidden=false;await refresh()}
   catch(err){say("Couldn't set the password. The link may have expired; request a new one.")}});
 
-$("buyBtn").onclick=()=>{$("buyBox").hidden=!$("buyBox").hidden};
+$("buyBtn").onclick=()=>{$("buyBox").hidden=!$("buyBox").hidden;if(!$("buyBox").hidden&&!window.cpCheckout)loadTopup()};
+
+// Manual top-up: pay by Payoneer, bank transfer or another method, then send the reference for review.
+const tEsc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function loadTopup(){
+  const box=$("buyBox");box.innerHTML=`<span class="status" style="margin:0">Loading…</span>`;
+  let j;try{const r=await fetch("/api/topup",{cache:"no-store"});j=await r.json();if(!r.ok)throw 0}catch(e){box.innerHTML=`<span class="status" style="margin:0">Couldn't load payment options. Email <a href="mailto:support@callposts.com" style="color:var(--accent)">support@callposts.com</a>.</span>`;return}
+  const how=j.howToPay?tEsc(j.howToPay).replace(/\n/g,"<br>"):`Email <a href="mailto:${j.support}?subject=CallPosts%20credits" style="color:var(--accent)">${j.support}</a> with the plan you want and we'll send payment details.`;
+  const st={pending:"Waiting for review",approved:"Credits added",rejected:"Not approved, contact support"};
+  box.innerHTML=`<span class="label" style="margin:0">Buy credits</span>
+    <div style="display:flex;flex-direction:column;gap:4px">${j.plans.map((p,i)=>`<label class="copy" style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><input type="radio" name="tuPlan" value="${p.id}" ${i===2?"checked":""} style="width:auto;margin-right:6px"><b>${tEsc(p.name)}</b> · ${p.credits} credits</span><span>${tEsc(p.price)} <span class="status" style="margin:0">${tEsc(p.note)}</span></span></label>`).join("")}</div>
+    <div class="status" style="margin:0"><b>1. Pay</b><br>${how}</div>
+    <div class="status" style="margin:0"><b>2. Tell us you've paid</b></div>
+    <select id="tuMethod" aria-label="How you paid">${j.methods.map(m=>`<option>${tEsc(m)}</option>`).join("")}</select>
+    <input id="tuRef" placeholder="Payment reference or transaction ID" aria-label="Payment reference">
+    <input id="tuNote" placeholder="Note (optional)" aria-label="Note">
+    <button type="button" class="btn" id="tuGo">I've paid: request credits</button>
+    <span class="status" id="tuMsg" role="status" style="margin:0">We check payments and add credits, usually within a day. Monthly plans add one month of credits per payment.</span>
+    ${j.requests.length?`<span class="label" style="margin:4px 0 0">Your requests</span>`+j.requests.map(r=>`<div class="status" style="margin:0">${new Date(r.created).toLocaleDateString(undefined,{month:"short",day:"numeric"})} · ${tEsc(r.plan)} · ${r.credits} credits · <b>${st[r.status]||r.status}</b></div>`).join(""):""}`;
+  $("tuGo").onclick=async()=>{const plan=(document.querySelector('input[name="tuPlan"]:checked')||{}).value,method=$("tuMethod").value,reference=$("tuRef").value.trim(),note=$("tuNote").value.trim();
+    if(!reference){$("tuMsg").textContent="Add the payment reference or transaction ID so we can match your payment.";$("tuRef").focus();return}
+    $("tuGo").disabled=true;
+    try{const r=await fetch("/api/topup",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({plan,method,reference,note})});const k=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(k.error||"Couldn't send the request.");
+      // Also post a Netlify form so the admin gets an email notification.
+      fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({"form-name":"topup-request",email:(window.cpUser&&window.cpUser.email)||"",plan,method,reference,note}).toString()}).catch(()=>{});
+      await loadTopup();$("tuMsg").textContent="Thanks! Your request is waiting for review. Credits appear here once the payment is confirmed.";
+    }catch(e){$("tuMsg").textContent=e.message;$("tuGo").disabled=false}};
+}
 $("logoutBtn").onclick=async()=>{try{await logout()}catch(e){}await refresh()};
 
 (async()=>{
